@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robô Ti Artes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="O Sol responde os clientes no seu Instagram e no WhatsApp, de dia e de madrugada. Quando quem escreve é você, o Otto anota. Por assinatura, a partir de R$ 147 por mês, com 7 dias grátis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* A VITRINE (14/11/2026). Um mundo só, escuro de propósito: o estúdio com a luz baixa e um balão de conversa de
+   vidro no meio. Rolar a página gira o balão: teal é o Sol (mensagem que chega), âmbar é o Otto (mensagem que sai).
+   Layout: o 3D fica parado atrás (canvas fixo) e o texto passa por cima, em colunas que se alternam com o balão. */
+:root {
+  --breu: #071113;          /* fundo */
+  --breu-2: #0E1E21;
+  --texto: #E6F1EE;
+  --apoio: #9DB4B6;
+  --linha: rgba(255, 255, 255, .10);
+  --teal: #19A693;          /* a marca, um tom acima do impresso para ler no escuro */
+  --sinal: #35E0BF;         /* LED de canal ligado: usar pouco */
+  --ambar: #F2B84B;         /* o Otto */
+  --vidro: rgba(14, 30, 33, .52);
+  --vidro-borda: rgba(255, 255, 255, .12);
+  --serif: 'Caladea', 'Bitstream Charter', Georgia, serif;
+  --sans: 'Carlito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'DejaVu Sans Mono', monospace;
+  --gut-l: max(16px, env(safe-area-inset-left, 0px));
+  --gut-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--breu); }
+body { margin: 0; background: var(--breu); color: var(--texto); font-family: var(--sans); font-size: 18px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+h1, h2, h3 { font-family: var(--serif); letter-spacing: -.02em; line-height: 1.06; text-wrap: balance; margin: 0; color: #fff; }
+p { margin: 0; }
+a { color: var(--sinal); }
+:focus-visible { outline: 3px solid var(--sinal); outline-offset: 3px; border-radius: 8px; }
+.num { font-variant-numeric: tabular-nums; }
+.rotulo { font: 600 12px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--sinal); }
+.miolo { width: 100%; max-width: 1180px; margin: 0 auto; padding-left: var(--gut-l); padding-right: var(--gut-r); }
+
+/* ---------- a cena 3D, parada atrás de tudo ---------- */
+#cena { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
+.sem-3d #cena { display: none; }
+.sem-3d body::after { content: ''; position: fixed; z-index: 0; inset: auto -10vw 18vh auto; width: 46vw; height: 46vw; max-width: 520px; max-height: 520px; border-radius: 42%;
+  background: radial-gradient(circle at 35% 30%, rgba(53, 224, 191, .55), rgba(25, 166, 147, .25) 45%, transparent 70%); filter: blur(10px); pointer-events: none; }
+main, .nav, footer { position: relative; z-index: 1; }
+
+/* ---------- o menu: uma pílula de vidro flutuando ---------- */
+.nav { position: fixed; z-index: 20; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 0; right: 0; padding-left: var(--gut-l); padding-right: var(--gut-r); pointer-events: none; }
+.nav .pilula-nav { pointer-events: auto; max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 999px;
+  background: var(--vidro); border: 1px solid var(--vidro-borda); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 20px 50px -24px rgba(0, 0, 0, .8);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
+.marca { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; margin-right: auto; }
+.marca i { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg, var(--sinal), var(--teal)); display: grid; place-items: center; font: 700 13px var(--serif); color: #062421; font-style: normal; }
+.marca b { font: 700 16px var(--serif); }
+.nav .links { display: flex; gap: 2px; }
+.nav .links a, .nav .entrar { color: var(--apoio); text-decoration: none; font-weight: 700; font-size: 15px; padding: 10px 12px; border-radius: 999px; min-height: 44px; display: inline-flex; align-items: center; }
+.nav .links a:hover, .nav .entrar:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+
+.bt { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: 999px; border: 0; cursor: pointer;
+  background: linear-gradient(180deg, #2BC7B2, var(--teal)); color: #04211D; font: 700 17px/1 var(--sans); text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 14px 30px -12px rgba(53, 224, 191, .55); transition: transform .2s, box-shadow .2s; }
+.bt:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 18px 36px -12px rgba(53, 224, 191, .7); }
+.bt.fraco { background: rgba(255, 255, 255, .06); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }
+.bt.fraco:hover { background: rgba(255, 255, 255, .1); }
+.bt.mini { min-height: 44px; padding: 0 18px; font-size: 15px; }
+.bt span[aria-hidden] { transition: transform .2s; }
+.bt:hover span[aria-hidden] { transform: translateX(3px); }
+
+.vidro { background: var(--vidro); border: 1px solid var(--vidro-borda); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 30px 60px -36px rgba(0, 0, 0, .9);
+  -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); border-radius: 22px; }
+
+/* ---------- as cenas: o texto alterna de lado com o balão ---------- */
+.ato { min-height: 100vh; display: flex; align-items: center; padding-block: 120px 80px; }
+.ato .miolo { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+.esq { grid-column: 1 / span 6; }
+.dir { grid-column: 7 / span 6; }
+.largo { grid-column: 1 / -1; }
+
+.heroi h1 { font-size: clamp(42px, 6.6vw, 86px); }
+.heroi h1 em { font-style: italic; color: var(--sinal); }
+.heroi .lede { margin-top: 22px; font-size: clamp(18px, 1.7vw, 21px); color: var(--texto); max-width: 32em; opacity: .9; }
+.acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+.garantias { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; font: 500 13px var(--mono); color: var(--apoio); }
+.garantias span::before { content: '●'; color: var(--sinal); margin-right: 8px; font-size: 9px; vertical-align: 2px; }
+.desce { margin-top: 56px; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--apoio); display: flex; align-items: center; gap: 10px; }
+.desce i { width: 1px; height: 34px; background: linear-gradient(var(--sinal), transparent); animation: desce 1.8s ease-in-out infinite; }
+@keyframes desce { 0%, 100% { transform: scaleY(.4); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } }
+
+.hora { font: 600 clamp(64px, 11vw, 150px)/.9 var(--mono); letter-spacing: -.04em; color: #fff; }
+.hora small { display: block; font: 600 13px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--apoio); margin-top: 18px; }
+.noite h2 { font-size: clamp(32px, 4.2vw, 54px); margin-top: 26px; }
+.noite h2 em { color: var(--sinal); }
+.noite p.lede { margin-top: 16px; color: var(--apoio); max-width: 30em; }
+
+/* o celular de vidro com a conversa */
+.fone { padding: 14px; max-width: 460px; }
+.chave { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(0, 0, 0, .35); position: relative; }
+.chave button { position: relative; z-index: 1; min-height: 42px; border: 0; border-radius: 999px; background: transparent; color: var(--apoio); font: 700 14.5px var(--sans); cursor: pointer; transition: color .25s; }
+.chave button[aria-pressed="true"] { color: #04211D; }
+.chave .corre { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 6px); border-radius: 999px; background: linear-gradient(180deg, #43E6C7, var(--teal)); transition: transform .45s cubic-bezier(.3, 1.3, .5, 1), background .45s; }
+.chave[data-rosto="otto"] .corre { transform: translateX(calc(100% + 4px)); background: linear-gradient(180deg, #FFD27A, var(--ambar)); }
+.quem { display: flex; align-items: center; gap: 10px; padding: 14px 6px 10px; border-bottom: 1px solid var(--linha); }
+.quem i { width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #9FE3C9, #2C6F64); }
+.quem b { display: block; color: #fff; font-size: 15px; line-height: 1.2; }
+.quem span { font: 500 11.5px var(--mono); color: var(--apoio); }
+.fio { display: flex; flex-direction: column; gap: 8px; padding: 14px 4px 6px; min-height: 330px; }
+.b { max-width: 86%; padding: 10px 14px; border-radius: 18px; font-size: 15.5px; line-height: 1.45; animation: entra .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+.b.ela { align-self: flex-start; background: rgba(255, 255, 255, .09); color: #EAF3F1; border-bottom-left-radius: 6px; }
+.b.robo { align-self: flex-end; background: linear-gradient(180deg, #23B7A3, #138C7B); color: #fff; border-bottom-right-radius: 6px; }
+.b.otto { align-self: flex-end; background: linear-gradient(180deg, #F7C565, #D99A2B); color: #2A1C02; border-bottom-right-radius: 6px; }
+.b small { display: block; margin-top: 4px; font: 500 10.5px var(--mono); opacity: .72; }
+.fio .nota { align-self: center; font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--apoio); }
+.fio .b:nth-child(2) { animation-delay: .12s; } .fio .b:nth-child(3) { animation-delay: .24s; } .fio .b:nth-child(4) { animation-delay: .36s; } .fio .b:nth-child(5) { animation-delay: .48s; }
+@keyframes entra { from { transform: translateY(8px) scale(.98); } to { transform: none; } }
+
+/* a virada: a tela para (sticky) e a rolagem só gira o balão; as legendas trocam com ele */
+.virada { height: 240vh; position: relative; }
+.gruda { position: sticky; top: 0; height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px;
+  max-width: 1180px; margin: 0 auto; padding-left: var(--gut-l); padding-right: var(--gut-r); }
+.legenda { transition: opacity .2s linear; max-width: 30vw; }
+.legenda h2 { font-size: clamp(40px, 5.2vw, 84px); }
+.legenda p { margin-top: 14px; color: var(--apoio); max-width: 16em; }
+.legenda.sol { opacity: calc(1 - var(--r, 0)); }
+.legenda.sol h2 em { color: var(--sinal); font-style: italic; }
+.legenda.otto { opacity: var(--r, 1); text-align: right; justify-self: end; }
+.legenda.otto h2 em { color: var(--ambar); font-style: italic; }
+.legenda.otto p { margin-left: auto; }
+.virada .rotulo.otto-r { color: var(--ambar); }
+.dica-virada { position: absolute; left: 50%; bottom: 7vh; transform: translateX(-50%); font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--apoio); white-space: nowrap; }
+.rostos h2 { font-size: clamp(32px, 4.2vw, 54px); }
+.rostos .lede { margin-top: 14px; color: var(--apoio); max-width: 30em; }
+.cartoes-rosto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
+.rosto { padding: 20px; }
+.rosto h3 { font-size: 28px; display: flex; align-items: center; gap: 10px; }
+.rosto h3::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--sinal); box-shadow: 0 0 14px var(--sinal); }
+.rosto.otto h3::before { background: var(--ambar); box-shadow: 0 0 14px var(--ambar); }
+.rosto .papel { font: 600 11.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--apoio); margin-top: 4px; }
+.rosto ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 15.5px; color: var(--texto); }
+.rosto li { padding-left: 18px; position: relative; opacity: .9; }
+.rosto li::before { content: ''; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 2px; background: var(--sinal); }
+.rosto.otto li::before { background: var(--ambar); }
+.selo { display: inline-block; padding: 3px 9px; border-radius: 999px; font: 600 11px var(--mono); letter-spacing: .04em; background: rgba(242, 184, 75, .16); color: var(--ambar); vertical-align: 4px; }
+
+.secao-titulo h2 { font-size: clamp(32px, 4.2vw, 56px); }
+.secao-titulo p { margin-top: 14px; color: var(--apoio); max-width: 34em; }
+.passos { list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; counter-reset: p; }
+.passos li { counter-increment: p; padding: 20px; min-width: 0; }
+.passos li::before { content: '0' counter(p); display: block; font: 600 13px var(--mono); color: var(--sinal); }
+.passos b { display: block; font: 700 21px/1.2 var(--serif); color: #fff; margin: 10px 0 6px; }
+.passos p { color: var(--apoio); font-size: 15.5px; }
+
+/* calculadora */
+.calc { padding: 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.calc label { display: block; font-weight: 700; color: #fff; }
+.calc output { font: 700 clamp(44px, 6vw, 72px)/1 var(--serif); color: #fff; display: block; margin-top: 8px; }
+.calc input[type=range] { width: 100%; margin-top: 18px; accent-color: var(--sinal); height: 28px; }
+.trava { display: flex; align-items: center; gap: 10px; margin-top: 16px; color: var(--texto); font-weight: 700; cursor: pointer; min-height: 44px; }
+.trava input { width: 22px; height: 22px; accent-color: var(--sinal); }
+.resultado { display: grid; gap: 14px; }
+.resultado div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--linha); padding-bottom: 10px; }
+.resultado span { color: var(--apoio); font-size: 15.5px; }
+.resultado b { font: 700 24px var(--serif); color: #fff; text-align: right; }
+.resultado .recomenda { border: 0; padding: 14px 16px; border-radius: 14px; background: rgba(53, 224, 191, .1); color: var(--texto); display: block; font-size: 16px; }
+.resultado .recomenda b { font-size: inherit; font-family: var(--sans); color: var(--sinal); }
+
+.planos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 40px; max-width: 900px; }
+.plano { padding: 30px; display: flex; flex-direction: column; gap: 16px; }
+.plano.destaque { border-color: rgba(53, 224, 191, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 0 1px rgba(53, 224, 191, .25), 0 30px 80px -30px rgba(53, 224, 191, .35); }
+.plano .tag { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--sinal); color: #04211D; font: 600 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.plano h3 { font-size: 26px; }
+.preco { font: 700 58px/1 var(--serif); color: #fff; }
+.preco small { font: 400 17px var(--sans); color: var(--apoio); }
+.plano ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; color: var(--texto); }
+.plano li::before { content: '✓'; color: var(--sinal); font-weight: 700; margin-right: 10px; }
+.plano .bt { margin-top: auto; }
+.plano .dica { font-size: 14px; color: var(--apoio); }
+
+.cobre { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 40px; }
+.cobre > div { padding: 26px; }
+.cobre h3 { font-size: 24px; margin-bottom: 16px; }
+.item { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: start; }
+.item + .item { margin-top: 16px; }
+.item i { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(53, 224, 191, .12); color: var(--sinal); font: 600 13px var(--mono); font-style: normal; }
+.item b { color: #fff; display: block; }
+.item p { color: var(--apoio); font-size: 15.5px; }
+.meta { border-color: rgba(242, 184, 75, .3); }
+.meta h3 { color: var(--ambar); }
+.meta > p { color: var(--texto); font-size: 16px; opacity: .9; }
+.tabela { margin: 16px 0; display: grid; gap: 2px; }
+.tabela div { display: flex; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--linha); font-size: 15.5px; }
+.tabela span:last-child { font: 600 14px var(--mono); color: #fff; text-align: right; white-space: nowrap; }
+.meta .rodape { font-size: 14px; color: var(--apoio); }
+
+.regras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 40px; }
+.regras div { padding: 24px; }
+.regras b { display: block; font: 700 20px var(--serif); color: #fff; margin-bottom: 8px; }
+.regras p { color: var(--apoio); font-size: 15.5px; }
+
+.perguntas { margin-top: 36px; max-width: 820px; display: grid; gap: 10px; }
+details { padding: 2px 22px; }
+summary { cursor: pointer; min-height: 56px; display: flex; align-items: center; font-weight: 700; color: #fff; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; margin-left: auto; font: 600 22px var(--mono); color: var(--sinal); padding-left: 14px; transition: transform .3s; }
+details[open] summary::after { transform: rotate(45deg); }
+details p { padding: 0 0 18px; color: var(--apoio); }
+
+.final { text-align: center; }
+.final .miolo { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 22px; }   /* uma coluna só: sem isto, herdava as 12 colunas das outras cenas e espremia o texto */
+.final h2 { font-size: clamp(40px, 6vw, 80px); max-width: 14em; }
+.final h2 em { font-style: italic; color: var(--sinal); }
+.final p { color: var(--apoio); max-width: 34em; }
+footer { border-top: 1px solid var(--linha); }
+footer .miolo { padding-block: 28px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 20px; font-size: 14px; color: var(--apoio); }
+footer a { color: var(--apoio); }
+
+/* ---------- o vendedor: o Sol da Ti Artes num balão de vidro no canto ---------- */
+.vend-bt { position: fixed; z-index: 30; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 18px 8px 10px; border-radius: 999px; cursor: pointer; color: #fff; font: 700 15.5px var(--sans);
+  background: var(--vidro); border: 1px solid rgba(53, 224, 191, .35); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 18px 40px -16px rgba(0,0,0,.9), 0 0 0 6px rgba(53,224,191,.06);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
+.vend-bt .bolha { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 4px; background: linear-gradient(160deg, #43E6C7, var(--teal)); }
+.vend-bt .bolha i { width: 6px; height: 6px; border-radius: 50%; background: #04211D; animation: digita 1.2s ease-in-out infinite; }
+.vend-bt .bolha i:nth-child(2) { animation-delay: .15s; } .vend-bt .bolha i:nth-child(3) { animation-delay: .3s; }
+@keyframes digita { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+.vend { position: fixed; z-index: 31; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); width: min(400px, calc(100vw - 32px));
+  height: min(600px, calc(100vh - 110px)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+.vend header { display: flex; align-items: center; gap: 12px; padding: 14px 14px 12px 18px; border-bottom: 1px solid var(--linha); }
+.vend header b { display: block; color: #fff; font: 700 17px var(--serif); }
+.vend header span { font: 500 11.5px var(--mono); color: var(--sinal); }
+.vend header button { margin-left: auto; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.06); color: #fff; font-size: 20px; cursor: pointer; }
+.vend .msgs { overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.vend .m { max-width: 88%; padding: 10px 14px; border-radius: 16px; font-size: 15.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vend .m.sol { align-self: flex-start; background: rgba(255,255,255,.08); border-bottom-left-radius: 6px; }
+.vend .m.eu { align-self: flex-end; background: linear-gradient(180deg, #23B7A3, #138C7B); color: #fff; border-bottom-right-radius: 6px; }
+.vend .m a { color: var(--sinal); font-weight: 700; }
+.vend .m.pensa { color: var(--apoio); font-style: italic; }
+.vend form { display: grid; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid var(--linha); }
+.vend .sug { display: flex; gap: 6px; flex-wrap: wrap; }
+.vend .sug button { min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--linha); background: rgba(255,255,255,.04); color: var(--texto); font: 600 13.5px var(--sans); cursor: pointer; }
+.vend .linha { display: flex; gap: 8px; }
+.vend textarea { flex: 1; min-width: 0; min-height: 48px; max-height: 120px; resize: none; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--linha); background: rgba(0,0,0,.25); color: #fff; font: 400 16px/1.4 var(--sans); }
+.vend .linha .bt { min-height: 48px; padding: 0 18px; }
+
+@media (max-width: 960px) {
+  .esq, .dir { grid-column: 1 / -1; }
+  .passos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .regras, .calc { grid-template-columns: minmax(0, 1fr); }
+  .nav .links { display: none; }
+  .ato { min-height: auto; padding-block: 110px 70px; }
+  .heroi { min-height: 100vh; }
+  .heroi .esq { padding-top: 34vh; }   /* o balão fica no alto, o texto embaixo dele */
+  .gruda { grid-template-columns: minmax(0, 1fr); align-content: space-between; padding-block: 96px 14vh; }
+  .legenda.otto { text-align: left; justify-self: start; }
+  .legenda.otto p { margin-left: 0; }
+  .legenda { max-width: none; }
+}
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .cartoes-rosto, .planos, .cobre, .passos { grid-template-columns: minmax(0, 1fr); }
+  .nav .entrar { display: none; }
+  .fio { min-height: 0; }
+  .preco { font-size: 50px; }
+  .calc, .plano, .cobre > div { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<canvas id="cena" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Principal">
+  <div class="pilula-nav">
+    <a class="marca" href="#topo"><i>Ti</i><b>Ti Artes</b></a>
+    <div class="links"><a href="#virada">Como é</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
+    <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
+  </div>
+</nav>
+
+<main>
+  <!-- 1. o heroi: o balão à direita -->
+  <section class="ato heroi" id="topo" data-cena="heroi">
+    <div class="miolo">
+      <div class="esq">
+        <p class="rotulo">Robô de atendimento · Instagram e WhatsApp</p>
+        <h1 style="margin-top:16px">O seu direct responde sozinho. E quando <em>você</em> escreve, ele anota.</h1>
+        <p class="lede">Uma conta, dois rostos. O <b>Sol</b> atende quem escreve para o seu negócio, com os seus preços e o seu jeito. O <b>Otto</b> é o seu assistente: quando quem escreve é você, ele marca, lembra e anota.</p>
+        <div class="acoes">
+          <a class="bt" href="entrar.html?criar=1">Montar o meu robô grátis <span aria-hidden="true">→</span></a>
+          <a class="bt fraco" href="#virada">Ver o robô conversando</a>
+        </div>
+        <p class="garantias"><span>Sem cartão para testar</span><span>Sem taxa de instalação</span><span>Cancela no painel</span></p>
+        <p class="desce"><i aria-hidden="true"></i>role para ver</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. a madrugada: o balão vai para a esquerda -->
+  <section class="ato noite" data-cena="noite">
+    <div class="miolo">
+      <div class="dir">
+        <p class="hora num">23:41<small>sábado · você dormindo</small></p>
+        <h2>A Marina perguntou o preço do arranjo. Você estava dormindo. <em>O Sol, não.</em></h2>
+        <p class="lede">Quem escreve à noite e não recebe resposta compra de quem responde. O robô responde na hora, no idioma da pessoa, e deixa o pedido anotado para você ver de manhã.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. a virada: a tela para e a rolagem gira o balão de teal (Sol) para âmbar (Otto) -->
+  <section class="virada" id="virada" data-cena="virada" aria-label="Uma conta, dois rostos">
+    <div class="gruda">
+      <div class="legenda sol"><p class="rotulo">quando o cliente escreve</p><h2 style="margin-top:10px">O <em>Sol</em> atende.</h2><p>Responde, mostra os preços e anota o pedido.</p></div>
+      <div class="legenda otto"><p class="rotulo otto-r">quando você escreve</p><h2 style="margin-top:10px">O <em>Otto</em> anota.</h2><p>Marca, lembra e organiza o seu dia.</p></div>
+      <p class="dica-virada">uma conta só · role para virar</p>
+    </div>
+  </section>
+
+  <!-- 4. os dois rostos, em detalhe -->
+  <section class="ato rostos" id="rostos" data-cena="rostos">
+    <div class="miolo">
+      <div class="esq">
+        <p class="rotulo">Os dois agentes</p>
+        <h2 style="margin-top:12px">A mesma conta sabe quem está do outro lado</h2>
+        <p class="lede">Cliente escreveu, quem responde é o Sol. Você escreveu, quem responde é o Otto. Sem trocar de aplicativo.</p>
+        <div class="cartoes-rosto">
+          <article class="rosto vidro"><h3>Sol</h3><p class="papel">Atendimento</p>
+            <ul><li>Fala dos seus serviços e preços</li><li>Anota pedidos, visitas e orçamentos</li><li>Passa para você reclamação e desconto</li><li>Entende áudio e foto</li><li>Nunca inventa preço nem prazo</li></ul></article>
+          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Assistente · <span class="selo">chega em dezembro</span></p>
+            <ul><li>Marca reunião e visita</li><li>Anota tarefa e lembra na hora</li><li>Cadastra cliente</li><li>Diz quem está esperando</li><li>Apaga só depois que você confirma</li></ul></article>
+        </div>
+      </div>
+      <div class="dir" style="align-self:center">
+        <div class="fone vidro" aria-label="Exemplo de conversa no direct">
+          <div class="chave" id="chave" data-rosto="sol" role="group" aria-label="Quem está escrevendo">
+            <span class="corre" aria-hidden="true"></span>
+            <button type="button" id="ver-sol" aria-pressed="true">Quando o cliente escreve</button>
+            <button type="button" id="ver-otto" aria-pressed="false">Quando você escreve</button>
+          </div>
+          <div class="quem"><i aria-hidden="true"></i><div><b>Ateliê Folha Miúda</b><span>@folhamiuda · exemplo</span></div></div>
+          <div class="fio" id="fio-sol">
+            <div class="b ela">Oi! Vocês fazem arranjo para casamento? É dia 29, umas 12 mesas<small>Marina · 23:41</small></div>
+            <div class="b robo">Oi, Marina! Fazemos, sim. O arranjo de mesa sai a partir de R$ 85 cada, e o de altar é sob consulta. Para 12 mesas no dia 29, eu anoto o seu pedido e a Rosa te responde amanhã cedo. Já tem as cores?<small>Sol · 23:41</small></div>
+            <div class="b ela">Verde e branco! Dá pra ir ver o ateliê?<small>Marina · 23:43</small></div>
+            <div class="b robo">Dá, sim. Anotei: visita ao ateliê, verde e branco, 12 mesas no dia 29. A Rosa confirma o horário com você.<small>Sol · 23:43</small></div>
+          </div>
+          <div class="fio" id="fio-otto" hidden>
+            <p class="nota">a dona escreve no mesmo direct</p>
+            <div class="b ela">Otto, marca a visita da Marina quinta às 15h e me lembra de pedir eucalipto amanhã<small>Rosa · 08:02</small></div>
+            <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". Amanhã às 9h eu te lembro do eucalipto.<small>Otto · 08:02</small></div>
+            <div class="b ela">Quem me escreveu ontem que eu não respondi?<small>Rosa · 08:03</small></div>
+            <div class="b otto">Dois pedidos esperando: a Marina (casamento, já com visita) e o Caio, que quer um vaso grande até sexta.<small>Otto · 08:03</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. como funciona -->
+  <section class="ato" id="como" data-cena="como">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Como funciona</p>
+        <h2 style="margin-top:12px">Em uma tarde, sem técnico e sem formulário</h2>
+        <p>Você ensina o robô conversando, do seu jeito. Ele organiza o que você contou e já sai respondendo como alguém da casa.</p>
+        <ol class="passos">
+          <li class="vidro"><b>Crie a conta</b><p>E-mail e senha. Sem cartão.</p></li>
+          <li class="vidro"><b>Conte do negócio</b><p>Escreva ou cole a tabela de preços. Ele aprende na hora.</p></li>
+          <li class="vidro"><b>Conecte o Instagram</b><p>Pelo login oficial. Ninguém vê a sua senha.</p></li>
+          <li class="vidro"><b>Teste como cliente</b><p>Pergunte o que os clientes perguntam e ajuste.</p></li>
+          <li class="vidro"><b>Teste no ar</b><p>4 horas grátis para montar, testar e ver ele respondendo. Gostou, escolhe o plano.</p></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. a calculadora e os planos -->
+  <section class="ato" id="planos" data-cena="planos">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Planos</p>
+        <h2 style="margin-top:12px">Quanto tempo o Sol devolve para você?</h2>
+        <p>Mexa no número e veja o plano que cabe no seu movimento.</p>
+        <div class="calc vidro" style="margin-top:32px">
+          <div>
+            <label for="por-dia">Mensagens que chegam por dia</label>
+            <output id="saida-dia" for="por-dia" class="num">40</output>
+            <input id="por-dia" type="range" min="5" max="250" step="5" value="40" aria-describedby="saida-dia">
+            <label class="trava"><input id="com-whats" type="checkbox"> Também no WhatsApp</label>
+          </div>
+          <div class="resultado" aria-live="polite">
+            <div><span>Respostas do robô no mês</span><b class="num" id="r-mes">1.200</b></div>
+            <div><span>Tempo seu que ele assume no mês</span><b class="num" id="r-horas">30 h</b></div>
+            <div id="linha-meta"><span>WhatsApp, na sua conta Meta</span><b class="num" id="r-meta">R$ 0</b></div>
+            <p class="recomenda" id="r-plano">O plano <b>Instagram</b> cabe com folga.</p>
+          </div>
+        </div>
+        <div class="planos">
+          <article class="plano vidro">
+            <h3>Instagram</h3>
+            <p class="preco num">R$ 147<small> por mês</small></p>
+            <ul><li>O Sol no direct do Instagram</li><li>Até 2.000 mensagens do robô por mês</li><li>Agenda e notas no mesmo painel</li><li>Suporte da Ti Artes</li></ul>
+            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Começar com o Instagram</a>
+          </article>
+          <article class="plano destaque vidro">
+            <span class="tag">o mais completo</span>
+            <h3>Instagram + WhatsApp</h3>
+            <p class="preco num">R$ 197<small> por mês</small></p>
+            <ul><li>O Sol no Instagram e no WhatsApp</li><li>Até 4.000 mensagens do robô por mês</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
+            <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Começar com os dois <span aria-hidden="true">→</span></a>
+            <p class="dica">O WhatsApp entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro.</p>
+          </article>
+        </div>
+        <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o Sol com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. a conta às claras -->
+  <section class="ato" data-cena="conta">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">A conta, às claras</p>
+        <h2 style="margin-top:12px">O que a mensalidade paga, e o que fica com a Meta</h2>
+        <div class="cobre">
+          <div class="vidro">
+            <h3>Está na mensalidade</h3>
+            <div class="item"><i>IA</i><div><b>A inteligência artificial</b><p>Cada resposta gasta IA. Esse custo é nosso, até o limite do seu plano.</p></div></div>
+            <div class="item"><i>24h</i><div><b>Hospedagem</b><p>O robô fica ligado o dia inteiro, nos nossos servidores. Você não instala nada.</p></div></div>
+            <div class="item"><i>◎</i><div><b>A guarda do seu robô</b><p>O que você ensinou fica guardado e é só seu. Nenhum outro cliente enxerga.</p></div></div>
+            <div class="item"><i>?</i><div><b>Suporte</b><p>Gente da Ti Artes para ajudar quando você precisar.</p></div></div>
+          </div>
+          <div class="vidro meta">
+            <h3>Fica com a Meta, na conta da sua empresa</h3>
+            <p>No WhatsApp, quem cobra as mensagens é a Meta, direto da conta Meta da sua empresa, no seu cartão. A Ti Artes não fica no meio dessa conta.</p>
+            <div class="tabela">
+              <div><span>Respostas do robô, por número, por mês</span><span>1.000 grátis</span></div>
+              <div><span>Da 1.001ª em diante</span><span>~R$ 0,035 cada</span></div>
+              <div><span>Lembrete que você manda (modelo aprovado)</span><span>~R$ 0,035 cada</span></div>
+              <div><span>Promoção que você manda (modelo aprovado)</span><span>~R$ 0,32 cada</span></div>
+              <div><span>Instagram</span><span>sem custo da Meta</span></div>
+            </div>
+            <p class="rodape">Quer avisar os seus clientes de uma promoção ou lembrar de um horário? Dá: 100 lembretes saem por cerca de R$ 3,50 e 100 promoções por cerca de R$ 32, pagos à Meta, fora da mensalidade. Tabela da Meta para o Brasil desde 01/10/2026; cada foto que o robô manda conta como uma mensagem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. regras e perguntas -->
+  <section class="ato" id="perguntas" data-cena="perguntas">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">As regras do jogo</p>
+        <h2 style="margin-top:12px">O que o robô faz, e o que ele não faz</h2>
+        <div class="regras">
+          <div class="vidro"><b>Só responde quem escreveu</b><p>No Instagram, ele responde quem mandou mensagem, em até 24 horas. Não manda direct para quem nunca falou com você.</p></div>
+          <div class="vidro"><b>Você assume quando quiser</b><p>Respondeu na mão, ele se cala naquela conversa. Pausou no painel, ele para em todas.</p></div>
+          <div class="vidro"><b>Passou do limite, não para</b><p>Ele continua respondendo. A gente avisa quando chegar a 80% e a 100% do plano.</p></div>
+        </div>
+        <div class="perguntas">
+          <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
+          <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o Sol com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
+          <details class="vidro"><summary>O robô pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
+          <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O robô entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
+          <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O robô segue ligado até o fim do mês que você já pagou, e depois para.</p></details>
+          <details class="vidro"><summary>Quem guarda as conversas?</summary><p>Ficam guardadas por 72 horas, para o robô lembrar do que foi dito. Se a pessoa escrever "apagar", tudo some na hora.</p></details>
+          <details class="vidro"><summary>Quem é a Ti Artes?</summary><p>Um estúdio de Curitiba que faz robôs de atendimento e apps para pequenos negócios: guias de turismo, imobiliárias, confeitarias e pousadas. A Ti Artes é empresa verificada na Meta, e a conexão é sempre pelo login oficial da Meta.</p></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. o convite final: o balão no centro -->
+  <section class="ato final" data-cena="final">
+    <div class="miolo">
+      <h2>Monte o seu robô em <em>2 minutos.</em></h2>
+      <p>Sem cartão. Mande o que você já tem (PDF, fotos, prints, o site), escolha o jeito dele falar e veja o Sol respondendo os seus clientes. São 4 horas grátis para experimentar, e você ainda ganha agenda e notas no mesmo painel.</p>
+      <div class="acoes" style="justify-content:center">
+        <a class="bt" href="entrar.html?criar=1">Criar a minha conta <span aria-hidden="true">→</span></a>
+        <a class="bt fraco" href="entrar.html?entrar=1">Já tenho conta</a>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- o vendedor: aparece só onde a função existe (no ar e na prévia local) -->
+<button type="button" class="vend-bt" id="vend-abre" hidden aria-controls="vend"><span class="bolha" aria-hidden="true"><i></i><i></i><i></i></span>Tirar dúvida com o Sol</button>
+<section class="vend vidro" id="vend" hidden aria-label="Conversa com o Sol, da Ti Artes" data-lenis-prevent>
+  <header><span class="bolha" aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:linear-gradient(160deg,#43E6C7,#19A693)"></span>
+    <div><b>Sol · Ti Artes</b><span>responde na hora</span></div>
+    <button type="button" id="vend-fecha" aria-label="Fechar a conversa">×</button></header>
+  <div class="msgs" id="vend-msgs" aria-live="polite"></div>
+  <form id="vend-form">
+    <div class="sug" id="vend-sug">
+      <button type="button">Como funciona o teste?</button><button type="button">Quanto custa o WhatsApp?</button><button type="button">Serve para o meu negócio?</button>
+    </div>
+    <div class="linha"><textarea id="vend-txt" rows="1" placeholder="Escreva a sua dúvida…" aria-label="Escreva a sua dúvida"></textarea><button class="bt" type="submit" id="vend-env">Enviar</button></div>
+  </form>
+</section>
+<script src="config.js"></script>
+<script>
+/* o vendedor da página: o próprio Sol da Ti Artes (rota /vendedor da função robo) */
+(function () {
+  if (!window.ROBO || !ROBO.funcao) return;
+  const $ = (id) => document.getElementById(id);
+  let vis = '';
+  try { vis = localStorage.getItem('robo-visitante') || ''; } catch (_) {}
+  if (!/^[a-z0-9]{16}$/.test(vis)) { vis = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join(''); try { localStorage.setItem('robo-visitante', vis); } catch (_) {} }
+  const msgs = $('vend-msgs');
+  const linka = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1">$1</a>');
+  const poe = (quem, texto) => { const d = document.createElement('div'); d.className = 'm ' + quem; d.innerHTML = linka(texto); msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d; };
+  let carregou = false;
+  async function abre() {
+    $('vend').hidden = false; $('vend-abre').hidden = true; $('vend-txt').focus();
+    if (carregou) return; carregou = true;
+    const r = await fetch(ROBO.funcao + '/vendedor?visitante=' + vis).then((x) => x.json()).catch(() => null);
+    for (const m of ((r && r.conversa) || [])) poe(m.role === 'user' ? 'eu' : 'sol', m.content);
+  }
+  async function manda(texto) {
+    texto = String(texto || '').trim(); if (!texto) return;
+    $('vend-txt').value = ''; $('vend-env').disabled = true; poe('eu', texto);
+    const p = poe('sol pensa', 'digitando…');
+    const r = await fetch(ROBO.funcao + '/vendedor', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visitante: vis, texto }) })
+      .then((x) => x.json()).catch(() => ({ resposta: 'Sem conexão agora. Tente de novo em instantes.' }));
+    p.remove(); $('vend-env').disabled = false; poe('sol', r.resposta || r.erro || 'Pode repetir?');
+  }
+  $('vend-abre').hidden = false;
+  $('vend-abre').onclick = abre;
+  $('vend-fecha').onclick = () => { $('vend').hidden = true; $('vend-abre').hidden = false; };
+  $('vend-form').onsubmit = (e) => { e.preventDefault(); manda($('vend-txt').value); };
+  $('vend-txt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); manda($('vend-txt').value); } });
+  $('vend-sug').querySelectorAll('button').forEach((b) => b.onclick = () => manda(b.textContent));
+})();
+</script>
+<footer><div class="miolo"><span>Ti Artes · Curitiba, PR</span><span><a href="https://guia.eugeniofim.com/privacidade.html">Privacidade</a></span></div></footer>
+
+<!-- a conversa e a calculadora funcionam sem 3D -->
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  /* troca de rosto: a conversa do celular (o 3D escuta o evento e vira o balão) */
+  window.rostoAtual = 'sol';
+  document.getElementById('virada').style.setProperty('--r', '0');
+  window.mostraRosto = function (r, deQuem) {
+    if (r === window.rostoAtual) return;
+    window.rostoAtual = r;
+    $('chave').dataset.rosto = r;
+    $('ver-sol').setAttribute('aria-pressed', String(r === 'sol')); $('ver-otto').setAttribute('aria-pressed', String(r === 'otto'));
+    $('fio-sol').hidden = r !== 'sol'; $('fio-otto').hidden = r !== 'otto';
+    window.dispatchEvent(new CustomEvent('rosto', { detail: { rosto: r, deQuem: deQuem || 'clique' } }));
+  };
+  $('ver-sol').addEventListener('click', () => mostraRosto('sol'));
+  $('ver-otto').addEventListener('click', () => mostraRosto('otto'));
+
+  /* a calculadora: N mensagens por dia viram o mês, o tempo e o plano que cabe */
+  const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
+  function calcula() {
+    const dia = +$('por-dia').value, whats = $('com-whats').checked;
+    const mes = dia * 30, horas = mes * 1.5 / 60;          // 1 minuto e meio por resposta, contando abrir, ler e escrever
+    $('saida-dia').textContent = fmt(dia);
+    $('r-mes').textContent = fmt(mes);
+    $('r-horas').textContent = fmt(horas) + ' h';
+    const doWhats = whats ? mes * 0.5 : 0;                   // metade no WhatsApp, quando os dois estão ligados
+    const pagas = Math.max(0, doWhats - 1000);
+    $('linha-meta').hidden = !whats;
+    $('r-meta').textContent = pagas ? '~R$ ' + (pagas * 0.035).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'R$ 0 (dentro das 1.000 grátis)';
+    const plano = whats ? { nome: 'Instagram + WhatsApp', lim: 4000 } : { nome: 'Instagram', lim: 2000 };
+    $('r-plano').innerHTML = mes <= plano.lim
+      ? `O plano <b>${plano.nome}</b> cabe ${mes <= plano.lim * 0.6 ? 'com folga' : 'certinho'}.`
+      : `Passa das ${fmt(plano.lim)} do plano <b>${plano.nome}</b>. O robô continua respondendo, e a gente conversa sobre um pacote maior.`;
+  }
+  $('por-dia').addEventListener('input', calcula); $('com-whats').addEventListener('change', calcula); calcula();
+})();
+</script>
+
+<!-- a cena 3D: three.js + GSAP ScrollTrigger + Lenis (rolagem suave). Sem WebGL, a página segue igual, sem o balão -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.0/dist/lenis.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const celular = () => innerWidth < 960;
+const canvas = document.getElementById('cena');
+
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); }
+catch (_) { document.documentElement.classList.add('sem-3d'); throw new Error('sem WebGL'); }
+renderer.setPixelRatio(Math.min(devicePixelRatio, celular() ? 1.5 : 2));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const cena = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 8);
+
+/* o fundo: breu com um brilho teal no alto e um verde-água à direita (o vidro precisa de algo atrás para refratar) */
+function fundo() {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#071113'; g.fillRect(0, 0, 64, 64);
+  const r1 = g.createRadialGradient(14, 8, 0, 14, 8, 46); r1.addColorStop(0, 'rgba(25,166,147,.55)'); r1.addColorStop(1, 'rgba(25,166,147,0)');
+  g.fillStyle = r1; g.fillRect(0, 0, 64, 64);
+  const r2 = g.createRadialGradient(56, 40, 0, 56, 40, 40); r2.addColorStop(0, 'rgba(53,224,191,.22)'); r2.addColorStop(1, 'rgba(53,224,191,0)');
+  g.fillStyle = r2; g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+cena.background = fundo();
+const pmrem = new THREE.PMREMGenerator(renderer);
+cena.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const luz = new THREE.DirectionalLight(0xffffff, 1.6); luz.position.set(3, 4, 5); cena.add(luz);
+const contraluz = new THREE.PointLight(0x35e0bf, 18, 12); contraluz.position.set(-2.5, -1, -2.5); cena.add(contraluz);
+
+/* ---------- o balão de conversa de vidro: o corpo, o rabinho e os três pontinhos de "digitando" ---------- */
+const TEAL = new THREE.Color('#35E0BF'), AMBAR = new THREE.Color('#F2B84B');
+const TEAL_VIDRO = new THREE.Color('#7FE9D6'), AMBAR_VIDRO = new THREE.Color('#FFD999');
+const vidro = new THREE.MeshPhysicalMaterial({
+  color: TEAL_VIDRO.clone(), metalness: 0, roughness: 0.05, transmission: 1, thickness: 0.8, ior: 1.4,
+  dispersion: 1.0, attenuationColor: new THREE.Color('#19A693'), attenuationDistance: 4.5, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.5,
+});
+const balao = new THREE.Group();
+const corpo = new THREE.Mesh(new RoundedBoxGeometry(2.6, 1.7, 0.72, 8, 0.36), vidro);
+const rabo = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.62, 40, 1, true), vidro);   /* sem tampa: a base apareceria através do vidro */
+rabo.position.set(-0.82, -0.84, 0); rabo.rotation.z = -0.55; rabo.scale.set(1, 1, 0.8);   /* a base fica dentro do corpo: só a ponta aparece */
+balao.add(corpo, rabo);
+const pontoMat = new THREE.MeshStandardMaterial({ color: TEAL.clone(), emissive: TEAL.clone(), emissiveIntensity: 2.4, roughness: 0.3 });
+const pontos = [-0.52, 0, 0.52].map((x) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.15, 32, 16), pontoMat); m.position.set(x, 0, 0); balao.add(m); return m; });
+const palco = new THREE.Group(); palco.add(balao); cena.add(palco);
+
+/* ---------- as mensagens em volta: balõezinhos que orbitam devagar (a madrugada inteira chegando) ---------- */
+const N = celular() ? 14 : 26;
+const miniMat = new THREE.MeshPhysicalMaterial({ color: '#A9EBDD', roughness: 0.22, metalness: 0, clearcoat: 1, transparent: true, opacity: 0.3, envMapIntensity: 0.9, depthWrite: false });
+const minis = new THREE.InstancedMesh(new RoundedBoxGeometry(0.5, 0.32, 0.12, 2, 0.06), miniMat, N);
+const orbita = Array.from({ length: N }, (_, i) => ({ r: 3 + Math.random() * 3.6, a: Math.random() * Math.PI * 2, v: (0.03 + Math.random() * 0.05) * (i % 2 ? 1 : -1),
+  y: (Math.random() - 0.5) * 6, z: -3.2 - Math.random() * 6, giro: Math.random() * Math.PI, s: 0.45 + Math.random() * 0.55 }));
+cena.add(minis);
+const tmp = new THREE.Object3D();
+
+/* ---------- pós: um brilho leve nos pontinhos (no celular, sem pós, para manter 30 quadros) ---------- */
+let composer = null;
+function montaPos() {
+  if (celular()) { composer = null; return; }
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType }));
+  composer.addPass(new RenderPass(cena, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.45, 0.4, 0.82));
+  composer.addPass(new OutputPass());
+}
+montaPos();
+
+/* ---------- o roteiro: cada cena da página pede uma posição; o laço só persegue o alvo (nada dá tranco) ---------- */
+const ROTEIRO = {
+  /* x: fração da meia largura visível; ym: a altura no celular, onde o texto ocupa a largura toda */
+  heroi:     { x: 0.5, y: 0.1, ym: 1.45, z: 0, s: 1.0, giro: -0.32, cam: 8.0, enxame: 0.6 },
+  noite:     { x: -0.56, y: 0.0, ym: 2.15, z: -0.4, s: 0.84, giro: 0.42, cam: 7.4, enxame: 1.0 },
+  virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
+  rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
+  como:      { x: 0.62, y: 1.9, ym: 2.3, z: -1.6, s: 0.55, giro: -0.6, cam: 8.8, enxame: 0.4 },
+  planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
+  conta:     { x: 0.7, y: 1.8, ym: 2.4, z: -2.4, s: 0.45, giro: -0.4, cam: 9.0, enxame: 0.3 },
+  perguntas: { x: -0.7, y: 1.6, ym: 2.4, z: -2.4, s: 0.45, giro: 0.4, cam: 9.0, enxame: 0.3 },
+  final:     { x: 0.0, y: 1.35, ym: 1.7, z: 0, s: 0.95, giro: 0.0, cam: 8.6, enxame: 0.8 },
+};
+/* x vem como fração da meia largura que a câmera enxerga naquela distância (0,6 = 60% do centro até a borda) e a
+   escala acompanha a largura: em tela estreita ou larga, o balão fica inteiro e do lado certo do texto */
+const meiaLargura = (cam) => Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * cam * camera.aspect;
+function ajusta(p) {
+  if (celular()) {
+    /* no celular o balão fica no alto, no meio, menor: o texto passa por baixo dele */
+    const cam = p.cam + 2.2, m = meiaLargura(cam);
+    return { ...p, cam, x: p.x * 0.12 * m, y: p.ym, s: Math.min(0.95, m / 2.2) * (p.s >= 0.9 ? 0.95 : 0.7) };
+  }
+  const m = meiaLargura(p.cam);
+  return { ...p, x: p.x * m, s: p.s * Math.max(0.6, Math.min(1.15, m / 3.4)) };
+}
+const alvo = { ...ROTEIRO.heroi, rosto: 0, rolagem: 0 };
+const atual = { ...alvo };
+let cenaAtual = 'heroi';
+function vai(nome) { cenaAtual = nome; Object.assign(alvo, ajusta(ROTEIRO[nome])); }
+vai('heroi');
+
+/* Lenis é dono da rolagem; o ScrollTrigger lê dele (a regra da skill: nunca misturar rolagem de CSS e de JS) */
+let lenis = null;
+if (!quieto && window.Lenis) {
+  /* prevent explícito: a 1.1.0 chama options.prevent em todo evento e quebra quando ele não é função */
+  lenis = new Lenis({ lerp: 0.085, smoothWheel: true, prevent: () => false });
+  if (window.ScrollTrigger) lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((t) => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+  document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+    const alvoEl = document.querySelector(a.getAttribute('href')); if (!alvoEl) return;
+    e.preventDefault(); lenis.scrollTo(alvoEl, { offset: -10, duration: 1.4 });
+  }));
+}
+if (window.gsap && window.ScrollTrigger) {
+  gsap.registerPlugin(ScrollTrigger);
+  document.querySelectorAll('[data-cena]').forEach((sec) => ScrollTrigger.create({
+    trigger: sec, start: 'top 55%', end: 'bottom 55%',
+    onEnter: () => vai(sec.dataset.cena), onEnterBack: () => vai(sec.dataset.cena),
+  }));
+  /* a virada: com a tela parada, a rolagem gira o balão de teal (Sol) para âmbar (Otto) e troca as legendas */
+  const virada = document.getElementById('virada');
+  ScrollTrigger.create({
+    trigger: virada, start: 'top top', end: 'bottom bottom', scrub: true,
+    onUpdate: (st) => {
+      const p = gsap.utils.clamp(0, 1, (st.progress - 0.18) / 0.5);
+      alvo.rosto = p;
+      virada.style.setProperty('--r', p.toFixed(3));
+    },
+    onLeave: () => { alvo.rosto = 0; }, onLeaveBack: () => { alvo.rosto = 0; virada.style.setProperty('--r', '0'); },
+  });
+  /* rolagem contínua: o balão dá uma volta lenta ao longo da página */
+  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (st) => { alvo.rolagem = st.progress; } });
+}
+/* clicar no seletor da conversa também vira o balão (e a rolagem retoma o controle quando a pessoa rolar) */
+window.addEventListener('rosto', (e) => { if (e.detail.deQuem === 'clique') alvo.rosto = e.detail.rosto === 'otto' ? 1 : 0; });
+
+/* o mouse inclina o balão de leve */
+const mouse = { x: 0, y: 0 }, mouseLerp = { x: 0, y: 0 };
+addEventListener('pointermove', (e) => { mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = e.clientY / innerHeight * 2 - 1; }, { passive: true });
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio, celular() ? 1.5 : 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  montaPos(); vai(cenaAtual);
+});
+
+/* ---------- o laço: tudo pelo tempo (delta), nada por quadro; lerp independente da taxa de quadros ---------- */
+const relogio = new THREE.Clock();
+const segue = (k, dt) => 1 - Math.pow(1 - k, dt * 60);
+const cor = new THREE.Color();
+function quadro() {
+  const dt = Math.min(relogio.getDelta(), 0.05), t = relogio.elapsedTime;
+  const f = quieto ? 1 : segue(0.06, dt), fr = quieto ? 1 : segue(0.05, dt);
+  for (const k of ['x', 'y', 'z', 's', 'giro', 'cam', 'enxame', 'rolagem']) atual[k] += (alvo[k] - atual[k]) * f;
+  atual.rosto += (alvo.rosto - atual.rosto) * fr;
+  mouseLerp.x += (mouse.x - mouseLerp.x) * segue(0.05, dt); mouseLerp.y += (mouse.y - mouseLerp.y) * segue(0.05, dt);
+
+  palco.position.set(atual.x, atual.y + (quieto ? 0 : Math.sin(t * 0.8) * 0.06), atual.z);
+  palco.scale.setScalar(atual.s);
+  /* a virada é um giro de meia volta em Y: o rabinho troca de lado (mensagem que chega vira mensagem que sai) */
+  balao.rotation.y = atual.giro + atual.rosto * Math.PI + atual.rolagem * 0.9 + mouseLerp.x * 0.25;
+  balao.rotation.x = -mouseLerp.y * 0.16 + Math.sin(t * 0.5) * 0.04;
+  balao.rotation.z = Math.sin(t * 0.35) * 0.03;
+  /* a cor acompanha o rosto: teal (Sol) → âmbar (Otto) */
+  vidro.color.copy(TEAL_VIDRO).lerp(AMBAR_VIDRO, atual.rosto);
+  vidro.attenuationColor.copy(cor.set('#19A693')).lerp(cor.set('#C98A1E'), atual.rosto);
+  pontoMat.color.copy(TEAL).lerp(AMBAR, atual.rosto); pontoMat.emissive.copy(pontoMat.color);
+  contraluz.color.copy(TEAL).lerp(AMBAR, atual.rosto);
+  /* "digitando…": os três pontinhos sobem e descem em sequência */
+  pontos.forEach((p, i) => { p.position.y = quieto ? 0 : Math.max(0, Math.sin(t * 5 - i * 0.7)) * 0.16; });
+
+  for (let i = 0; i < N; i++) {
+    const o = orbita[i];
+    if (!quieto) { o.a += o.v * dt; o.giro += dt * 0.2; }
+    const r = o.r * (0.7 + atual.enxame * 0.3);
+    tmp.position.set(Math.cos(o.a) * r + atual.x * 0.4, o.y + Math.sin(o.a * 2) * 0.2, o.z + Math.sin(o.a) * 1.5);
+    tmp.rotation.set(o.giro * 0.4, o.giro, 0);
+    tmp.scale.setScalar(o.s * (0.55 + atual.enxame * 0.45));
+    tmp.updateMatrix(); minis.setMatrixAt(i, tmp.matrix);
+  }
+  minis.instanceMatrix.needsUpdate = true;
+  miniMat.opacity = 0.12 + atual.enxame * 0.22;
+
+  camera.position.set(mouseLerp.x * 0.25, -mouseLerp.y * 0.15, atual.cam);
+  camera.lookAt(0, 0, 0);
+  composer ? composer.render() : renderer.render(cena, camera);
+}
+renderer.setAnimationLoop(quadro);
+document.addEventListener('visibilitychange', () => renderer.setAnimationLoop(document.hidden ? null : quadro));
+</script>
+</body>
+</html>
