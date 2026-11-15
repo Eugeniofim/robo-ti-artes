@@ -7,13 +7,13 @@
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Agentes de IA humanizada, não chatbot de menu: o agente de atendimento responde os seus clientes no Instagram e no WhatsApp na hora, 24 horas, com os seus preços e o seu jeito. E o Otto, o seu assistente no WhatsApp, faz o trabalho de secretária: marca, anota e organiza o seu dia. A partir de R$ 99 por mês, teste grátis sem cartão.">
+<meta name="description" content="Agentes de IA humanizada, não chatbot de menu: o agente de atendimento responde os seus clientes no Instagram e no WhatsApp na hora, 24 horas, com os seus preços e o seu jeito. E a Dora, a sua secretária no WhatsApp, marca, anota e organiza o seu dia. A partir de R$ 99 por mês, teste grátis sem cartão.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 /* A VITRINE (14/11/2026). Um mundo só, escuro de propósito: o estúdio com a luz baixa e um balão de conversa de
-   vidro no meio. Rolar a página gira o balão: teal é o Sol (mensagem que chega), âmbar é o Otto (mensagem que sai).
+   vidro no meio. Rolar a página gira o balão: teal é o Sol (mensagem que chega), âmbar é a Dora (mensagem que sai).
    Layout: o 3D fica parado atrás (canvas fixo) e o texto passa por cima, em colunas que se alternam com o balão. */
 :root {
   --breu: #071113;          /* fundo */
@@ -23,7 +23,7 @@
   --linha: rgba(255, 255, 255, .10);
   --teal: #19A693;          /* a marca, um tom acima do impresso para ler no escuro */
   --sinal: #35E0BF;         /* LED de canal ligado: usar pouco */
-  --ambar: #F2B84B;         /* o Otto */
+  --ambar: #F2B84B;         /* a Dora */
   --vidro: rgba(14, 30, 33, .52);
   --vidro-borda: rgba(255, 255, 255, .12);
   --serif: 'Caladea', 'Bitstream Charter', Georgia, serif;
@@ -349,6 +349,16 @@ footer .assina img { width: 22px; height: 22px; }
 .jeitos.todos .jeito h3 { font-size: 22px; }
 .jeitos.todos .antes { font-size: 15px; }
 .acoes-todos { margin-top: 26px; }
+/* 15/11 noite: a Dora é um número no WhatsApp, e tudo o que ela faz */
+.passos.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 980px; }
+.sub-dora { font: 700 24px/1.2 var(--serif); color: #fff; margin: 40px 0 0; }
+.faz-dora { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 980px; }
+.faz-dora li { padding: 16px 18px; min-width: 0; display: grid; gap: 4px; }
+.faz-dora b { color: #fff; font-size: 17px; }
+.faz-dora span { color: var(--apoio); font-size: 15.5px; line-height: 1.45; }
+.ainda-nao { margin-top: 18px !important; max-width: 980px !important; padding: 14px 16px; border-radius: 14px; border: 1px dashed var(--linha); color: var(--apoio); font-size: 15.5px; }
+.ainda-nao b { color: var(--texto); }
+@media (max-width: 760px) { .passos.tres, .faz-dora { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) { .compara { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -359,7 +369,7 @@ footer .assina img { width: 22px; height: 22px; }
 <nav class="nav" aria-label="Principal">
   <div class="pilula-nav">
     <a class="marca" href="#topo"><img src="logo.svg" alt="" width="32" height="32"><b><small>studio</small>Ti Artes</b></a>
-    <div class="links"><a href="#virada">Como é</a><a href="#humano">Não é chatbot</a><a href="#exemplos">Exemplos</a><a href="#app">O app</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <div class="links"><a href="#virada">Como é</a><a href="#humano">Não é chatbot</a><a href="#exemplos">Exemplos</a><a href="#dora">A Dora</a><a href="#app">O app</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
     <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
     <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
   </div>
@@ -372,7 +382,7 @@ footer .assina img { width: 22px; height: 22px; }
       <div class="esq">
         <p class="rotulo">Agentes de IA humanizada · Instagram e WhatsApp</p>
         <h1 style="margin-top:16px">Cada mensagem sem resposta é uma venda <em>que foi para outro.</em></h1>
-        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. Não é chatbot de menu: ele entende texto, áudio e foto e conversa como gente. E o <b>Otto</b>, o seu agente assistente no WhatsApp, marca, anota e organiza o seu dia.</p>
+        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. Não é chatbot de menu: ele entende texto, áudio e foto e conversa como gente. E a <b>Dora</b>, a sua secretária no WhatsApp, marca, anota e organiza o seu dia.</p>
         <div class="acoes">
           <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
           <a class="bt fraco" href="#rostos">Ver o agente conversando</a>
@@ -399,11 +409,11 @@ footer .assina img { width: 22px; height: 22px; }
     </div>
   </section>
 
-  <!-- 3. a virada: a tela para e a rolagem gira o balão de teal (Sol) para âmbar (Otto) -->
+  <!-- 3. a virada: a tela para e a rolagem gira o balão de teal (Sol) para âmbar (Dora) -->
   <section class="virada" id="virada" data-cena="virada" aria-label="Dois agentes, uma conta só">
     <div class="gruda">
       <div class="legenda sol"><p class="rotulo">quando o cliente escreve</p><h2 style="margin-top:10px">O agente de <em>atendimento</em> vende.</h2><p>Responde, mostra os preços e anota o pedido.</p></div>
-      <div class="legenda otto"><p class="rotulo otto-r">quando você chama o Otto</p><h2 style="margin-top:10px">O agente <em>assistente</em> organiza.</h2><p>Marca, anota e confirma os horários.</p></div>
+      <div class="legenda otto"><p class="rotulo otto-r">quando você chama a Dora</p><h2 style="margin-top:10px">A <em>secretária</em> organiza.</h2><p>Marca, anota e confirma os horários.</p></div>
       <p class="dica-virada">uma conta só · role para virar</p>
     </div>
   </section>
@@ -414,12 +424,12 @@ footer .assina img { width: 22px; height: 22px; }
       <div class="esq">
         <p class="rotulo">Os dois agentes</p>
         <h2 style="margin-top:12px">Dois agentes. Cada um no seu lugar.</h2>
-        <p class="lede">O agente de atendimento fica no Instagram (e no WhatsApp) do seu negócio, falando com os seus clientes. O Otto fica no WhatsApp, falando só com você: salve o número dele e pronto. Sem conta nova e sem chip novo.</p>
+        <p class="lede">O agente de atendimento fica no Instagram (e no WhatsApp) do seu negócio, falando com os seus clientes. A Dora, a sua secretária, é um número de WhatsApp que fala só com você: salve o número dela e pronto. Sem conta nova e sem chip novo.</p>
         <div class="cartoes-rosto">
           <article class="rosto vidro"><h3>Sol</h3><p class="papel">Agente de atendimento · para os seus clientes</p>
             <p class="ganho">Você para de perder venda por demora.</p>
             <ul><li>Responde na hora, de madrugada e no fim de semana</li><li>Fala dos seus serviços e preços, do seu jeito</li><li>Anota pedidos, visitas e orçamentos para você</li><li>Entende áudio e foto</li><li>Nunca inventa preço nem prazo: o que não sabe, passa para você</li></ul></article>
-          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Agente assistente · no seu WhatsApp <span class="selo" id="selo-otto">chega em breve</span></p>
+          <article class="rosto otto vidro"><h3>Dora</h3><p class="papel">Secretária · um número no seu WhatsApp <span class="selo" id="selo-otto">chega em breve</span></p>
             <p class="ganho">Você para de esquecer quem pediu horário.</p>
             <ul><li>Marca atendimento, visita e entrega na agenda</li><li>Anota o que você pedir, por texto, áudio ou foto</li><li>Confirma os horários que os clientes pediram</li><li>Guarda nota fiscal e comprovante no seu Google Drive</li><li>Diz o que você tem hoje e quem está esperando</li></ul></article>
         </div>
@@ -429,7 +439,7 @@ footer .assina img { width: 22px; height: 22px; }
           <div class="chave" id="chave" data-rosto="sol" role="group" aria-label="Quem está escrevendo">
             <span class="corre" aria-hidden="true"></span>
             <button type="button" id="ver-sol" aria-pressed="true">Quando o cliente escreve</button>
-            <button type="button" id="ver-otto" aria-pressed="false">Quando você chama o Otto</button>
+            <button type="button" id="ver-otto" aria-pressed="false">Quando você chama a Dora</button>
           </div>
           <div class="quem"><i aria-hidden="true"></i><div><b id="quem-nome">Ateliê Folha Miúda</b><span id="quem-onde">@folhamiuda · exemplo</span></div></div>
           <div class="fio" id="fio-sol">
@@ -439,11 +449,11 @@ footer .assina img { width: 22px; height: 22px; }
             <div class="b robo">Dá, sim. Anotei: visita ao ateliê, verde e branco, 12 mesas no dia 29. A Rosa confirma o horário com você.<small>Sol · 23:43</small></div>
           </div>
           <div class="fio" id="fio-otto" hidden>
-            <p class="nota">a dona chama o Otto no WhatsApp dela</p>
-            <div class="b ela">Otto, marca a visita da Marina quinta às 15h e anota pra eu pedir eucalipto<small>Rosa · 08:02</small></div>
-            <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". E anotei: pedir eucalipto.<small>Otto · 08:02</small></div>
+            <p class="nota">a dona chama a Dora no WhatsApp dela</p>
+            <div class="b ela">Dora, marca a visita da Marina quinta às 15h e anota pra eu pedir eucalipto<small>Rosa · 08:02</small></div>
+            <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". E anotei: pedir eucalipto.<small>Dora · 08:02</small></div>
             <div class="b ela">Quem me escreveu ontem que eu não respondi?<small>Rosa · 08:03</small></div>
-            <div class="b otto">Dois pedidos esperando: a Marina (casamento, já com visita) e o Caio, que quer um vaso grande até sexta.<small>Otto · 08:03</small></div>
+            <div class="b otto">Dois pedidos esperando: a Marina (casamento, já com visita) e o Caio, que quer um vaso grande até sexta.<small>Dora · 08:03</small></div>
           </div>
         </div>
       </div>
@@ -479,8 +489,8 @@ footer .assina img { width: 22px; height: 22px; }
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">Exemplos · três jeitos de usar</p>
-        <h2 style="margin-top:12px">Atendimento, assistente ou os dois. <em>Você escolhe.</em></h2>
-        <p>Só o assistente é o plano Secretária. Nos planos com atendimento, você liga ou desliga o Otto no painel quando quiser. Veja como fica o dia de quem usa:</p>
+        <h2 style="margin-top:12px">Atendimento, secretária ou os dois. <em>Você escolhe.</em></h2>
+        <p>Só a secretária é o plano Secretária. Nos planos com atendimento, você liga ou desliga a Dora no painel quando quiser. Veja como fica o dia de quem usa:</p>
         <div class="jeitos">
           <article class="jeito vidro">
             <p class="tipo sol">Só atendimento</p>
@@ -490,18 +500,18 @@ footer .assina img { width: 22px; height: 22px; }
             <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Tem quarto para casal de 12 a 14 de dezembro?</p><p class="b robo">Tem, sim! A suíte com vista sai R$ 380 a diária, com café. Anotei 12 a 14/12 para dois, e a recepção confirma cedo. Qual é o seu nome?</p></div>
           </article>
           <article class="jeito vidro">
-            <p class="tipo otto">Só assistente</p>
+            <p class="tipo otto">Só secretária</p>
             <h3>Uma ceramista</h3>
             <p class="antes"><b>O problema:</b> encomenda anotada em papel, queima do forno guardada de cabeça e feira esquecida.</p>
             <ul><li>Marca queima, entrega e feira na agenda, que vai para o Google Agenda</li><li>Anota encomenda por áudio, com a mão no barro</li><li>Diz o que tem para hoje e quem está esperando</li></ul>
-            <div class="mini-fio" aria-label="Exemplo de conversa no WhatsApp do Otto"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 20/11 e marquei a queima na qui 19/11 às 8h.</p></div>
+            <div class="mini-fio" aria-label="Exemplo de conversa no WhatsApp da Dora"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 20/11 e marquei a queima na qui 19/11 às 8h.</p></div>
           </article>
           <article class="jeito vidro dois">
             <p class="tipo ambos">Os dois</p>
             <h3>Uma clínica veterinária</h3>
             <p class="antes"><b>O problema:</b> a recepção parando para responder "tem horário pro banho?" no Instagram e no WhatsApp, no meio da consulta.</p>
-            <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pelo Otto, no WhatsApp, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
-            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Otto, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 20/11 às 10h, na sua agenda.</p></div>
+            <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pela Dora, no WhatsApp, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
+            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Dora, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 20/11 às 10h, na sua agenda.</p></div>
           </article>
         </div>
         <p class="tambem"><b>Também serve para</b> <span>salão de beleza</span><span>confeitaria</span><span>estúdio de tatuagem</span><span>personal trainer</span><span>imobiliária</span><span>guia de turismo</span><span>fotógrafo</span><span>loja de roupa</span></p>
@@ -514,8 +524,8 @@ footer .assina img { width: 22px; height: 22px; }
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">Plano Secretária · R$ 99 por mês</p>
-        <h2 style="margin-top:12px">Não tem empresa? <em>O Otto organiza a sua vida também.</em></h2>
-        <p>O Otto faz o trabalho de uma secretária: marca, lembra, anota e guarda. Você fala com ele no WhatsApp que já usa, por texto, áudio ou foto, e tudo cai num app só seu, no celular e no notebook. Serve para qualquer área.</p>
+        <h2 style="margin-top:12px">Não tem empresa? <em>A Dora organiza a sua vida também.</em></h2>
+        <p>A Dora é a sua secretária: marca, anota e guarda. Você fala com ela no WhatsApp que já usa, por texto, áudio ou foto, e tudo cai num app só seu, no celular e no notebook. Serve para qualquer área.</p>
         <ul class="dores">
           <li><b>Compromisso guardado de cabeça</b> que você só lembra quando já passou.</li>
           <li><b>Conversa com você mesmo no WhatsApp</b>, cheia de recado que ninguém acha depois.</li>
@@ -543,14 +553,44 @@ footer .assina img { width: 22px; height: 22px; }
         </div>
         <p class="tambem"><b>Também serve para</b> <span>personal trainer</span><span>manicure</span><span>motorista de aplicativo</span><span>pedreiro</span><span>terapeuta</span><span>vendedora autônoma</span><span>fotógrafo</span></p>
         <div class="acoes acoes-todos">
-          <a class="bt" href="entrar.html?criar=1&amp;plano=otto">Testar o Otto grátis <span aria-hidden="true">→</span></a>
-          <a class="bt fraco" href="#app">Ver o app no celular e no notebook</a>
+          <a class="bt" href="entrar.html?criar=1&amp;plano=otto">Testar a Dora grátis <span aria-hidden="true">→</span></a>
+          <a class="bt fraco" href="#dora">Ver tudo o que ela faz</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- 4c. o app de gestão vem junto (15/11, pedido dele: "mostrar fotos do aplicativo de organização interna") -->
+  <!-- 4b3. a Dora é um número no WhatsApp (15/11 à noite, pedido dele: "deixar claro que a secretária é uma linha no whats e mostrar tudo o que ela faz") -->
+  <section class="ato" id="dora" data-cena="dora">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">A Dora, a sua secretária</p>
+        <h2 style="margin-top:12px">A Dora é um número <em>no seu WhatsApp.</em></h2>
+        <p>Não é um app novo para baixar. É um contato no WhatsApp: o número da secretária da Ti Artes, o mesmo para todos os assinantes, e cada um só vê o que é seu. Você conversa com ela como conversa com uma pessoa, por texto, áudio ou foto.</p>
+        <ol class="passos tres">
+          <li class="vidro"><b>Salve o número</b><p>O número da Dora aparece no seu painel. Salve como "Dora" nos seus contatos.</p></li>
+          <li class="vidro"><b>Toque em "Falar com a Dora"</b><p>O WhatsApp abre com um código de 6 números já escrito. É só enviar.</p></li>
+          <li class="vidro"><b>Pronto</b><p>Ela reconhece você pelo seu número e só enxerga o seu negócio. Sem chip novo e sem outra conta.</p></li>
+        </ol>
+        <h3 class="sub-dora">Tudo o que ela faz</h3>
+        <ul class="faz-dora">
+          <li class="vidro"><b>Marca compromissos</b><span>"marca a Ana sexta às 15h"</span></li>
+          <li class="vidro"><b>Muda e desmarca</b><span>"passa a Ana para as 16h". Para apagar, ela pede um "sim" antes.</span></li>
+          <li class="vidro"><b>Anota e risca lembretes</b><span>"anota: comprar papel" e, depois, "já comprei o papel"</span></li>
+          <li class="vidro"><b>Diz o seu dia</b><span>"o que eu tenho hoje?", "e amanhã?", "o que tem na semana?"</span></li>
+          <li class="vidro"><b>Mostra quem está esperando</b><span>Os pedidos de horário e os recados que o agente de atendimento anotou dos seus clientes.</span></li>
+          <li class="vidro"><b>Confirma horários pedidos</b><span>"confirmei com a Marina, pode marcar" vira compromisso na agenda.</span></li>
+          <li class="vidro"><b>Guarda os seus papéis</b><span>Mande a foto do comprovante ou o PDF da nota e diga "guarda": ela lê, dá um nome que diz o que é e põe na pasta certa do seu Google Drive.</span></li>
+          <li class="vidro"><b>Acha o que foi guardado</b><span>"cadê o comprovante da papelaria?"</span></li>
+          <li class="vidro"><b>Entende áudio, foto e PDF</b><span>Fale com a mão ocupada. Mande a foto de uma agenda de papel e ela passa a limpo.</span></li>
+          <li class="vidro"><b>Tudo cai no app</b><span>O que ela marca aparece na hora no seu app, no celular e no computador.</span></li>
+        </ul>
+        <p class="ainda-nao"><b>O que ela ainda não faz:</b> mandar aviso sozinha na hora do compromisso, falar com os seus clientes e cobrar. Com os clientes, quem fala é o agente de atendimento, nos planos com Instagram ou WhatsApp.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="ato" id="app" data-cena="app">
     <div class="miolo">
       <div class="largo secao-titulo">
@@ -574,7 +614,7 @@ footer .assina img { width: 22px; height: 22px; }
           <div class="vidro"><b>Pedidos e recados</b><p>Quem pediu o quê, com o contato, em ordem. Nenhum cliente fica sem retorno.</p></div>
           <div class="vidro drive"><b>Arquivos no seu Google Drive</b><p>Mande a nota fiscal ou o comprovante no direct e diga "guarda". O agente lê, dá um nome que diz o que é e põe na pasta certa.</p>
             <ul class="arvore" aria-label="Exemplo de pastas no Drive"><li>Agentes Ti Artes · seu negócio<ul><li>Notas fiscais</li><li>Comprovantes</li><li>Contratos</li></ul></li></ul></div>
-          <div class="vidro"><b>Notas por áudio</b><p>Fale com o assistente como fala com uma pessoa. Ele anota, marca e lembra você do que tem hoje.</p></div>
+          <div class="vidro"><b>Notas por áudio</b><p>Fale com a Dora como fala com uma pessoa. Ela anota, marca e diz o que você tem hoje.</p></div>
         </div>
       </div>
     </div>
@@ -624,29 +664,29 @@ footer .assina img { width: 22px; height: 22px; }
             <p class="para">Para se organizar</p>
             <h3>Secretária</h3>
             <p class="preco num">R$ 99<small> por mês</small></p>
-            <ul><li>O Otto faz o trabalho de secretária no seu WhatsApp: texto, áudio e foto</li><li>App de gestão no celular e no computador</li><li>Agenda, notas e arquivos no seu Google Drive</li><li>Para qualquer pessoa, com ou sem empresa</li><li>Sem atendimento de clientes</li></ul>
-            <span class="selo" id="selo-plano-otto">abre com o número do Otto</span>
-            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=otto">Testar o Otto grátis</a>
+            <ul><li>A Dora, sua secretária no WhatsApp: texto, áudio e foto</li><li>App de gestão no celular e no computador</li><li>Agenda, notas e arquivos no seu Google Drive</li><li>Para qualquer pessoa, com ou sem empresa</li><li>Sem atendimento de clientes</li></ul>
+            <span class="selo" id="selo-plano-otto">abre com o número da Dora</span>
+            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=otto">Testar a Dora grátis</a>
           </article>
           <article class="plano vidro">
             <p class="para">Para quem vende no direct</p>
             <h3>Instagram</h3>
             <p class="preco num">R$ 149<small> por mês</small></p>
-            <ul><li>Agente de atendimento no direct do Instagram</li><li>Até 2.000 mensagens por mês</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Testar no Instagram</a>
           </article>
           <article class="plano vidro">
             <p class="para">Para quem vende no WhatsApp</p>
             <h3>WhatsApp</h3>
             <p class="preco num">R$ 199<small> por mês</small></p>
-            <ul><li>Agente de atendimento no WhatsApp</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Até 2.000 mensagens por mês</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no WhatsApp</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=whatsapp">Testar no WhatsApp</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
             <h3>Completo</h3>
             <p class="preco num">R$ 249<small> por mês</small></p>
-            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
             <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Testar tudo grátis <span aria-hidden="true">→</span></a>
           </article>
         </div>
@@ -680,7 +720,7 @@ footer .assina img { width: 22px; height: 22px; }
               <div><span>Promoção que você manda (modelo aprovado)</span><span>~R$ 0,32 cada</span></div>
               <div><span>Instagram</span><span>sem custo da Meta</span></div>
             </div>
-            <p class="rodape">Quer avisar os seus clientes de uma promoção ou lembrar de um horário? Dá: 100 lembretes saem por cerca de R$ 3,50 e 100 promoções por cerca de R$ 32, pagos à Meta, fora da mensalidade. Tabela da Meta para o Brasil desde 01/10/2026; cada foto que o agente manda conta como uma mensagem.</p>
+            <p class="rodape">Mensagem que começa do lado do negócio, como promoção ou lembrete de horário, a Meta cobra à parte: 100 lembretes saem por cerca de R$ 3,50 e 100 promoções por cerca de R$ 32, fora da mensalidade. Os agentes ainda não mandam esse tipo de mensagem: hoje eles só respondem quem escreveu. Tabela da Meta para o Brasil desde 01/10/2026; cada foto que o agente manda conta como uma mensagem.</p>
           </div>
         </div>
       </div>
@@ -700,10 +740,11 @@ footer .assina img { width: 22px; height: 22px; }
         </div>
         <div class="perguntas">
           <details class="vidro"><summary>É um chatbot?</summary><p>Não. Chatbot é menu de botão ("digite 1 para preços") e resposta pronta. Aqui é um agente de inteligência artificial que conversa como gente: entende o que o cliente escreve do jeito dele, com erro de digitação, gíria, áudio e foto, lembra o que já foi dito e responde no tom que você escolheu. O que ele não sabe, não inventa: anota e passa para você.</p></details>
-          <details class="vidro"><summary>Não tenho empresa. Serve para mim?</summary><p>Serve. O plano Secretária, de R$ 99 por mês, é só o Otto e o app: você manda áudio ou texto no WhatsApp e ele marca a agenda, anota e guarda os seus documentos no seu Google Drive. Professor, eletricista, estudante, mãe e pai, músico: qualquer pessoa que quer parar de guardar tudo de cabeça.</p></details>
+          <details class="vidro"><summary>Não tenho empresa. Serve para mim?</summary><p>Serve. O plano Secretária, de R$ 99 por mês, é só a Dora e o app: você manda áudio ou texto no WhatsApp e ela marca a agenda, anota e guarda os seus documentos no seu Google Drive. Professor, eletricista, estudante, mãe e pai, músico: qualquer pessoa que quer parar de guardar tudo de cabeça.</p></details>
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
           <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o agente com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
-          <details class="vidro"><summary>Como eu falo com o meu assistente?</summary><p>Pelo WhatsApp. O Otto é um número da Ti Artes: no painel, toque em "Falar com o Otto" e o WhatsApp abre com um código já escrito. Envie, e ele passa a te reconhecer pelo seu número. Você não precisa de outra conta nem de outro chip. Ele só conversa com você e só vê o seu negócio.</p></details>
+          <details class="vidro"><summary>Como eu falo com a Dora?</summary><p>Pelo WhatsApp. A Dora é um número da Ti Artes, o mesmo para todos os assinantes: salve nos seus contatos, toque em "Falar com a Dora" no painel e o WhatsApp abre com um código já escrito. Envie, e ela passa a reconhecer você pelo seu número. Você não precisa de outra conta nem de outro chip. Ela só conversa com você e só vê o seu negócio.</p></details>
+          <details class="vidro"><summary>A Dora me avisa sozinha?</summary><p>Ainda não. Hoje ela responde quando você chama: marca, anota, guarda e diz o que você tem. O que ela marca fica na agenda do app, no celular e no computador. Ela também não fala com os seus clientes nem cobra: com os clientes, quem fala é o agente de atendimento, nos planos com Instagram ou WhatsApp.</p></details>
           <details class="vidro"><summary>O atendimento no WhatsApp usa o meu número?</summary><p>Pode usar. Com uma linha nova, que a Ti Artes liga só para o seu atendimento, já funciona hoje, e as mensagens da Meta estão na mensalidade. No número que você já usa no WhatsApp Business, entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro; aí as mensagens são cobradas pela Meta na conta da sua empresa, e você continua usando o WhatsApp no celular normalmente.</p></details>
           <details class="vidro"><summary>O app de gestão é pago à parte?</summary><p>Não. Ele vem junto com a assinatura, sem pagar nada a mais: agenda, pedidos, notas e os arquivos que o agente guarda no seu Google Drive. No teste grátis você já usa tudo. Se não assinar, a conta fica guardada 7 dias e depois é apagada; o que já foi para o seu Google Drive continua lá, porque é seu.</p></details>
           <details class="vidro"><summary>O agente pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
@@ -784,7 +825,7 @@ footer .assina img { width: 22px; height: 22px; }
   }
   $('vend-abre').hidden = false;
   $('vend-abre').onclick = abre;
-  /* o Otto: "chega em breve" até a nuvem dizer que o número dele está ligado */
+  /* a Dora: "chega em breve" até a nuvem dizer que o número dela está ligado */
   fetch(ROBO.funcao + '/planos').then((x) => x.json()).then((j) => {
     const selo = $('selo-otto');
     if (j && j.assistente && j.otto_wa && selo) { selo.textContent = 'já incluso'; selo.classList.add('pronto'); }
@@ -812,8 +853,8 @@ footer .assina img { width: 22px; height: 22px; }
     $('chave').dataset.rosto = r;
     $('ver-sol').setAttribute('aria-pressed', String(r === 'sol')); $('ver-otto').setAttribute('aria-pressed', String(r === 'otto'));
     $('fio-sol').hidden = r !== 'sol'; $('fio-otto').hidden = r !== 'otto';
-    $('quem-nome').textContent = r === 'otto' ? 'Otto · Ti Artes' : 'Ateliê Folha Miúda';
-    $('quem-onde').textContent = r === 'otto' ? 'WhatsApp · o assistente da Rosa' : '@folhamiuda · exemplo';
+    $('quem-nome').textContent = r === 'otto' ? 'Dora · Ti Artes' : 'Ateliê Folha Miúda';
+    $('quem-onde').textContent = r === 'otto' ? 'WhatsApp · a secretária da Rosa' : '@folhamiuda · exemplo';
     window.dispatchEvent(new CustomEvent('rosto', { detail: { rosto: r, deQuem: deQuem || 'clique' } }));
   };
   $('ver-sol').addEventListener('click', () => mostraRosto('sol'));
@@ -955,6 +996,7 @@ const ROTEIRO = {
   humano:    { x: -0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: 0.5, cam: 9.0, enxame: 0.3 },
   exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
   todos:     { x: 0.78, y: -2.0, ym: 2.6, z: -2.8, s: 0.4, giro: -0.4, cam: 9.0, enxame: 0.25 },
+  dora:      { x: -0.78, y: 2.0, ym: 2.6, z: -2.8, s: 0.4, giro: 0.4, cam: 9.0, enxame: 0.25 },
   app:       { x: -0.8, y: 2.1, ym: 2.6, z: -3.0, s: 0.38, giro: 0.5, cam: 9.0, enxame: 0.25 },
   como:      { x: 0.62, y: 1.9, ym: 2.3, z: -1.6, s: 0.55, giro: -0.6, cam: 8.8, enxame: 0.4 },
   planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
@@ -999,7 +1041,7 @@ if (window.gsap && window.ScrollTrigger) {
     trigger: sec, start: 'top 55%', end: 'bottom 55%',
     onEnter: () => vai(sec.dataset.cena), onEnterBack: () => vai(sec.dataset.cena),
   }));
-  /* a virada: com a tela parada, a rolagem gira o balão de teal (Sol) para âmbar (Otto) e troca as legendas */
+  /* a virada: com a tela parada, a rolagem gira o balão de teal (Sol) para âmbar (Dora) e troca as legendas */
   const virada = document.getElementById('virada');
   ScrollTrigger.create({
     trigger: virada, start: 'top top', end: 'bottom bottom', scrub: true,
@@ -1044,7 +1086,7 @@ function quadro() {
   balao.rotation.y = atual.giro + atual.rosto * Math.PI + atual.rolagem * 0.9 + mouseLerp.x * 0.25;
   balao.rotation.x = -mouseLerp.y * 0.16 + Math.sin(t * 0.5) * 0.04;
   balao.rotation.z = Math.sin(t * 0.35) * 0.03;
-  /* a cor acompanha o rosto: teal (Sol) → âmbar (Otto) */
+  /* a cor acompanha o rosto: teal (Sol) → âmbar (Dora) */
   vidro.color.copy(TEAL_VIDRO).lerp(AMBAR_VIDRO, atual.rosto);
   vidro.attenuationColor.copy(cor.set('#19A693')).lerp(cor.set('#C98A1E'), atual.rosto);
   pontoMat.color.copy(TEAL).lerp(AMBAR, atual.rosto); pontoMat.emissive.copy(pontoMat.color);

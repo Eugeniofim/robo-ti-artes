@@ -75,7 +75,7 @@
 
   let EU = null, MENU = null;
   const NOME = () => (EU && EU.nomes && EU.nomes.atendimento) || 'Sol';
-  const ASSIST = () => (EU && EU.nomes && EU.nomes.assistente) || 'Otto';
+  const ASSIST = () => (EU && EU.nomes && EU.nomes.assistente) || 'Dora';
   const ABAS = {
     inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
@@ -331,8 +331,8 @@
         ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<article class="cartao tile largo"><h2>${ic(EU.pausado ? 'play' : 'pausa')} ${EU.pausado ? 'Ele está pausado' : 'Ligar e desligar'}</h2>
           <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
           <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></article>` : ''}
-        <article class="cartao tile ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} O ${esc(ASSIST())}, o seu agente assistente</h2>
-          <p>Quando quem escreve no direct é você, do seu perfil pessoal, o ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.
+        <article class="cartao tile ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} A ${esc(ASSIST())}, a sua secretária</h2>
+          <p>Quando quem escreve no direct é você, do seu perfil pessoal, a ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.
           ${!(EU.assistente || {}).disponivel ? '<span class="selo breve">chega em breve</span>' : EU.assistente.ligado ? '<span class="selo ok">ligado</span>' : ''}</p>
           ${(EU.assistente || {}).disponivel && !EU.assistente.ligado ? '<a class="lnk" href="#conectar">Ligar em 1 minuto</a>' : ''}</article>
       </div></section>`;
@@ -858,14 +858,14 @@
 
   /* ---------- o modo da conta: os dois agentes, só o atendimento ou só o assistente ---------- */
   const MODOS = [
-    { id: 'ambos', nome: 'Os dois', txt: 'Os clientes falam com o agente de atendimento, e você fala com o Otto, o seu assistente.' },
-    { id: 'atendimento', nome: 'Só atendimento', txt: 'O agente responde os clientes. O Otto fica desligado.' },
-    { id: 'assistente', nome: 'Só assistente', txt: 'Os clientes não recebem resposta automática. Você usa só o Otto para a agenda, as notas e os arquivos.' },
+    { id: 'ambos', nome: 'Os dois', txt: 'Os clientes falam com o agente de atendimento, e você fala com a Dora, a sua secretária.' },
+    { id: 'atendimento', nome: 'Só atendimento', txt: 'O agente responde os clientes. A Dora fica desligada.' },
+    { id: 'assistente', nome: 'Só secretária', txt: 'Os clientes não recebem resposta automática. Você usa só a Dora para a agenda, as notas e os arquivos.' },
   ];
   function cartaoModo() {
     if (!(EU.assistente || {}).disponivel) return '';
     if (EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length)
-      return `<article class="cartao modos"><h2>Plano Secretária</h2><p>Só o ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
+      return `<article class="cartao modos"><h2>Plano Secretária</h2><p>Só a ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
     const atual = EU.modo || 'ambos';
     return `<article class="cartao modos"><h2>Como os agentes trabalham nesta conta</h2>
       <div class="modos-opcoes" role="radiogroup" aria-label="Como os agentes trabalham">${MODOS.map((x) => `<button type="button" role="radio" class="modo ${atual === x.id ? 'on' : ''}" aria-checked="${atual === x.id}" data-modo="${x.id}"><b>${esc(x.nome)}</b><span>${esc(x.txt)}</span></button>`).join('')}</div>
@@ -878,8 +878,8 @@
       const r = await api('/modo', { modo: b.dataset.modo });
       if (r.erro) { alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro)); alvo.querySelectorAll('[data-modo]').forEach((x) => { x.disabled = false; }); return; }
       EU = r;
-      avisoVolta = { tipo: 'info', texto: r.modo === 'assistente' ? `Pronto: agora só você recebe resposta, do ${ASSIST()}. Os clientes não recebem resposta automática.`
-        : r.modo === 'atendimento' ? 'Pronto: o agente responde os clientes e o assistente fica desligado.' : 'Pronto: os dois agentes estão valendo.' };
+      avisoVolta = { tipo: 'info', texto: r.modo === 'assistente' ? `Pronto: agora só você recebe resposta, da ${ASSIST()}. Os clientes não recebem resposta automática.`
+        : r.modo === 'atendimento' ? 'Pronto: o agente responde os clientes e a secretária fica desligada.' : 'Pronto: os dois agentes estão valendo.' };
       mostra();
     });
   }
@@ -887,30 +887,30 @@
   /* ---------- o agente assistente: o dono manda um código do perfil pessoal e passa a falar com o assistente ---------- */
   function cartaoAssistente() {
     const a = EU.assistente || {}, ig = EU.instagram || {};
-    const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Agente assistente <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
-    if (!a.disponivel) return `<article class="cartao" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
-    if (EU.modo === 'atendimento') return `<article class="cartao" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar o ${esc(ASSIST())}, escolha "Os dois" ou "Só assistente" aqui em cima.</p></article>`;
+    const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Secretária <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
+    if (!a.disponivel) return `<article class="cartao" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
+    if (EU.modo === 'atendimento') return `<article class="cartao" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar a ${esc(ASSIST())}, escolha "Os dois" ou "Só secretária" aqui em cima.</p></article>`;
     /* o Otto central: um WhatsApp da Ti Artes, o mesmo para todos; o dono liga mandando o código de um toque */
     if (a.otto_wa) {
       const num = foneBonito(a.otto_wa);
       if (a.whatsapp) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado no WhatsApp</span></p>
-        <p>Fale com o ${esc(ASSIST())} pelo WhatsApp <b class="num">${esc(num)}</b>, do seu celular: texto, áudio, foto ou PDF. Ele marca na sua agenda, anota, confirma os horários que os clientes pediram e guarda nota fiscal e comprovante no seu Drive.</p>
-        <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp do ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
+        <p>Fale com a ${esc(ASSIST())} pelo WhatsApp <b class="num">${esc(num)}</b>, do seu celular: texto, áudio, foto ou PDF. Ela marca na sua agenda, anota, confirma os horários que os clientes pediram e guarda nota fiscal e comprovante no seu Drive.</p>
+        <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp da ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
       return `<article class="cartao" id="assist">${topo}
-        <p>O ${esc(ASSIST())} é o seu assistente no WhatsApp: você manda texto, áudio, foto ou PDF, e ele marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
-        <ol class="passinhos"><li>Toque em <b>Falar com o ${esc(ASSIST())}</b>: o WhatsApp abre com o seu código já escrito.</li><li>Envie. Pronto: ele te reconhece pelo seu número.</li></ol>
-        <div class="botoes"><button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Falar com o ${esc(ASSIST())} no WhatsApp</button></div>
+        <p>A ${esc(ASSIST())} é a sua secretária: um número de WhatsApp da Ti Artes que fala só com você. Salve o número nos contatos; você manda texto, áudio, foto ou PDF, e ela marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
+        <ol class="passinhos"><li>Toque em <b>Falar com a ${esc(ASSIST())}</b>: o WhatsApp abre com o seu código já escrito.</li><li>Envie. Pronto: ela reconhece você pelo seu número.</li></ol>
+        <div class="botoes"><button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Falar com a ${esc(ASSIST())} no WhatsApp</button></div>
         <div id="assist-mostra" hidden></div></article>`;
     }
     if (a.ligado) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
-      <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é o ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
+      <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é a ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
       <p class="dica">Para ver como os clientes são atendidos, escreva "modo cliente" (volta com "modo dono").</p>
       <div class="botoes"><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
-    if (!ig.conectado) return `<article class="cartao" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga o ${esc(ASSIST())} em 1 minuto.</p></article>`;
+    if (!ig.conectado) return `<article class="cartao" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga a ${esc(ASSIST())} em 1 minuto.</p></article>`;
     return `<article class="cartao" id="assist">${topo}
-      <p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ele saber que é você:</p>
+      <p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ela saber que é você:</p>
       <ol class="passinhos"><li>Toque em <b>Mostrar o meu código</b>.</li><li>Abra o Instagram no <b>seu perfil pessoal</b> (não no do negócio).</li><li>Mande o código numa mensagem para <b>@${esc(ig.usuario || 'o seu negócio')}</b>.</li></ol>
-      <p class="dica">Não tem um perfil pessoal além do negócio? Crie um em dois minutos no Instagram: é dele que você vai falar com o ${esc(ASSIST())}.</p>
+      <p class="dica">Não tem um perfil pessoal além do negócio? Crie um em dois minutos no Instagram: é dele que você vai falar com a ${esc(ASSIST())}.</p>
       <div class="botoes"><button class="bt pequeno" id="assist-codigo" type="button">Mostrar o meu código</button></div>
       <div id="assist-mostra" hidden></div></article>`;
   }
@@ -954,7 +954,7 @@
     const pastas = {};
     for (const g of G.itens || []) (pastas[g.pasta || 'Guardados'] = pastas[g.pasta || 'Guardados'] || []).push(g);
     const onde = (g) => g.drive === 'ok' ? `<span class="selo ok">no Drive</span>` : (g.drive === 'sem' || !d.ligado) ? '<span class="selo">só aqui</span>' : g.drive === 'erro' ? '<span class="selo atencao">tenta de novo</span>' : '<span class="selo">indo pro Drive</span>';
-    return `<div class="cartao guardados"><h2>${ic('pasta')} Guardados pelo ${esc(ASSIST())}</h2>
+    return `<div class="cartao guardados"><h2>${ic('pasta')} Guardados pela ${esc(ASSIST())}</h2>
       <p class="dica">Mande no direct, do seu perfil: foto, comprovante, nota fiscal ou PDF, e diga "guarda". Ele lê, dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : '. <b>Ligue o Google Drive</b> aqui em cima para irem para lá'}.</p>
       ${Object.keys(pastas).length ? Object.entries(pastas).map(([p, l]) => `<h3 class="pasta-nome">${ic('pasta')} ${esc(p)}</h3><ul class="fontes">${l.map((g) => `<li class="fonte"><div><b>${esc(g.nome)}</b><span class="dica">${esc(dia(g.guardado || g.quando))} ${onde(g)}</span></div>
         <div class="botoes"><button class="bt pequeno fraco" type="button" data-abrir-g="${esc(g.id)}">Abrir</button><button class="bt pequeno fraco" type="button" data-apagar-g="${esc(g.id)}">Apagar</button></div></li>`).join('')}</ul>`).join('')
@@ -1006,13 +1006,13 @@
     const semOtto = !(EU.assistente && EU.assistente.otto_wa);
     const itens = (x) => (x.canais.length ? [
       `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
-      `${ASSIST()}, o seu assistente no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
+      `${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
       ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
-    ] : [`${ASSIST()} faz o trabalho de secretária no seu WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+    ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
     const cartoes = EU.planos.map((x) => `<article class="plano ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
       <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
-      ${x.id === 'otto' && semOtto ? `<p class="dica">Abre assim que o WhatsApp do ${esc(ASSIST())} estiver no ar.</p>` : `<div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>
+      ${x.id === 'otto' && semOtto ? `<p class="dica">Abre assim que o WhatsApp da ${esc(ASSIST())} estiver no ar.</p>` : `<div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>
       <button class="bt pequeno fraco" type="button" data-plano="${x.id}" data-forma="pix">Pagar 1 mês no Pix</button></div>`}</article>`).join('');
     const pagando = p && EU.em_dia;
     alvo.innerHTML = `<section class="aba">${topo}
