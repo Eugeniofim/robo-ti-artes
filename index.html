@@ -271,6 +271,8 @@ footer a { color: var(--apoio); }
   .preco { font-size: 50px; }
   .calc, .plano, .cobre > div { padding: 22px; }
 }
+/* 15/11: leitura em cima do 3D: uma sombra escura e larga atrás dos títulos e do texto principal */
+h1, h2, .lede, .garantias, .dores li, .legenda p { text-shadow: 0 1px 2px rgba(7, 17, 19, .55), 0 0 26px rgba(7, 17, 19, .85); }
 /* 15/11: o app de gestão que vem junto */
 .app-vitrine { margin-top: 30px; }
 .app-abas { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(14, 30, 33, .6); border: 1px solid var(--linha); }
@@ -803,6 +805,22 @@ const orbita = Array.from({ length: N }, (_, i) => ({ r: 3 + Math.random() * 3.6
   y: (Math.random() - 0.5) * 6, z: -3.2 - Math.random() * 6, giro: Math.random() * Math.PI, s: 0.45 + Math.random() * 0.55 }));
 cena.add(minis);
 const tmp = new THREE.Object3D();
+/* os balõezinhos NUNCA passam por cima do texto (15/11, pedido dele: "esses pedacinhos tão dificultando a leitura"):
+   cada um encolhe até sumir quando o lugar dele na tela cai dentro de um bloco de texto visível, e volta quando sai.
+   As zonas de texto são medidas a cada poucos quadros (getBoundingClientRect de poucos elementos: barato). */
+const SELETOR_TEXTO = '.ato .esq, .ato .dir, .ato .largo, .virada .legenda, .final h2, .final p, .final .acoes, .nav';
+let zonas = [], contaZona = 0;
+function medeZonas() {
+  const W = innerWidth, H = innerHeight, m = 36;
+  zonas = [];
+  document.querySelectorAll(SELETOR_TEXTO).forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (!r.width || r.bottom < -m || r.top > H + m) return;
+    zonas.push([(r.left - m) / W * 2 - 1, (r.right + m) / W * 2 - 1, 1 - (r.bottom + m) / H * 2, 1 - (r.top - m) / H * 2]);
+  });
+}
+const visivel = new Float32Array(N).fill(1);
+const naTela = new THREE.Vector3();
 
 /* ---------- pós: um brilho leve nos pontinhos (no celular, sem pós, para manter 30 quadros) ---------- */
 let composer = null;
@@ -818,8 +836,8 @@ montaPos();
 /* ---------- o roteiro: cada cena da página pede uma posição; o laço só persegue o alvo (nada dá tranco) ---------- */
 const ROTEIRO = {
   /* x: fração da meia largura visível; ym: a altura no celular, onde o texto ocupa a largura toda */
-  heroi:     { x: 0.5, y: 0.1, ym: 1.45, z: 0, s: 1.0, giro: -0.32, cam: 8.0, enxame: 0.6 },
-  noite:     { x: -0.56, y: 0.0, ym: 2.15, z: -0.4, s: 0.84, giro: 0.42, cam: 7.4, enxame: 1.0 },
+  heroi:     { x: 0.6, y: 0.1, ym: 1.45, z: 0, s: 0.9, giro: -0.32, cam: 8.0, enxame: 0.45 },
+  noite:     { x: -0.56, y: 0.0, ym: 2.15, z: -0.4, s: 0.84, giro: 0.42, cam: 7.4, enxame: 0.7 },
   virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
   rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
   exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
@@ -828,7 +846,7 @@ const ROTEIRO = {
   planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
   conta:     { x: 0.7, y: 1.8, ym: 2.4, z: -2.4, s: 0.45, giro: -0.4, cam: 9.0, enxame: 0.3 },
   perguntas: { x: -0.7, y: 1.6, ym: 2.4, z: -2.4, s: 0.45, giro: 0.4, cam: 9.0, enxame: 0.3 },
-  final:     { x: 0.0, y: 1.35, ym: 1.7, z: 0, s: 0.95, giro: 0.0, cam: 8.6, enxame: 0.8 },
+  final:     { x: 0.0, y: 1.35, ym: 1.7, z: 0, s: 0.95, giro: 0.0, cam: 8.6, enxame: 0.55 },
 };
 /* x vem como fração da meia largura que a câmera enxerga naquela distância (0,6 = 60% do centro até a borda) e a
    escala acompanha a largura: em tela estreita ou larga, o balão fica inteiro e do lado certo do texto */
@@ -920,17 +938,21 @@ function quadro() {
   /* "digitando…": os três pontinhos sobem e descem em sequência */
   pontos.forEach((p, i) => { p.position.y = quieto ? 0 : Math.max(0, Math.sin(t * 5 - i * 0.7)) * 0.16; });
 
+  if (contaZona++ % 6 === 0) medeZonas();
   for (let i = 0; i < N; i++) {
     const o = orbita[i];
     if (!quieto) { o.a += o.v * dt; o.giro += dt * 0.2; }
     const r = o.r * (0.7 + atual.enxame * 0.3);
     tmp.position.set(Math.cos(o.a) * r + atual.x * 0.4, o.y + Math.sin(o.a * 2) * 0.2, o.z + Math.sin(o.a) * 1.5);
     tmp.rotation.set(o.giro * 0.4, o.giro, 0);
-    tmp.scale.setScalar(o.s * (0.55 + atual.enxame * 0.45));
+    naTela.copy(tmp.position).project(camera);
+    const sobreTexto = zonas.some(([x0, x1, y0, y1]) => naTela.x > x0 && naTela.x < x1 && naTela.y > y0 && naTela.y < y1);
+    visivel[i] += ((sobreTexto ? 0 : 1) - visivel[i]) * Math.min(1, dt * (sobreTexto ? 9 : 3));
+    tmp.scale.setScalar(o.s * (0.55 + atual.enxame * 0.45) * visivel[i]);
     tmp.updateMatrix(); minis.setMatrixAt(i, tmp.matrix);
   }
   minis.instanceMatrix.needsUpdate = true;
-  miniMat.opacity = 0.12 + atual.enxame * 0.22;
+  miniMat.opacity = 0.1 + atual.enxame * 0.16;
 
   camera.position.set(mouseLerp.x * 0.25, -mouseLerp.y * 0.15, atual.cam);
   camera.lookAt(0, 0, 0);
