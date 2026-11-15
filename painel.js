@@ -895,6 +895,7 @@
       const num = foneBonito(a.otto_wa);
       if (a.whatsapp) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado no WhatsApp</span></p>
         <p>Fale com a ${esc(ASSIST())} pelo WhatsApp <b class="num">${esc(num)}</b>, do seu celular: texto, áudio, foto ou PDF. Ela marca na sua agenda, anota, confirma os horários que os clientes pediram e guarda nota fiscal e comprovante no seu Drive.</p>
+        ${avisosDora(a.avisos)}
         <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp da ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
       return `<article class="cartao" id="assist">${topo}
         <p>A ${esc(ASSIST())} é a sua secretária: um número de WhatsApp da Ti Artes que fala só com você. Salve o número nos contatos; você manda texto, áudio, foto ou PDF, e ela marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
@@ -914,7 +915,33 @@
       <div class="botoes"><button class="bt pequeno" id="assist-codigo" type="button">Mostrar o meu código</button></div>
       <div id="assist-mostra" hidden></div></article>`;
   }
+  /* os avisos que a Dora manda sozinha (robo/avisos-dora.ts): resumo da manhã, aviso antes do compromisso, contas.
+     Salva a cada mudança; ela também muda conversando ("me manda o resumo às 6h30") */
+  const MIN_ANTES = [[15, '15 min antes'], [30, '30 min antes'], [60, '1 hora antes'], [120, '2 horas antes'], [180, '3 horas antes'], [1440, '1 dia antes']];
+  function avisosDora(av) {
+    av = av || { manha: '07:00', antes: 60, contas: true };
+    return `<div class="avisos-dora"><h3>O que ela manda sozinha</h3>
+      <label class="av-linha"><input type="checkbox" id="av-manha" ${av.manha ? 'checked' : ''}> <span>Resumo do dia às</span> <input type="time" id="av-hora" value="${esc(av.manha || '07:00')}" step="900" aria-label="Hora do resumo"></label>
+      <label class="av-linha"><input type="checkbox" id="av-antes" ${av.antes ? 'checked' : ''}> <span>Aviso antes do compromisso:</span> <select id="av-min" aria-label="Quanto tempo antes">${MIN_ANTES.map(([v, t]) => `<option value="${v}" ${(av.antes || 60) === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+      <label class="av-linha"><input type="checkbox" id="av-contas" ${av.contas ? 'checked' : ''}> <span>Lembrete das contas, no dia anterior e no dia</span></label>
+      <p class="dica">Também dá para pedir a ela: "me manda o resumo às 6h30" ou "não precisa me avisar antes".</p>
+      <p class="dica" id="av-msg" role="status"></p></div>`;
+  }
+  function ligaAvisosDora() {
+    const ids = ['av-manha', 'av-hora', 'av-antes', 'av-min', 'av-contas'];
+    if (!$('av-manha')) return;
+    const salva = async () => {
+      const corpo = { manha: $('av-manha').checked ? $('av-hora').value : '', antes: $('av-antes').checked ? +$('av-min').value : 0, contas: $('av-contas').checked };
+      const m = $('av-msg'); m.textContent = 'Salvando…';
+      const r = await api('/dora-avisos', corpo);
+      if (r.erro || !r.avisos) { m.textContent = r.erro || 'Não deu para salvar. Tente de novo.'; return; }
+      if (EU.assistente) EU.assistente.avisos = r.avisos;
+      m.textContent = 'Salvo.';
+    };
+    for (const id of ids) $(id).addEventListener('change', salva);
+  }
   function ligaAssistente(alvo) {
+    ligaAvisosDora();
     const bw = $('assist-wa');
     if (bw) bw.onclick = async () => {
       bw.disabled = true;

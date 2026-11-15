@@ -234,6 +234,12 @@ main#conteudo { min-width: 0; padding-bottom: 40px; }
 .tipos { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .tipos span { font: 600 12px var(--mono); letter-spacing: .06em; padding: 4px 9px; border-radius: 999px; background: color-mix(in srgb, var(--tinta) 8%, transparent); color: var(--grafite); }
 .campo { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
+/* os avisos da Dora (cartão da secretária) */
+.avisos-dora { margin: 16px 0 4px; padding: 14px 16px; border: 1px solid var(--card-borda); border-radius: 14px; display: grid; gap: 10px; }
+.avisos-dora h3 { margin: 0; font-size: 16px; }
+.av-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; }
+.av-linha input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--sinal); flex: none; }
+.av-linha input[type=time], .av-linha select { min-height: 40px; padding: 6px 10px; border: 1.5px solid var(--card-borda); border-radius: 10px; font: 400 15px var(--sans); background: transparent; color: inherit; }
 .campo input, .campo textarea, .entrada { width: 100%; min-height: 48px; padding: 12px 14px; border: 1.5px solid var(--card-borda); border-radius: 14px; font: 400 16px/1.45 var(--sans);
   background: color-mix(in srgb, var(--folha) 70%, transparent); color: var(--tinta); }
 .campo input:focus, .campo textarea:focus, .entrada:focus { border-color: var(--sinal); outline: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--sinal) 16%, transparent); }
