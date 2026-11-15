@@ -891,6 +891,7 @@
     return `<article class="cartao" id="assist">${topo}
       <p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ele saber que é você:</p>
       <ol class="passinhos"><li>Toque em <b>Mostrar o meu código</b>.</li><li>Abra o Instagram no <b>seu perfil pessoal</b> (não no do negócio).</li><li>Mande o código numa mensagem para <b>@${esc(ig.usuario || 'o seu negócio')}</b>.</li></ol>
+      <p class="dica">Não tem um perfil pessoal além do negócio? Crie um em dois minutos no Instagram: é dele que você vai falar com o ${esc(ASSIST())}.</p>
       <div class="botoes"><button class="bt pequeno" id="assist-codigo" type="button">Mostrar o meu código</button></div>
       <div id="assist-mostra" hidden></div></article>`;
   }
