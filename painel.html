@@ -483,6 +483,31 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .passinhos { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 4px; }
 .cupom .linha-cupom { display: flex; gap: 8px; }
 .cupom .linha-cupom input { flex: 1; min-width: 0; text-transform: uppercase; }
+
+/* ===== 15/11 à noite: o mesmo visual do site (o teste B que ele escolheu). Verde = Sol, LARANJA = Dora (não amarelo);
+   vidro com um aro que vai do verde ao laranja e um brilho laranja no fundo. O aro é um ::before com máscara, para o
+   cartão continuar translúcido (a borda de sempre fica por baixo). ===== */
+:root { --laranja: #D9601C; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --laranja: #FF8A3D; } }
+:root[data-theme="dark"] { --laranja: #FF8A3D; }
+.fundo::before {
+  background: radial-gradient(38% 34% at 14% 10%, color-mix(in srgb, var(--teal) 36%, transparent), transparent 70%),
+    radial-gradient(28% 28% at 90% 6%, color-mix(in srgb, var(--sinal) 18%, transparent), transparent 70%),
+    radial-gradient(46% 42% at 80% 104%, color-mix(in srgb, var(--laranja) 24%, transparent), transparent 70%); }
+.cartao { position: relative; }
+.cartao::before, .plano::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sinal) 55%, transparent), transparent 38%, transparent 62%, color-mix(in srgb, var(--laranja) 50%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; }
+/* o que é da Dora fica laranja: o cartão da secretária, o plano Secretária e o quadro dos avisos */
+.da-dora::before { background: linear-gradient(135deg, color-mix(in srgb, var(--laranja) 75%, transparent), transparent 42%, transparent 60%, color-mix(in srgb, var(--laranja) 45%, transparent)); }
+.da-dora .canal-ic { background: linear-gradient(135deg, #FFB06B, #E8692A); }
+.da-dora h2 .ic, .da-dora > h2 svg { color: var(--laranja); }
+.da-dora .bt:not(.fraco) { background: linear-gradient(180deg, #FFB06B, #F2772F); color: #2A1004; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 12px 26px -14px rgba(255,138,61,.7); }
+.da-dora .bt.fraco:hover { border-color: color-mix(in srgb, var(--laranja) 55%, transparent); background: color-mix(in srgb, var(--laranja) 12%, transparent); }
+.plano.da-dora.escolhido { border-color: var(--laranja); box-shadow: 0 0 0 4px color-mix(in srgb, var(--laranja) 14%, transparent); }
+.avisos-dora { border-color: color-mix(in srgb, var(--laranja) 35%, var(--card-borda)); background: color-mix(in srgb, var(--laranja) 6%, transparent); }
+.av-linha input[type=checkbox] { accent-color: var(--laranja); }
 </style>
 </head>
 <body>

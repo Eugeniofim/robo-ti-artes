@@ -331,8 +331,8 @@
         ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<article class="cartao tile largo"><h2>${ic(EU.pausado ? 'play' : 'pausa')} ${EU.pausado ? 'Ele está pausado' : 'Ligar e desligar'}</h2>
           <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
           <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></article>` : ''}
-        <article class="cartao tile ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} A ${esc(ASSIST())}, a sua secretária</h2>
-          <p>Quando quem escreve no direct é você, do seu perfil pessoal, a ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.
+        <article class="cartao tile da-dora ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} A ${esc(ASSIST())}, a sua secretária</h2>
+          <p>${(EU.assistente || {}).otto_wa ? `Fale com a ${esc(ASSIST())} no WhatsApp dela: ela marca na agenda, anota, confirma os horários e, de manhã, manda o seu dia.` : `Quando quem escreve no direct é você, do seu perfil pessoal, a ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.`}
           ${!(EU.assistente || {}).disponivel ? '<span class="selo breve">chega em breve</span>' : EU.assistente.ligado ? '<span class="selo ok">ligado</span>' : ''}</p>
           ${(EU.assistente || {}).disponivel && !EU.assistente.ligado ? '<a class="lnk" href="#conectar">Ligar em 1 minuto</a>' : ''}</article>
       </div></section>`;
@@ -888,27 +888,27 @@
   function cartaoAssistente() {
     const a = EU.assistente || {}, ig = EU.instagram || {};
     const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Secretária <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
-    if (!a.disponivel) return `<article class="cartao" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
-    if (EU.modo === 'atendimento') return `<article class="cartao" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar a ${esc(ASSIST())}, escolha "Os dois" ou "Só secretária" aqui em cima.</p></article>`;
+    if (!a.disponivel) return `<article class="cartao da-dora" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
+    if (EU.modo === 'atendimento') return `<article class="cartao da-dora" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar a ${esc(ASSIST())}, escolha "Os dois" ou "Só secretária" aqui em cima.</p></article>`;
     /* o Otto central: um WhatsApp da Ti Artes, o mesmo para todos; o dono liga mandando o código de um toque */
     if (a.otto_wa) {
       const num = foneBonito(a.otto_wa);
-      if (a.whatsapp) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado no WhatsApp</span></p>
+      if (a.whatsapp) return `<article class="cartao da-dora" id="assist">${topo}<p><span class="selo ok">ligado no WhatsApp</span></p>
         <p>Fale com a ${esc(ASSIST())} pelo WhatsApp <b class="num">${esc(num)}</b>, do seu celular: texto, áudio, foto ou PDF. Ela marca na sua agenda, anota, confirma os horários que os clientes pediram e guarda nota fiscal e comprovante no seu Drive.</p>
         ${avisosDora(a.avisos)}
         <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp da ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
-      return `<article class="cartao" id="assist">${topo}
+      return `<article class="cartao da-dora" id="assist">${topo}
         <p>A ${esc(ASSIST())} é a sua secretária: um número de WhatsApp da Ti Artes que fala só com você. Salve o número nos contatos; você manda texto, áudio, foto ou PDF, e ela marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
         <ol class="passinhos"><li>Toque em <b>Falar com a ${esc(ASSIST())}</b>: o WhatsApp abre com o seu código já escrito.</li><li>Envie. Pronto: ela reconhece você pelo seu número.</li></ol>
         <div class="botoes"><button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Falar com a ${esc(ASSIST())} no WhatsApp</button></div>
         <div id="assist-mostra" hidden></div></article>`;
     }
-    if (a.ligado) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
+    if (a.ligado) return `<article class="cartao da-dora" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
       <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é a ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
       <p class="dica">Para ver como os clientes são atendidos, escreva "modo cliente" (volta com "modo dono").</p>
       <div class="botoes"><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
-    if (!ig.conectado) return `<article class="cartao" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga a ${esc(ASSIST())} em 1 minuto.</p></article>`;
-    return `<article class="cartao" id="assist">${topo}
+    if (!ig.conectado) return `<article class="cartao da-dora" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga a ${esc(ASSIST())} em 1 minuto.</p></article>`;
+    return `<article class="cartao da-dora" id="assist">${topo}
       <p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ela saber que é você:</p>
       <ol class="passinhos"><li>Toque em <b>Mostrar o meu código</b>.</li><li>Abra o Instagram no <b>seu perfil pessoal</b> (não no do negócio).</li><li>Mande o código numa mensagem para <b>@${esc(ig.usuario || 'o seu negócio')}</b>.</li></ol>
       <p class="dica">Não tem um perfil pessoal além do negócio? Crie um em dois minutos no Instagram: é dele que você vai falar com a ${esc(ASSIST())}.</p>
@@ -1036,7 +1036,7 @@
       `${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
       ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
     ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
-    const cartoes = EU.planos.map((x) => `<article class="plano ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
+    const cartoes = EU.planos.map((x) => `<article class="plano ${x.id === 'otto' ? 'da-dora' : ''} ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
       <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
       ${x.id === 'otto' && semOtto ? `<p class="dica">Abre assim que o WhatsApp da ${esc(ASSIST())} estiver no ar.</p>` : `<div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>

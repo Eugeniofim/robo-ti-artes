@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-v>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -23,7 +23,7 @@
   --linha: rgba(255, 255, 255, .10);
   --teal: #19A693;          /* a marca, um tom acima do impresso para ler no escuro */
   --sinal: #35E0BF;         /* LED de canal ligado: usar pouco */
-  --ambar: #F2B84B;         /* a Dora */
+  --ambar: #FF8A3D;         /* a Dora: laranja (15/11; era âmbar) */
   --vidro: rgba(14, 30, 33, .52);
   --vidro-borda: rgba(255, 255, 255, .12);
   --serif: 'Caladea', 'Bitstream Charter', Georgia, serif;
@@ -360,6 +360,36 @@ footer .assina img { width: 22px; height: 22px; }
 .ainda-nao b { color: var(--texto); }
 @media (max-width: 760px) { .passos.tres, .faz-dora { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) { .compara { grid-template-columns: minmax(0, 1fr); } }
+
+/* ===== O VISUAL DE 15/11 (o teste B, escolhido por ele; html[data-v] mantém a força das regras que ele aprovou): verde é o Sol, LARANJA é a Dora (não amarelo: "não ficar tão Brasilzão"); vidro mais claro com borda verde→laranja e brilho dos dois lados ===== */
+html[data-v] { --ambar: #FF8A3D; --d3-ponto: #FF8A3D; --d3-vidro: #FFC29A; --d3-atenua: #D9622A; }
+html[data-v] .chave[data-rosto="otto"] .corre { background: linear-gradient(180deg, #FFB27A, var(--ambar)); }
+html[data-v] .selo, html[data-v] .jeito .tipo.otto { background: rgba(255, 138, 61, .16); }
+html[data-v] #todos .rotulo, html[data-v] #dora .rotulo, html[data-v] #todos h2 em, html[data-v] #dora h2 em { color: var(--ambar); }
+html[data-v] #dora .passos li::before { color: var(--ambar); }
+html[data-v] .faz-dora b { color: #FFD9BF; }
+html[data-v] a.bt[href*="plano=otto"]:not(.fraco) { background: linear-gradient(180deg, #FFB06B, #F2772F); color: #2A1004; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 14px 30px -12px rgba(255, 138, 61, .6); }
+html[data-v] a.bt.fraco[href*="plano=otto"] { box-shadow: inset 0 0 0 1px rgba(255, 138, 61, .55); color: #FFD9BF; }
+html[data-v] .plano.otto-plano { border-color: rgba(255, 138, 61, .45); }
+html[data-v] .plano.otto-plano li::before { color: var(--ambar); }
+html[data-v] .b.otto { background: linear-gradient(180deg, #FFA466, #EE7432); color: #2A1004; }
+html[data-v] .mini-fio .otto { background: rgba(255, 138, 61, .24); color: #FFEFE4; }
+html[data-v] .meta { border-color: rgba(255, 138, 61, .3); }
+html[data-v] .jeito .tipo.ambos { background: linear-gradient(90deg, rgba(53, 224, 191, .18), rgba(255, 138, 61, .22)); }
+html[data-v] .jeito.dois { border-color: rgba(255, 138, 61, .35); }
+
+/* vidro mais claro, borda que vai do verde ao laranja, título com degradê */
+html[data-v] .vidro {
+  border: 1px solid transparent;
+  background: linear-gradient(rgba(12, 24, 27, .40), rgba(12, 24, 27, .40)) padding-box,
+    linear-gradient(135deg, rgba(53, 224, 191, .42), rgba(255, 255, 255, .07) 36%, rgba(255, 255, 255, .05) 64%, rgba(255, 138, 61, .40)) border-box;
+  -webkit-backdrop-filter: blur(24px) saturate(175%); backdrop-filter: blur(24px) saturate(175%); }
+html[data-v] .heroi h1 em { background: linear-gradient(100deg, #4FF0CF 0%, #B9F2DA 42%, #FFB27A 70%, #FF8A3D 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(0 2px 14px rgba(7, 17, 19, .7)); padding-right: .08em; }
+html[data-v] .plano.destaque { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 30px 80px -30px rgba(255, 138, 61, .35), 0 0 60px -20px rgba(53, 224, 191, .35); }
+html[data-v] .plano .tag { background: linear-gradient(90deg, #35E0BF, #FF9A55); }
+html[data-v] .rotulo { display: inline-block; padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .10); }
+
+html[data-v] { --d3-g2: 255, 138, 61; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -922,13 +952,16 @@ const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 10
 camera.position.set(0, 0, 8);
 
 /* o fundo: breu com um brilho teal no alto e um verde-água à direita (o vidro precisa de algo atrás para refratar) */
+/* cores lidas do CSS (--d3-base, --d3-g2, --d3-ponto, --d3-vidro, --d3-atenua): o visual se ajusta num lugar só */
+const css = (n, d) => (getComputedStyle(document.documentElement).getPropertyValue(n).trim() || d);
 function fundo() {
   const c = document.createElement('canvas'); c.width = 64; c.height = 64;
   const g = c.getContext('2d');
-  g.fillStyle = '#071113'; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = css('--d3-base', '#071113'); g.fillRect(0, 0, 64, 64);
   const r1 = g.createRadialGradient(14, 8, 0, 14, 8, 46); r1.addColorStop(0, 'rgba(25,166,147,.55)'); r1.addColorStop(1, 'rgba(25,166,147,0)');
   g.fillStyle = r1; g.fillRect(0, 0, 64, 64);
-  const r2 = g.createRadialGradient(56, 40, 0, 56, 40, 40); r2.addColorStop(0, 'rgba(53,224,191,.22)'); r2.addColorStop(1, 'rgba(53,224,191,0)');
+  const g2 = css('--d3-g2', '53,224,191');
+  const r2 = g.createRadialGradient(56, 40, 0, 56, 40, 40); r2.addColorStop(0, `rgba(${g2},.22)`); r2.addColorStop(1, `rgba(${g2},0)`);
   g.fillStyle = r2; g.fillRect(0, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -939,8 +972,10 @@ const luz = new THREE.DirectionalLight(0xffffff, 1.6); luz.position.set(3, 4, 5)
 const contraluz = new THREE.PointLight(0x35e0bf, 18, 12); contraluz.position.set(-2.5, -1, -2.5); cena.add(contraluz);
 
 /* ---------- o balão de conversa de vidro: o corpo, o rabinho e os três pontinhos de "digitando" ---------- */
-const TEAL = new THREE.Color('#35E0BF'), AMBAR = new THREE.Color('#F2B84B');
-const TEAL_VIDRO = new THREE.Color('#7FE9D6'), AMBAR_VIDRO = new THREE.Color('#FFD999');
+/* as cores da Dora vêm do CSS (--d3-ponto, --d3-vidro, --d3-atenua) */
+const TEAL = new THREE.Color('#35E0BF'), AMBAR = new THREE.Color(css('--d3-ponto', '#F2B84B'));
+const TEAL_VIDRO = new THREE.Color('#7FE9D6'), AMBAR_VIDRO = new THREE.Color(css('--d3-vidro', '#FFD999'));
+const ATENUA_DORA = css('--d3-atenua', '#C98A1E');
 const vidro = new THREE.MeshPhysicalMaterial({
   color: TEAL_VIDRO.clone(), metalness: 0, roughness: 0.05, transmission: 1, thickness: 0.8, ior: 1.4,
   dispersion: 1.0, attenuationColor: new THREE.Color('#19A693'), attenuationDistance: 4.5, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.5,
@@ -1092,7 +1127,7 @@ function quadro() {
   balao.rotation.z = Math.sin(t * 0.35) * 0.03;
   /* a cor acompanha o rosto: teal (Sol) → âmbar (Dora) */
   vidro.color.copy(TEAL_VIDRO).lerp(AMBAR_VIDRO, atual.rosto);
-  vidro.attenuationColor.copy(cor.set('#19A693')).lerp(cor.set('#C98A1E'), atual.rosto);
+  vidro.attenuationColor.copy(cor.set('#19A693')).lerp(cor.set(ATENUA_DORA), atual.rosto);
   pontoMat.color.copy(TEAL).lerp(AMBAR, atual.rosto); pontoMat.emissive.copy(pontoMat.color);
   contraluz.color.copy(TEAL).lerp(AMBAR, atual.rosto);
   /* "digitando…": os três pontinhos sobem e descem em sequência */
