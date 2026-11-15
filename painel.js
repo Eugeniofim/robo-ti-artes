@@ -865,7 +865,7 @@
   function cartaoModo() {
     if (!(EU.assistente || {}).disponivel) return '';
     if (EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length)
-      return `<article class="cartao modos"><h2>Plano Assistente</h2><p>Só o ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
+      return `<article class="cartao modos"><h2>Plano Secretária</h2><p>Só o ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
     const atual = EU.modo || 'ambos';
     return `<article class="cartao modos"><h2>Como os agentes trabalham nesta conta</h2>
       <div class="modos-opcoes" role="radiogroup" aria-label="Como os agentes trabalham">${MODOS.map((x) => `<button type="button" role="radio" class="modo ${atual === x.id ? 'on' : ''}" aria-checked="${atual === x.id}" data-modo="${x.id}"><b>${esc(x.nome)}</b><span>${esc(x.txt)}</span></button>`).join('')}</div>
@@ -1002,13 +1002,13 @@
     const p = EU.plano;
     const ST = { teste: `Em teste grátis até ${dia(EU.pago_ate)}. O cartão só é cobrado depois.`, ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}.` : `Ativa. Renova sozinha em ${dia(EU.pago_ate)}.`,
       atrasada: 'O último pagamento não passou. Atualize o cartão para o agente não parar.', cancelada: `Cancelada. O agente responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o agente parou.', novo: '' };
-    /* o plano Assistente vive no WhatsApp do Otto: sem o número no ar, o cartão aparece, mas não vende */
+    /* o plano Secretária vive no WhatsApp do Otto: sem o número no ar, o cartão aparece, mas não vende */
     const semOtto = !(EU.assistente && EU.assistente.otto_wa);
     const itens = (x) => (x.canais.length ? [
       `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
       `${ASSIST()}, o seu assistente no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
       ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
-    ] : [`${ASSIST()}, o seu assistente no WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+    ] : [`${ASSIST()} faz o trabalho de secretária no seu WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
     const cartoes = EU.planos.map((x) => `<article class="plano ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
       <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
@@ -1172,7 +1172,7 @@
     if (abaAtual() !== 'estudio') return;
     if (r.erro) { alvo.innerHTML = aviso('erro', r.erro); return; }
     const t = r.total, l = r.assinantes || [];
-    const nomePlano = { otto: 'Assistente', instagram: 'Instagram', whatsapp: 'WhatsApp', completo: 'Completo' };
+    const nomePlano = { otto: 'Secretária', instagram: 'Instagram', whatsapp: 'WhatsApp', completo: 'Completo' };
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Só a Ti Artes</p><h1>Estúdio · ${esc(nomeMes(r.mes))}</h1>
       <p class="lede">O que cada assinante paga e quanto a IA dele custou de verdade neste mês (medido em cada resposta). IA em reais a R$ 6,50 por dólar.</p></div></div>
       <div class="numeros"><div><b>${reais(t.receita)}</b><span>entra no mês</span></div><div><b>${reais(t.ia)}</b><span>IA de todos</span></div><div><b>${reais(t.lucro)}</b><span>sobra, depois de IA, taxa, imposto e casa</span></div></div>
