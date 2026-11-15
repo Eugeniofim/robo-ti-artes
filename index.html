@@ -271,6 +271,24 @@ footer a { color: var(--apoio); }
   .preco { font-size: 50px; }
   .calc, .plano, .cobre > div { padding: 22px; }
 }
+/* 15/11: o app de gestão que vem junto */
+.app-vitrine { margin-top: 30px; }
+.app-abas { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(14, 30, 33, .6); border: 1px solid var(--linha); }
+.app-abas button { min-height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: var(--apoio); font: 600 14px var(--sans); cursor: pointer; }
+.app-abas button[aria-selected="true"] { background: var(--teal); color: #fff; }
+.app-telas { position: relative; margin: 20px 0 0; padding-right: 9%; }
+.app-pc { width: 100%; height: auto; display: block; border-radius: 16px; border: 1px solid var(--vidro-borda); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .8); }
+.app-cel { position: absolute; right: 0; bottom: -6%; width: 22%; height: auto; border-radius: 26px; border: 6px solid #0B1517; box-shadow: 0 24px 60px -16px rgba(0, 0, 0, .85); }
+.app-telas figcaption { margin-top: 14px; font: 500 12.5px var(--mono); color: var(--apoio); }
+.app-recursos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 44px; }
+.app-recursos > div { padding: 18px; }
+.app-recursos b { display: block; font: 700 19px/1.25 var(--serif); color: #fff; margin-bottom: 6px; }
+.app-recursos p { color: var(--apoio); font-size: 15px; margin: 0; }
+.arvore, .arvore ul { list-style: none; margin: 10px 0 0; padding: 0; font: 500 13px var(--mono); color: var(--texto); }
+.arvore ul { margin: 6px 0 0 14px; border-left: 1px solid var(--linha); padding-left: 10px; display: grid; gap: 4px; }
+.arvore li::before { content: ''; display: inline-block; width: 12px; height: 9px; margin-right: 7px; border-radius: 2px; background: var(--sinal); opacity: .8; vertical-align: 0; }
+@media (max-width: 900px) { .app-recursos { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .app-recursos { grid-template-columns: 1fr; } .app-telas { padding-right: 18%; } .app-cel { width: 34%; } .app-telas figcaption { max-width: 58%; } .app-abas button { padding: 0 14px; } }
 /* 15/11: os três jeitos de usar */
 .jeitos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
 .jeito { padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
@@ -315,7 +333,7 @@ footer .assina img { width: 22px; height: 22px; }
 <nav class="nav" aria-label="Principal">
   <div class="pilula-nav">
     <a class="marca" href="#topo"><img src="logo.svg" alt="" width="32" height="32"><b><small>studio</small>Ti Artes</b></a>
-    <div class="links"><a href="#virada">Como é</a><a href="#exemplos">Exemplos</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <div class="links"><a href="#virada">Como é</a><a href="#exemplos">Exemplos</a><a href="#app">O app</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
     <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
     <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
   </div>
@@ -441,6 +459,36 @@ footer .assina img { width: 22px; height: 22px; }
     </div>
   </section>
 
+  <!-- 4c. o app de gestão vem junto (15/11, pedido dele: "mostrar fotos do aplicativo de organização interna") -->
+  <section class="ato" id="app" data-cena="app">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Incluso na assinatura</p>
+        <h2 style="margin-top:12px">Você assina o agente. O app de gestão <em>vem junto.</em></h2>
+        <p>Tudo o que os agentes fazem cai num app só seu, no celular e no computador. Sem planilha, sem caderno, sem caçar conversa antiga no direct.</p>
+        <div class="app-vitrine">
+          <div class="app-abas" role="tablist" aria-label="Telas do app">
+            <button type="button" role="tab" aria-selected="true" data-tela="inicio">Início</button>
+            <button type="button" role="tab" aria-selected="false" data-tela="agenda">Agenda</button>
+            <button type="button" role="tab" aria-selected="false" data-tela="arquivos">Arquivos</button>
+          </div>
+          <figure class="app-telas">
+            <img class="app-pc" id="tela-pc" src="telas/pc-inicio.jpg" alt="O app no computador: a tela de início com o dia de hoje e os últimos pedidos" width="1280" height="860" loading="lazy" decoding="async">
+            <img class="app-cel" id="tela-cel" src="telas/cel-inicio.jpg" alt="O app no celular" width="390" height="844" loading="lazy" decoding="async">
+            <figcaption>Telas de verdade do app, com dados de exemplo.</figcaption>
+          </figure>
+        </div>
+        <div class="app-recursos">
+          <div class="vidro"><b>Agenda que se enche sozinha</b><p>Os horários que os clientes pedem chegam para você confirmar com um toque. E tudo aparece no seu Google Agenda.</p></div>
+          <div class="vidro"><b>Pedidos e recados</b><p>Quem pediu o quê, com o contato, em ordem. Nenhum cliente fica sem retorno.</p></div>
+          <div class="vidro drive"><b>Arquivos no seu Google Drive</b><p>Mande a nota fiscal ou o comprovante no direct e diga "guarda". O agente lê, dá um nome que diz o que é e põe na pasta certa.</p>
+            <ul class="arvore" aria-label="Exemplo de pastas no Drive"><li>Agentes Ti Artes · seu negócio<ul><li>Notas fiscais</li><li>Comprovantes</li><li>Contratos</li></ul></li></ul></div>
+          <div class="vidro"><b>Notas por áudio</b><p>Fale com o assistente como fala com uma pessoa. Ele anota, marca e lembra você do que tem hoje.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 4. como funciona -->
   <section class="ato" id="como" data-cena="como">
     <div class="miolo">
@@ -484,14 +532,14 @@ footer .assina img { width: 22px; height: 22px; }
           <article class="plano vidro">
             <h3>Instagram</h3>
             <p class="preco num">R$ 147<small> por mês</small></p>
-            <ul><li>Agente de atendimento no direct do Instagram</li><li>Agente assistente para você</li><li>Até 2.000 mensagens por mês</li><li>Agenda e notas no mesmo painel</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Agente assistente para você</li><li>Até 2.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Começar com o Instagram</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
             <h3>Instagram + WhatsApp</h3>
             <p class="preco num">R$ 197<small> por mês</small></p>
-            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Agente assistente para você</li><li>Até 4.000 mensagens por mês</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Agente assistente para você</li><li>Até 4.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Começar com os dois <span aria-hidden="true">→</span></a>
             <p class="dica">O WhatsApp entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro.</p>
           </article>
@@ -547,6 +595,7 @@ footer .assina img { width: 22px; height: 22px; }
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
           <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o agente com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
           <details class="vidro"><summary>Como o agente sabe que sou eu, e não um cliente?</summary><p>Você liga o agente assistente no painel: aparece um código, e você manda esse código do seu perfil pessoal no direct do seu negócio. Pronto. Daí em diante, quando você escreve desse perfil, quem responde é o assistente. Qualquer outra pessoa fala com o atendimento. Para ver o atendimento como um cliente vê, escreva "modo cliente".</p></details>
+          <details class="vidro"><summary>O app de gestão é pago à parte?</summary><p>Não. Ele vem junto com a assinatura, sem pagar nada a mais: agenda, pedidos, notas e os arquivos que o agente guarda no seu Google Drive. No teste grátis você já usa tudo. Se não assinar, a conta fica guardada 7 dias e depois é apagada; o que já foi para o seu Google Drive continua lá, porque é seu.</p></details>
           <details class="vidro"><summary>O agente pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
           <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O agente entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
           <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O agente segue ligado até o fim do mês que você já pagou, e depois para.</p></details>
@@ -569,6 +618,18 @@ footer .assina img { width: 22px; height: 22px; }
     </div>
   </section>
 </main>
+<script>
+/* as abas das telas do app (Início · Agenda · Arquivos) */
+(function () {
+  const abas = document.querySelectorAll('.app-abas [data-tela]');
+  abas.forEach((b) => b.addEventListener('click', () => {
+    abas.forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    const t = b.dataset.tela;
+    document.getElementById('tela-pc').src = `telas/pc-${t}.jpg`;
+    document.getElementById('tela-cel').src = `telas/cel-${t}.jpg`;
+  }));
+})();
+</script>
 <!-- o vendedor: aparece só onde a função existe (no ar e na prévia local) -->
 <button type="button" class="vend-bt" id="vend-abre" hidden aria-controls="vend"><span class="bolha" aria-hidden="true"><i></i><i></i><i></i></span>Tirar dúvida com o Sol</button>
 <section class="vend vidro" id="vend" hidden aria-label="Conversa com o Sol, da Ti Artes" data-lenis-prevent>
@@ -762,6 +823,7 @@ const ROTEIRO = {
   virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
   rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
   exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
+  app:       { x: -0.8, y: 2.1, ym: 2.6, z: -3.0, s: 0.38, giro: 0.5, cam: 9.0, enxame: 0.25 },
   como:      { x: 0.62, y: 1.9, ym: 2.3, z: -1.6, s: 0.55, giro: -0.6, cam: 8.8, enxame: 0.4 },
   planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
   conta:     { x: 0.7, y: 1.8, ym: 2.4, z: -2.4, s: 0.45, giro: -0.4, cam: 9.0, enxame: 0.3 },

@@ -336,6 +336,9 @@ details.dobra[open] > summary::after { content: '–'; }
 .linha-tempo::before { content: ''; position: absolute; left: 46px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: linear-gradient(var(--sinal), transparent); opacity: .5; }
 .ev { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 10px 0; }
 .ev-hora { position: relative; z-index: 1; justify-self: start; font: 600 14px var(--mono); color: var(--menta-texto); background: var(--menta); padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+.ev > span:empty { display: none; }
+.ev-hora.duas { display: grid; justify-items: center; line-height: 1.15; padding: 6px 10px; }
+.ev-hora.duas small { font: inherit; opacity: .85; }
 .ev-hora.dia-todo { background: color-mix(in srgb, var(--tinta) 10%, transparent); color: var(--grafite); }
 .ev-txt { display: grid; min-width: 0; }
 .ev-txt span { color: var(--grafite); font-size: 14.5px; }
@@ -463,6 +466,10 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .modo.on b::before { content: '● '; color: var(--teal, #19A693); }
 .modo:disabled { opacity: .6; cursor: progress; }
 @media (max-width: 720px) { .modos-opcoes { grid-template-columns: 1fr; } }
+/* 15/11: os guardados do assistente */
+.guardados .pasta-nome { font-size: 15px; display: flex; align-items: center; gap: 8px; margin: 14px 0 6px; opacity: .9; }
+.guardados .pasta-nome svg { width: 18px; height: 18px; }
+.guardados .fonte .dica { display: flex; gap: 8px; align-items: center; margin-top: 3px; }
 /* 15/11: o código do agente assistente e o cupom */
 .codigo-dono { font: 700 40px var(--mono, ui-monospace); letter-spacing: .14em; margin: 6px 0; color: var(--tinta); }
 .passinhos { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 4px; }

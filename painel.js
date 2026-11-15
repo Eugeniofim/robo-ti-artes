@@ -13,7 +13,8 @@
   const tamanho = (b) => (b >= 1048576 ? (b / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB' : Math.max(1, Math.round((b || 0) / 1024)) + ' KB');
   const hojeIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const primeiro = (s) => String(s || '').trim().split(/\s+/)[0] || '';
-  if (ROBO.local) $('faixa-local').hidden = false;
+  /* a faixa da prévia some só nos prints da vitrine (testes/robo-local.ts, /falso/print) */
+  if (ROBO.local && !(() => { try { return localStorage.getItem('robo-print'); } catch (_) { return null; } })()) $('faixa-local').hidden = false;
   if (!Sessao.tem()) { location.href = 'entrar.html'; return; }
 
   /* chamada à função que nunca explode: sem rede vira um erro de verdade na tela */
@@ -913,6 +914,33 @@
     };
   }
 
+  /* ---------- os arquivos que o dono mandou ao assistente (foto, comprovante, nota fiscal) ---------- */
+  function cartaoGuardados() {
+    if (!(EU.assistente || {}).disponivel || EU.modo === 'atendimento') return '';
+    const G = EU.guardados || { itens: [] }, d = drive();
+    const pastas = {};
+    for (const g of G.itens || []) (pastas[g.pasta || 'Guardados'] = pastas[g.pasta || 'Guardados'] || []).push(g);
+    const onde = (g) => g.drive === 'ok' ? `<span class="selo ok">no Drive</span>` : (g.drive === 'sem' || !d.ligado) ? '<span class="selo">só aqui</span>' : g.drive === 'erro' ? '<span class="selo atencao">tenta de novo</span>' : '<span class="selo">indo pro Drive</span>';
+    return `<div class="cartao guardados"><h2>${ic('pasta')} Guardados pelo ${esc(ASSIST())}</h2>
+      <p class="dica">Mande no direct, do seu perfil: foto, comprovante, nota fiscal ou PDF, e diga "guarda". Ele lê, dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : '. <b>Ligue o Google Drive</b> aqui em cima para irem para lá'}.</p>
+      ${Object.keys(pastas).length ? Object.entries(pastas).map(([p, l]) => `<h3 class="pasta-nome">${ic('pasta')} ${esc(p)}</h3><ul class="fontes">${l.map((g) => `<li class="fonte"><div><b>${esc(g.nome)}</b><span class="dica">${esc(dia(g.guardado || g.quando))} ${onde(g)}</span></div>
+        <div class="botoes"><button class="bt pequeno fraco" type="button" data-abrir-g="${esc(g.id)}">Abrir</button><button class="bt pequeno fraco" type="button" data-apagar-g="${esc(g.id)}">Apagar</button></div></li>`).join('')}</ul>`).join('')
+        : `<p class="vazio">Nada guardado ainda.</p>`}
+      <p class="dica num">${(+G.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(G.limite_mb || 0)} MB no app${G.recebidos ? ` · ${G.recebidos} arquivo${G.recebidos === 1 ? '' : 's'} esperando você dizer onde guardar (some${G.recebidos === 1 ? '' : 'm'} em 3 dias)` : ''}. O que já está no Drive sai do app em ${G.dias_no_app || 30} dias e fica no Drive.</p></div>`;
+  }
+  function ligaGuardados(alvo, pinta) {
+    alvo.querySelectorAll('[data-abrir-g]').forEach((b) => b.onclick = async () => {
+      const g = ((EU.guardados || {}).itens || []).find((x) => x.id === b.dataset.abrirG);
+      if (g && g.drive_link && !g.no_app) { window.open(g.drive_link, '_blank', 'noopener'); return; }
+      b.disabled = true; const r = await api('/guardado?id=' + encodeURIComponent(b.dataset.abrirG)); b.disabled = false;
+      if (r.url) window.open(r.url, '_blank', 'noopener'); else alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não abriu.'));
+    });
+    alvo.querySelectorAll('[data-apagar-g]').forEach((b) => b.onclick = async () => {
+      if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'Apagar do app?'; return; }
+      b.disabled = true; const r = await api('/guardado-apagar', { id: b.dataset.apagarG }); if (!r.erro) { EU = r; pinta(); }
+    });
+  }
+
   /* ---------- Arquivos ---------- */
   function telaArquivos(alvo, topo) {
     const pinta = () => {
@@ -922,6 +950,7 @@
         <div class="cabeca-aba"><div><p class="rotulo">Arquivos</p><h1>Os seus arquivos</h1>
         <p class="lede">O que você mandou para o ${esc(NOME())} ler fica guardado aqui. Ele aprende com cada um.</p></div></div>
         ${cartaoDrive(false)}
+        ${cartaoGuardados()}
         <div class="arq-grade">
           <div class="cartao"><h2>${ic('pasta')} ${l.length} arquivo${l.length === 1 ? '' : 's'}</h2>
             ${l.length ? `<ul class="fontes" id="arq-lista">${l.map(itemFonte).join('')}</ul>` : `<p class="vazio">Nenhum arquivo ainda. Mande o primeiro aqui ao lado: o cardápio, a tabela de preços ou fotos do seu trabalho.</p>`}</div>
@@ -930,7 +959,7 @@
               <p class="dica num">${(+u.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(u.limite_mb)} MB</p></div>` : ''}</div>
         </div></section>`;
       const lista = $('arq-lista'); if (lista) ligaFontes(lista, pinta);
-      ligaSoltar(alvo); ligaDrive(alvo);
+      ligaSoltar(alvo); ligaDrive(alvo); ligaGuardados(alvo, pinta);
     };
     pinta();
   }
@@ -1020,7 +1049,7 @@
         <button class="bt fraco" id="ag-google" type="button">${svg('agenda')} Ver no Google Agenda</button></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
       <div id="ag-link"></div>
-      ${(r.pedidos || []).length ? `<div class="cartao pedido-h"><h2>${ic('relogio')} Pedidos de horário para confirmar</h2><ul class="linha-tempo">${r.pedidos.map((p) => `<li class="ev"><span class="ev-hora num">${esc(dia(p.dia + 'T12:00:00').slice(0, 5))} ${esc(p.hora)}</span>
+      ${(r.pedidos || []).length ? `<div class="cartao pedido-h"><h2>${ic('relogio')} Pedidos de horário para confirmar</h2><ul class="linha-tempo">${r.pedidos.map((p) => `<li class="ev"><span class="ev-hora num duas">${esc(dia(p.dia + 'T12:00:00').slice(0, 5))}${p.hora ? `<small>${esc(p.hora)}</small>` : ''}</span>
         <div class="ev-txt"><b>${esc(p.titulo)}</b><span>${esc(p.com || '')}</span></div><span></span><button class="bt pequeno" type="button" data-confirma="${esc(p.id)}">Confirmar</button></li>`).join('')}</ul></div>` : ''}
       <form class="cartao marcar" id="ag-form"><h2>${ic('mais')} Marcar</h2><div class="linha-form">
         <label>Dia<input type="date" id="ag-dia" value="${hoje}" required></label><label>Hora<input type="time" id="ag-hora"></label>
