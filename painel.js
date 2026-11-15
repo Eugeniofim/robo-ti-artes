@@ -48,6 +48,7 @@
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     agenda: '<rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>',
     casa: '<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 9.5V20h12V9.5"/>',
+    pessoas: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.6 14.4a4.4 4.4 0 0 1 4.9 4.6"/>',
     sair: '<path d="M14.5 4.5h3a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-3"/><path d="M10 8l-4 4 4 4M6 12h9.5"/>',
   };
   const ic = (n, cls) => `<span class="ic${cls ? ' ' + cls : ''}" aria-hidden="true"><svg viewBox="0 0 24 24">${IC[n] || ''}</svg></span>`;
@@ -77,7 +78,7 @@
   const NOME = () => (EU && EU.nomes && EU.nomes.atendimento) || 'Sol';
   const ASSIST = () => (EU && EU.nomes && EU.nomes.assistente) || 'Dora';
   const ABAS = {
-    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', notas: 'Notas', pedidos: 'Pedidos',
+    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
   };
   /* nomes antigos de aba (links de volta do Stripe e do Instagram, favoritos) */
@@ -129,6 +130,7 @@
         ] },
         { secao: 'O seu dia', itens: [
           { id: 'agenda', rotulo: 'Agenda', icone: 'agenda', href: '#agenda' },
+          { id: 'clientes', rotulo: 'Clientes', icone: 'pessoas', href: '#clientes' },
           { id: 'notas', rotulo: 'Notas', icone: 'nota', href: '#notas' },
           { id: 'pedidos', rotulo: 'Pedidos', icone: 'caixa', href: '#pedidos' },
           { id: 'arquivos', rotulo: 'Arquivos', icone: 'pasta', href: '#arquivos' },
@@ -148,7 +150,8 @@
       aoUsuario: () => { location.hash = 'plano'; fechaGaveta(); },
     });
     /* barra de baixo do celular: 4 atalhos + o menu */
-    $('baixo').innerHTML = [['inicio', 'Início', 'casa'], ['cerebro', 'Cérebro', 'cerebro'], ['testar', 'Testar', 'balao'], ['agenda', 'Agenda', 'agenda']]
+    /* no celular, o dia a dia: o CRM e a agenda na barra (Cérebro e Testar seguem no Menu) */
+    $('baixo').innerHTML = [['inicio', 'Início', 'casa'], ['clientes', 'Clientes', 'pessoas'], ['agenda', 'Agenda', 'agenda'], ['cerebro', 'Cérebro', 'cerebro']]
       .map(([k, n, i]) => `<a href="#${k}" data-aba="${k}">${svg(i)}<span>${n}</span>${k === 'cerebro' && !c.pronto ? '<i class="ponto" aria-label="falta alimentar"></i>' : ''}</a>`).join('')
       + `<button type="button" id="abre-menu" aria-label="Abrir o menu" aria-expanded="false">${svg('menu')}<span>Menu</span></button>`;
     $('abre-menu').onclick = abreGaveta;
@@ -236,13 +239,16 @@
   window.addEventListener('hashchange', () => EU && mostra());
 
   function mostra() {
+    /* trocou de aba com a ficha de um cliente aberta: fecha */
+    document.querySelectorAll('body > #cl-ficha, body > #cl-fundo, body > #cl-toast').forEach((e) => (e.hidden = true));
+    document.body.classList.remove('ficha-aberta');
     cabecalho();
     const aba = abaAtual(), alvo = $('conteudo');
     const topo = avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '';
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, conectar: telaConectar,
-      plano: telaPlano, pedidos: telaPedidos, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
+      plano: telaPlano, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
     window.scrollTo(0, 0);
   }
 
@@ -324,7 +330,7 @@
         <span class="bola">${x.feito ? svg('check').replace('<svg', '<svg style="width:15px;height:15px;stroke-width:2.6;fill:none;stroke:currentColor"') : i + 1}</span><span>${esc(x.nome)}</span></a></li>`).join('')}</ol>
       <div class="bento">
         <article class="cartao tile"><h2>${ic('agenda')} Hoje</h2><div id="t-hoje"><p class="dica">Carregando…</p></div><a class="lnk" href="#agenda">Abrir a agenda</a></article>
-        <article class="cartao tile"><h2>${ic('balao')} Últimos pedidos</h2><div id="t-ped"><p class="dica">Carregando…</p></div><a class="lnk" href="#pedidos">Ver todos</a></article>
+        <article class="cartao tile"><h2>${ic('pessoas')} Clientes</h2><div id="t-ped"><p class="dica">Carregando…</p></div><a class="lnk" href="#clientes">Abrir o CRM</a></article>
         <article class="cartao tile"><h2>${ic('cerebro')} O que falta ele saber</h2>
           ${faltam.length ? `<ul class="mini-lista">${faltam.map((i) => `<li><span class="quando">${(i.meio || (+i.parcial || 0) > 0) ? 'meio' : 'falta'}</span><span><b>${esc(i.nome || (DICAS[i.id] || {}).nome || '')}</b></span></li>`).join('')}</ul>` : `<p>Ele sabe tudo o que precisa. Continue mandando novidades.</p>`}
           <a class="lnk" href="#cerebro">Alimentar</a></article>
@@ -347,11 +353,15 @@
       el.innerHTML = (hoje.length ? `<ul class="mini-lista">${hoje.slice(0, 4).map((e) => `<li><span class="quando">${esc(e.hora || 'dia todo')}</span><span><b>${esc(e.titulo)}</b>${e.com ? `<span class="dica">com ${esc(e.com)}</span>` : ''}</span></li>`).join('')}</ul>`
         : '<p class="vazio">Nada marcado para hoje.</p>') + (ped.length ? `<p class="aviso atencao" style="margin-top:6px">${ic('relogio')}<span>${ped.length} pedido${ped.length > 1 ? 's' : ''} de horário para confirmar.</span></p>` : '');
     });
-    api('/recados').then((r) => {
+    /* o CRM no Início: quem precisa de você (novo sem resposta, parado sem próximo passo); toque abre a ficha */
+    api('/clientes').then((r) => {
       const el = $('t-ped'); if (!el) return;
-      const l = (r.recados || []).slice(0, 3);
-      el.innerHTML = l.length ? `<ul class="mini-lista">${l.map((x) => `<li><span class="quando">${esc(dia(x.quando).slice(0, 5))}</span><span><b>${esc(x.nome || 'Alguém')}</b><span class="dica">${esc(x.assunto || x.resumo || '')}</span></span></li>`).join('')}</ul>`
-        : `<p class="vazio">Quando o ${esc(NOME())} anotar um pedido, ele aparece aqui.</p>`;
+      const todos = r.fichas || [], l = todos.filter(precisa).slice(0, 4);
+      const lista = (v) => `<ul class="mini-lista">${v.map((f) => `<li><span class="quando">${esc(quandoCurto(f.ultimo))}</span><span><button type="button" class="lnk-ficha" data-abre-ficha="${esc(f.id)}">${esc(nomeDe(f))}</button><span class="dica">${esc(precisa(f) === 'novo' ? 'novo: responder' : precisa(f) === 'parado' ? 'parado, sem próximo passo' : ((f.pedidos || [])[0] || {}).assunto || '')}</span></span></li>`).join('')}</ul>`;
+      el.innerHTML = l.length ? `<p class="dica"><b>${(r.resumo || {}).precisa || l.length}</b> precisa${l.length > 1 ? 'm' : ''} de você</p>` + lista(l)
+        : todos.length ? `<p class="dica">Ninguém esperando. ${inteiro((r.resumo || {}).fechados_mes || 0)} fechado${(r.resumo || {}).fechados_mes === 1 ? '' : 's'} no mês.</p>` + lista(todos.slice(0, 3))
+        : `<p class="vazio">Quando o ${esc(NOME())} anotar o primeiro pedido, o cliente aparece aqui, já com a ficha.</p>`;
+      el.querySelectorAll('[data-abre-ficha]').forEach((b) => b.onclick = () => abreFicha(b.dataset.abreFicha));
     });
   }
 
@@ -1033,9 +1043,9 @@
     const semOtto = !(EU.assistente && EU.assistente.otto_wa);
     const itens = (x) => (x.canais.length ? [
       `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
-      `${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
+      `${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos',
       ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
-    ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+    ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
     const cartoes = EU.planos.map((x) => `<article class="plano ${x.id === 'otto' ? 'da-dora' : ''} ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
       <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
@@ -1112,7 +1122,9 @@
     const hoje = hojeIso();
     const vem = (r.agenda || []).filter((e) => e.dia >= hoje), foi = (r.agenda || []).filter((e) => e.dia < hoje);
     const porDia = {}; vem.forEach((e) => (porDia[e.dia] = porDia[e.dia] || []).push(e));
-    const item = (e) => `<li class="ev"><span class="ev-hora num ${e.hora ? '' : 'dia-todo'}">${esc(e.hora || 'dia todo')}</span><div class="ev-txt"><b>${esc(e.titulo)}</b>${e.com ? `<span>com ${esc(e.com)}</span>` : ''}${e.nota && !/^pedido:/.test(e.nota) ? `<span class="dica">${esc(e.nota.replace(/pedido:\w+/, '').trim())}</span>` : ''}</div>
+    const fichaDo = (e) => { const n = String(e.nota || ''); const c = n.match(/cliente:([a-z0-9]+)/); if (c) return c[1]; const p = n.match(/pedido:([a-z0-9]+)/); return p ? 'rid:' + p[1] : ''; };
+    const notaLimpa = (n) => String(n || '').replace(/(cliente|pedido):[a-z0-9]+/g, '').trim();
+    const item = (e) => `<li class="ev"><span class="ev-hora num ${e.hora ? '' : 'dia-todo'}">${esc(e.hora || 'dia todo')}</span><div class="ev-txt"><b>${esc(e.titulo)}</b>${e.com ? `<span>com ${fichaDo(e) ? `<button type="button" class="lnk-ficha" data-abre-ficha="${esc(fichaDo(e))}">${esc(e.com)}</button>` : esc(e.com)}</span>` : ''}${notaLimpa(e.nota) ? `<span class="dica">${esc(notaLimpa(e.nota))}</span>` : ''}${e.tipo === 'conta' ? `<span class="selo conta">conta${e.valor ? ' · ' + esc(e.valor) : ''}</span>` : ''}</div>
       ${e.origem === 'robo' ? `<span class="selo ok">do ${esc(NOME())}</span>` : '<span></span>'}<button type="button" class="bt-ic" data-apaga="${esc(e.id)}" aria-label="Apagar ${esc(e.titulo)}">${svg('x')}</button></li>`;
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Agenda</h1><p class="lede">Os seus compromissos e os horários que o ${esc(NOME())} combinou com os clientes.</p></div>
@@ -1123,14 +1135,22 @@
         <div class="ev-txt"><b>${esc(p.titulo)}</b><span>${esc(p.com || '')}</span></div><span></span><button class="bt pequeno" type="button" data-confirma="${esc(p.id)}">Confirmar</button></li>`).join('')}</ul></div>` : ''}
       <form class="cartao marcar" id="ag-form"><h2>${ic('mais')} Marcar</h2><div class="linha-form">
         <label>Dia<input type="date" id="ag-dia" value="${hoje}" required></label><label>Hora<input type="time" id="ag-hora"></label>
-        <label class="largo">O quê<input id="ag-tit" placeholder="Visita da Marina ao ateliê" required></label><label class="largo">Com quem<input id="ag-com" placeholder="Marina (opcional)"></label>
+        <label class="largo">O quê<input id="ag-tit" placeholder="Visita da Marina ao ateliê" required></label><label class="largo">Com quem<input id="ag-com" placeholder="Marina (opcional)" list="ag-clientes" autocomplete="off"><datalist id="ag-clientes"></datalist></label>
         <button class="bt" type="submit">Marcar</button></div><p class="aviso erro" id="ag-erro" hidden></p></form>
       ${Object.keys(porDia).length ? Object.entries(porDia).map(([d, l]) => `<div class="cartao"><h2 class="dia-tit">${esc(diaLongo(d))}${d === hoje ? ' <span class="selo ok">hoje</span>' : ''}</h2><ul class="linha-tempo">${l.map(item).join('')}</ul></div>`).join('')
         : `<div class="cartao"><p class="vazio">Nada marcado daqui para a frente. Marque o primeiro compromisso aqui em cima, ou confirme um pedido que o ${esc(NOME())} anotou.</p></div>`}
       ${foi.length ? `<details class="cartao dobra"><summary>Já passou (${foi.length})</summary><ul class="linha-tempo">${foi.slice(-30).reverse().map(item).join('')}</ul></details>` : ''}
     </section>`;
     const salva = async (corpo) => { const x = await api('/agenda', corpo); if (x.erro) { $('ag-erro').textContent = x.erro; $('ag-erro').hidden = false; return false; } telaAgenda(alvo, ''); return true; };
-    $('ag-form').onsubmit = (e) => { e.preventDefault(); salva({ acao: 'criar', item: { dia: $('ag-dia').value, hora: $('ag-hora').value, titulo: $('ag-tit').value, com: $('ag-com').value } }); };
+    /* o "Com quem" conhece os clientes do CRM: escolher um liga o compromisso à ficha dele */
+    let FICHAS_AG = [];
+    api('/clientes').then((x) => { FICHAS_AG = x.fichas || []; const dl = $('ag-clientes'); if (dl) dl.innerHTML = FICHAS_AG.filter((f) => f.nome).slice(0, 400).map((f) => `<option value="${esc(f.nome)}"></option>`).join(''); });
+    $('ag-form').onsubmit = (e) => {
+      e.preventDefault();
+      const com = $('ag-com').value.trim(), f = com && FICHAS_AG.find((x) => String(x.nome || '').trim().toLowerCase() === com.toLowerCase());
+      salva({ acao: 'criar', item: { dia: $('ag-dia').value, hora: $('ag-hora').value, titulo: $('ag-tit').value, com, ...(f ? { nota: 'cliente:' + f.id } : {}) } });
+    };
+    alvo.querySelectorAll('[data-abre-ficha]').forEach((b) => b.onclick = () => abreFicha(b.dataset.abreFicha));
     alvo.querySelectorAll('[data-confirma]').forEach((b) => b.onclick = () => {
       const p = r.pedidos.find((x) => x.id === b.dataset.confirma);
       salva({ acao: 'criar', item: { dia: p.dia, hora: p.hora, titulo: p.titulo, com: p.com, nota: 'pedido:' + p.id, origem: 'robo' } });
@@ -1174,6 +1194,217 @@
   }
 
   /* ---------- Pedidos ---------- */
+  /* ---------- Clientes: o CRM (15/11/2026, pedido dele: "o app é um CRM e uma agenda: faz as duas conversarem, deixa
+     tudo fluido"). Cada pessoa que fala com o atendimento vira uma ficha sozinha (_comum/fichas.js); o dono completa,
+     move no funil e marca o PRÓXIMO PASSO, que vira compromisso na agenda (e a Dora avisa). Lista ou funil, busca,
+     planilha. A ficha abre de onde a pessoa estiver: Clientes, Pedidos, Agenda ou o Início. ---------- */
+  const SIT = { novo: 'Novo', conversando: 'Conversando', fechado: 'Fechado', perdido: 'Perdido' };
+  let FICHA_ABRIR = '';          /* 'id' ou 'rid:<recado>': a ficha que abre quando a aba Clientes carrega */
+  let CRM_VISTA = (() => { try { return localStorage.getItem('robo-crm-vista') || 'lista'; } catch (_) { return 'lista'; } })();
+  const abreFicha = (chave) => { FICHA_ABRIR = chave; if (abaAtual() === 'clientes') mostra(); else location.hash = '#clientes'; };
+  const nomeDe = (f) => f.nome || (f.whatsapp ? foneBonito(f.whatsapp) : '') || f.instagram || f.email || 'Sem nome';
+  const iniciais = (f) => (f.nome ? f.nome.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('') : '?').toUpperCase();
+  const quandoCurto = (iso) => { if (!iso) return ''; const d = new Date(iso), h = new Date(); const dias = Math.round((h - d) / 86400000);
+    return dias <= 0 ? 'hoje' : dias === 1 ? 'ontem' : dias < 7 ? `há ${dias} dias` : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
+  const precisa = (f) => (f.situacao === 'novo' ? 'novo' : f.situacao === 'conversando' && !f.proximo && Date.now() - Date.parse(f.ultimo || f.criado) > 3 * 86400000 ? 'parado' : '');
+  const proxTxt = (p) => (p ? `${p.texto}${p.dia ? ' · ' + new Date(p.dia + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + (p.hora ? ' ' + p.hora : '') : ''}` : '');
+  const waLink = (f, texto) => `https://wa.me/${esc(f.whatsapp || f.telefone)}${texto ? '?text=' + encodeURIComponent(texto) : ''}`;
+
+  async function telaClientes(alvo, topo) {
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
+    const r = await api('/clientes');
+    if (abaAtual() !== 'clientes') return;
+    let L = r.fichas || [];
+    let filtro = 'todos', busca = '';
+    const conta = () => {
+      const c = { todos: L.length, precisa: 0, novo: 0, conversando: 0, fechado: 0, perdido: 0 };
+      L.forEach((f) => { c[f.situacao] = (c[f.situacao] || 0) + 1; if (precisa(f)) c.precisa++; });
+      return c;
+    };
+    const casa = (f) => {
+      if (filtro === 'precisa' && !precisa(f)) return false;
+      if (SIT[filtro] && f.situacao !== filtro) return false;
+      if (!busca) return true;
+      const b = busca.toLowerCase(), bd = b.replace(/\D/g, '');
+      const tudo = [f.nome, f.instagram, f.email, f.nota, ...(f.pedidos || []).map((p) => p.assunto)].join(' ').toLowerCase();
+      return tudo.includes(b) || (bd.length >= 4 && [f.whatsapp, f.telefone].some((t) => String(t || '').includes(bd)));
+    };
+    const cartaoCliente = (f, compacto) => {
+      const p = precisa(f), ult = (f.pedidos || [])[0];
+      return `<li class="cliente ${compacto ? 'compacto' : ''}" data-ficha="${esc(f.id)}" draggable="${compacto ? 'true' : 'false'}" tabindex="0" role="button" aria-label="Abrir a ficha de ${esc(nomeDe(f))}">
+        <span class="avatar-cl" aria-hidden="true">${esc(iniciais(f))}</span>
+        <div class="cl-txt"><b>${esc(nomeDe(f))}</b>
+          <span class="dica">${esc(ult ? (ult.assunto || ult.resumo || 'pedido') : f.nota ? f.nota.slice(0, 60) : 'cadastrado por você')}</span>
+          ${f.proximo ? `<span class="cl-prox">${ic('agenda')} ${esc(proxTxt(f.proximo))}</span>` : ''}</div>
+        <div class="cl-lado">${compacto ? '' : `<span class="sit sit-${esc(f.situacao)}">${esc(SIT[f.situacao] || f.situacao)}</span>`}
+          ${p ? `<span class="selo-precisa">${p === 'novo' ? 'responder' : 'parado'}</span>` : ''}<span class="dica num">${esc(quandoCurto(f.ultimo))}</span></div></li>`;
+    };
+    const desenha = () => {
+      const c = conta(), V = L.filter(casa);
+      /* os números de cima acompanham cada mudança (sem recarregar) */
+      const mes = hojeIso().slice(0, 7), fechMes = L.filter((f) => f.situacao === 'fechado' && String(f.ultimo).slice(0, 7) === mes).length;
+      $('cl-numeros').innerHTML = `<div><b class="num">${inteiro(c.precisa)}</b><span>precisam de você</span></div><div><b class="num">${inteiro(c.conversando)}</b><span>em conversa</span></div>
+        <div><b class="num">${inteiro(fechMes)}</b><span>fechados no mês</span></div><div><b class="num">${inteiro(L.length)}</b><span>na carteira</span></div>`;
+      const chip = (id, rot) => `<button type="button" class="chip-f ${filtro === id ? 'ativo' : ''} ${id === 'precisa' && c.precisa ? 'quente' : ''}" data-filtro="${id}" aria-pressed="${filtro === id}">${rot} <span class="num">${c[id] || 0}</span></button>`;
+      $('cl-chips').innerHTML = chip('precisa', 'Precisa de você') + chip('novo', 'Novos') + chip('conversando', 'Conversando') + chip('fechado', 'Fechados') + chip('perdido', 'Perdidos') + chip('todos', 'Todos');
+      const box = $('cl-lista');
+      if (!L.length) {
+        box.innerHTML = `<div class="cartao vazio-crm"><h2>${ic('balao')} A sua carteira de clientes começa aqui</h2>
+          <p>Quando alguém pedir orçamento, horário ou falar com você pelo Instagram ou pelo WhatsApp, o ${esc(NOME())} anota e a ficha aparece aqui sozinha. Você também pode cadastrar, ou pedir para a ${esc(ASSIST())}: "cadastra a Dona Lúcia, 41 99999-0000".</p>
+          <div class="botoes"><button class="bt pequeno" type="button" data-novo="1">${svg('mais')} Cadastrar o primeiro</button></div></div>`;
+      } else if (CRM_VISTA === 'funil' && !busca) {
+        box.innerHTML = `<div class="funil">${Object.keys(SIT).map((s) => { const l = L.filter((f) => f.situacao === s && (filtro !== 'precisa' || precisa(f)));
+          return `<section class="coluna" data-coluna="${s}" aria-label="${SIT[s]}"><h3><span class="sit sit-${s}">${SIT[s]}</span> <span class="num dica">${l.length}</span></h3>
+            <ul class="cl-lista">${l.slice(0, 80).map((f) => cartaoCliente(f, true)).join('') || '<li class="coluna-vazia dica">Arraste um cliente para cá</li>'}</ul></section>`; }).join('')}</div>`;
+      } else {
+        box.innerHTML = V.length ? `<ul class="cl-lista cartao">${V.slice(0, 300).map((f) => cartaoCliente(f, false)).join('')}</ul>${V.length > 300 ? `<p class="dica">Mostrando 300 de ${V.length}. Use a busca.</p>` : ''}`
+          : `<div class="cartao"><p class="vazio">Ninguém aqui${busca ? ' com "' + esc(busca) + '"' : ''}.</p></div>`;
+      }
+      box.querySelectorAll('[data-ficha]').forEach((el) => {
+        el.onclick = () => abre(el.dataset.ficha);
+        el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abre(el.dataset.ficha); } };
+        el.ondragstart = (e) => { e.dataTransfer.setData('text/plain', el.dataset.ficha); el.classList.add('arrastando'); };
+        el.ondragend = () => el.classList.remove('arrastando');
+      });
+      box.querySelectorAll('[data-coluna]').forEach((col) => {
+        col.ondragover = (e) => { e.preventDefault(); col.classList.add('alvo'); };
+        col.ondragleave = () => col.classList.remove('alvo');
+        col.ondrop = (e) => { e.preventDefault(); col.classList.remove('alvo'); const id = e.dataTransfer.getData('text/plain'); if (id) muda(id, { situacao: col.dataset.coluna }); };
+      });
+      const bn = box.querySelector('[data-novo]'); if (bn) bn.onclick = () => abre('');
+      alvo.querySelectorAll('[data-filtro]').forEach((b) => b.onclick = () => { filtro = b.dataset.filtro; desenha(); });
+      alvo.querySelectorAll('[data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === CRM_VISTA)); });
+    };
+    /* gravar uma mudança e redesenhar sem perder o lugar */
+    const muda = async (id, campos) => {
+      const x = await api('/cliente', { id, ...campos });
+      if (x.erro || !x.ficha) { toast(x.erro || 'Não deu para salvar.'); return null; }
+      const i = L.findIndex((f) => f.id === x.ficha.id), velho = i >= 0 ? L[i] : {};
+      const nova = { ...x.ficha, compromissos: velho.compromissos || [] };
+      if (i >= 0) L[i] = nova; else L.unshift(nova);
+      desenha();
+      return nova;
+    };
+    const toast = (t) => { const m = $('cl-toast'); m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 2600); };
+
+    /* a ficha: um painel ao lado (no celular, a tela inteira) */
+    const abre = (id) => {
+      const f = id ? L.find((x) => x.id === id) : null;
+      const g = $('cl-ficha'), fundo = $('cl-fundo');
+      if (!f) {
+        g.innerHTML = `<div class="ficha-topo"><h2>Novo cliente</h2><button type="button" class="bt-ic" data-fecha aria-label="Fechar">${svg('x')}</button></div>
+          <form id="cl-form-novo" class="ficha-form"><label class="campo">Nome<input name="nome" autocomplete="off" placeholder="Marina Souza"></label>
+          <label class="campo">WhatsApp<input name="whatsapp" inputmode="tel" placeholder="41 99999-0000"></label>
+          <label class="campo">Instagram<input name="instagram" placeholder="@marina"></label>
+          <label class="campo">E-mail<input name="email" type="email" placeholder="marina@email.com"></label>
+          <div class="botoes"><button class="bt" type="submit">Cadastrar</button></div><p class="dica">Se o contato já estiver numa ficha, ela é completada em vez de nascer outra.</p></form>`;
+        g.querySelector('#cl-form-novo').onsubmit = async (e) => {
+          e.preventDefault(); const d = Object.fromEntries(new FormData(e.target));
+          const x = await muda('', d); if (x) abre(x.id);
+        };
+      } else {
+        const sitBt = Object.keys(SIT).map((s) => `<button type="button" class="seg sit-${s} ${f.situacao === s ? 'ativo' : ''}" data-sit="${s}" aria-pressed="${f.situacao === s}">${SIT[s]}</button>`).join('');
+        const hist = [...(f.compromissos || []).map((e) => ({ q: e.dia + 'T' + (e.hora || '00:00'), html: `${ic('agenda')}<div><b>${esc(e.titulo)}</b><span class="dica">${esc(diaLongo(e.dia))}${e.hora ? ' às ' + esc(e.hora) : ''}${e.dia >= hojeIso() ? ' · na agenda' : ''}</span></div>` })),
+          ...(f.pedidos || []).map((p) => ({ q: p.quando, html: `${ic('balao')}<div><b>${esc(p.assunto || 'Pedido')}</b>${p.resumo && p.resumo !== p.assunto ? `<span>${esc(p.resumo)}</span>` : ''}<span class="dica">${esc(dia(p.quando))} · pelo ${esc(p.canal === 'whatsapp' ? 'WhatsApp' : p.canal === 'instagram' ? 'Instagram' : p.canal)}${p.quando_quer ? ' · quer ' + esc(p.quando_quer) : ''}</span></div>` }))]
+          .sort((a, b) => String(b.q).localeCompare(String(a.q)));
+        const contato = (rot, val, link, extra) => `<div class="ct"><span class="dica">${rot}</span><b>${esc(val)}</b>${link ? `<a class="lnk" href="${link}" target="_blank" rel="noopener">${extra}</a>` : ''}</div>`;
+        g.innerHTML = `<div class="ficha-topo"><span class="avatar-cl grande" aria-hidden="true">${esc(iniciais(f))}</span>
+            <input class="ficha-nome" id="fi-nome" value="${esc(f.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente">
+            <button type="button" class="bt-ic" data-fecha aria-label="Fechar">${svg('x')}</button></div>
+          <div class="segmento" role="group" aria-label="Situação">${sitBt}</div>
+          ${f.situacao === 'perdido' ? `<label class="campo">Por que perdeu?<input id="fi-motivo" value="${esc(f.motivo || '')}" placeholder="achou caro, fechou com outro…"></label>` : ''}
+          <div class="ficha-bloco contatos">
+            ${f.whatsapp ? contato('WhatsApp', foneBonito(f.whatsapp), waLink(f, `Oi${f.nome ? ', ' + f.nome.split(' ')[0] : ''}!`), 'Mandar mensagem') : ''}
+            ${f.telefone ? contato('Telefone', foneBonito(f.telefone), 'tel:+' + esc(f.telefone), 'Ligar') : ''}
+            ${f.instagram ? contato('Instagram', f.instagram, 'https://instagram.com/' + encodeURIComponent(f.instagram.replace('@', '')), 'Abrir') : ''}
+            ${f.email ? contato('E-mail', f.email, 'mailto:' + esc(f.email), 'Escrever') : ''}
+            <details class="editar-ct"><summary>${f.whatsapp || f.telefone || f.instagram || f.email ? 'Mudar contatos' : 'Pôr contato'}</summary>
+              <div class="linha-form"><label>WhatsApp<input id="fi-wa" value="${esc(f.whatsapp ? foneBonito(f.whatsapp) : '')}" inputmode="tel"></label><label>Instagram<input id="fi-ig" value="${esc(f.instagram)}"></label>
+              <label class="largo">E-mail<input id="fi-em" value="${esc(f.email)}" type="email"></label><button class="bt pequeno fraco" type="button" id="fi-ct-salva">Salvar contatos</button></div></details>
+          </div>
+          <div class="ficha-bloco proximo ${f.proximo ? 'tem' : ''}"><h3>${ic('agenda')} Próximo passo</h3>
+            ${f.proximo ? `<p class="prox-atual"><b>${esc(f.proximo.texto)}</b>${f.proximo.dia ? `<span class="dica">${esc(diaLongo(f.proximo.dia))}${f.proximo.hora ? ' às ' + esc(f.proximo.hora) : ''} · está na agenda${(EU.assistente || {}).ligado ? ` e a ${esc(ASSIST())} avisa` : ''}</span>` : '<span class="dica">sem dia</span>'}</p>
+              <div class="botoes"><button class="bt pequeno" type="button" id="fi-feito">${svg('check')} Feito</button><button class="bt pequeno fraco" type="button" id="fi-troca">Mudar</button></div>` : ''}
+            <form id="fi-prox" class="linha-form" ${f.proximo ? 'hidden' : ''}><label class="largo">O quê<input id="fi-px-t" placeholder="Ligar para fechar o orçamento" required></label>
+              <label>Dia<input type="date" id="fi-px-d" value="${esc(f.proximo ? f.proximo.dia : '')}"></label><label>Hora<input type="time" id="fi-px-h" value="${esc(f.proximo ? f.proximo.hora : '')}"></label>
+              <button class="bt pequeno" type="submit">Marcar na agenda</button></form>
+            <div class="atalhos">${['Ligar', 'Mandar orçamento', 'Confirmar o horário', 'Cobrar'].map((t) => `<button type="button" class="chip-f" data-atalho="${t}">${t}</button>`).join('')}</div>
+          </div>
+          <div class="ficha-bloco"><label class="campo">Valor do negócio<input id="fi-valor" value="${esc(f.valor || '')}" placeholder="R$ 380"></label>
+            <label class="campo">Anotações<textarea id="fi-nota" rows="3" placeholder="Prefere falar à tarde. Já comprou o arranjo de mesa.">${esc(f.nota || '')}</textarea></label></div>
+          <div class="ficha-bloco"><h3>${ic('relogio')} Histórico</h3>${hist.length ? `<ul class="historico">${hist.map((h) => `<li>${h.html}</li>`).join('')}</ul>` : '<p class="dica">Ainda nada. Os pedidos do atendimento e os compromissos com essa pessoa aparecem aqui.</p>'}
+            <p class="dica">Primeiro contato ${esc(dia(f.primeiro))} · pelo ${esc(f.origem === 'whatsapp' ? 'WhatsApp' : f.origem === 'instagram' ? 'Instagram' : 'cadastro')}</p></div>
+          <div class="ficha-pe"><button type="button" class="bt pequeno perigo" id="fi-apaga">${svg('lixo')} Apagar ficha</button></div>`;
+        const salva = (campos) => muda(f.id, campos).then((n) => n && abre(n.id));
+        g.querySelectorAll('[data-sit]').forEach((b) => b.onclick = () => salva({ situacao: b.dataset.sit }));
+        const nome = $('fi-nome'); nome.onchange = () => nome.value.trim() && muda(f.id, { nome: nome.value.trim() });
+        const mot = $('fi-motivo'); if (mot) mot.onchange = () => muda(f.id, { motivo: mot.value });
+        $('fi-valor').onchange = (e) => muda(f.id, { valor: e.target.value });
+        $('fi-nota').onchange = (e) => muda(f.id, { nota: e.target.value }).then((n) => n && toast('Anotação salva.'));
+        $('fi-ct-salva').onclick = () => salva({ whatsapp: $('fi-wa').value, instagram: $('fi-ig').value, email: $('fi-em').value });
+        const px = $('fi-prox');
+        px.onsubmit = async (e) => {
+          e.preventDefault();
+          const x = await api('/cliente-proximo', { id: f.id, texto: $('fi-px-t').value, dia: $('fi-px-d').value, hora: $('fi-px-h').value });
+          if (x.erro) { toast(x.erro); return; }
+          const i = L.findIndex((y) => y.id === f.id); L[i] = { ...x.ficha, compromissos: f.compromissos || [] };
+          toast(x.ficha.proximo && x.ficha.proximo.dia ? 'Marcado na agenda.' : 'Próximo passo anotado.');
+          recarrega(f.id);
+        };
+        g.querySelectorAll('[data-atalho]').forEach((b) => b.onclick = () => { px.hidden = false; $('fi-px-t').value = b.dataset.atalho + (f.nome ? ' ' + (b.dataset.atalho === 'Ligar' ? 'para ' : 'para ') + f.nome.split(' ')[0] : ''); if (!$('fi-px-d').value) $('fi-px-d').value = hojeIso(); $('fi-px-t').focus(); });
+        const feito = $('fi-feito'); if (feito) feito.onclick = async () => { const x = await api('/cliente-proximo', { id: f.id, feito: true }); if (x.erro) return toast(x.erro); recarrega(f.id); };
+        const troca = $('fi-troca'); if (troca) troca.onclick = () => { px.hidden = false; $('fi-px-t').value = f.proximo.texto; $('fi-px-t').focus(); };
+        $('fi-apaga').onclick = async (e) => {
+          const b = e.currentTarget;
+          if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.innerHTML = `${svg('lixo')} Apagar mesmo? Não tem volta`; return; }
+          const x = await api('/cliente-apagar', { id: f.id });
+          if (x.erro) return toast(x.erro);
+          L = L.filter((y) => y.id !== f.id); fecha(); desenha(); toast('Ficha apagada.');
+        };
+      }
+      g.hidden = false; fundo.hidden = false; document.body.classList.add('ficha-aberta');
+      g.querySelectorAll('[data-fecha]').forEach((b) => b.onclick = fecha);
+      const foco = g.querySelector('input,button'); if (foco && !id) foco.focus();
+    };
+    const fecha = () => { $('cl-ficha').hidden = true; $('cl-fundo').hidden = true; document.body.classList.remove('ficha-aberta'); };
+    /* depois do próximo passo: relê (o compromisso novo entra no histórico) e reabre a mesma ficha */
+    const recarrega = async (id) => { const x = await api('/clientes'); if (x.fichas) L = x.fichas; desenha(); abre(id); };
+
+    alvo.innerHTML = `<section class="aba crm">${topo}
+      <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Clientes</h1>
+        <p class="lede">Cada pessoa que fala com o ${esc(NOME())} vira uma ficha aqui, sozinha. Você move no funil e marca o próximo passo, que vai para a agenda${(EU.assistente || {}).disponivel ? ` e a ${esc(ASSIST())} lembra você` : ''}.</p></div>
+        <div class="botoes"><button class="bt pequeno" type="button" id="cl-novo">${svg('mais')} Novo cliente</button><button class="bt pequeno fraco" type="button" id="cl-planilha">${svg('baixar')} Planilha</button></div></div>
+      ${r.erro ? aviso('erro', r.erro) : ''}
+      <div class="crm-numeros" id="cl-numeros"></div>
+      <div class="crm-barra"><div class="chips-f" id="cl-chips"></div>
+        <div class="crm-busca"><input type="search" id="cl-busca" placeholder="Buscar nome, telefone, @ ou pedido" aria-label="Buscar cliente">
+        <div class="vista" role="group" aria-label="Ver como"><button type="button" data-vista="lista">Lista</button><button type="button" data-vista="funil">Funil</button></div></div></div>
+      <div id="cl-lista"></div>
+      <div class="ficha-fundo" id="cl-fundo" hidden></div><aside class="ficha cartao" id="cl-ficha" hidden aria-label="Ficha do cliente"></aside>
+      <p class="toast" id="cl-toast" role="status" hidden></p>
+    </section>`;
+    /* a ficha, o fundo e o aviso moram no <body>: dentro da aba, a barra do celular ficava por cima */
+    ['cl-fundo', 'cl-ficha', 'cl-toast'].forEach((id) => { document.querySelectorAll('body > #' + id).forEach((e) => e.remove()); const el = alvo.querySelector('#' + id); if (el) document.body.appendChild(el); });
+    $('cl-busca').oninput = (e) => { busca = e.target.value.trim(); desenha(); };
+    alvo.querySelectorAll('[data-vista]').forEach((b) => b.onclick = () => { CRM_VISTA = b.dataset.vista; try { localStorage.setItem('robo-crm-vista', CRM_VISTA); } catch (_) {} desenha(); });
+    $('cl-novo').onclick = () => abre('');
+    $('cl-fundo').onclick = fecha;
+    document.addEventListener('keydown', function esc1(e) { if (e.key === 'Escape') { fecha(); } if (abaAtual() !== 'clientes') document.removeEventListener('keydown', esc1); });
+    $('cl-planilha').onclick = async () => {
+      const x = await api('/clientes-planilha');
+      if (!x.csv) return toast(x.erro || 'Não deu para gerar a planilha.');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([x.csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = (x.nome || 'Clientes') + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+    };
+    desenha();
+    /* veio de Pedidos, da Agenda ou do Início: abre a ficha certa */
+    if (FICHA_ABRIR) {
+      const k = FICHA_ABRIR; FICHA_ABRIR = '';
+      const f = k.startsWith('rid:') ? L.find((x) => (x.pedidos || []).some((p) => p.rid === k.slice(4))) : L.find((x) => x.id === k);
+      if (f) abre(f.id);
+    }
+  }
+
   async function telaPedidos(alvo, topo) {
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Pedidos anotados</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/recados');
@@ -1186,9 +1417,10 @@
       ${r.erro ? aviso('erro', r.erro) : ''}
       ${l.length ? `<ul class="pedidos">${l.map((x) => `<li class="pedido"><div class="topo"><b>${esc(x.nome || 'Alguém')}</b><span class="selo ${x.canal === 'teste' ? 'desligado' : 'ok'}">${esc(canal(x.canal))}</span></div>
           <p>${esc(x.assunto || x.resumo || '')}</p>${x.quando_quer ? `<p class="dica">${ic('relogio')} ${esc(x.quando_quer)}</p>` : ''}
-          <p class="contato">${esc([x.contato, x.instagram ? '@' + x.instagram : '', x.email].filter(Boolean).join(' · ') || 'sem contato')}</p>
-          <span class="dica num">${esc(dia(x.quando))}</span></li>`).join('')}</ul>`
+          <p class="contato">${esc([x.contato || (x.canal === 'whatsapp' && x.de ? foneBonito(x.de) : ''), x.instagram ? (String(x.instagram).startsWith('@') ? x.instagram : '@' + x.instagram) : '', x.email].filter(Boolean).join(' · ') || 'sem contato')}</p>
+          <div class="pedido-pe"><span class="dica num">${esc(dia(x.quando))}</span>${x.canal !== 'teste' && x.canal !== 'sistema' ? `<button class="bt pequeno fraco" type="button" data-ficha-rid="${esc(x.id)}">${svg('pessoas')} Ver ficha</button>` : ''}</div></li>`).join('')}</ul>`
         : `<div class="cartao"><p class="vazio">Ainda nenhum pedido. Quando o ${esc(NOME())} anotar o primeiro, ele aparece aqui.</p><div><a class="bt fraco pequeno" href="#testar">Fazer um pedido de teste</a></div></div>`}</section>`;
+    alvo.querySelectorAll('[data-ficha-rid]').forEach((b) => b.onclick = () => abreFicha('rid:' + b.dataset.fichaRid));
   }
 
   /* ---------- Estúdio (só a Ti Artes) ---------- */
@@ -1229,6 +1461,7 @@ function criaMenuVidro(raiz, o) {
     balao: '<path d="M12 4c4.7 0 8.5 3.2 8.5 7.2s-3.8 7.2-8.5 7.2c-1 0-2-.2-2.9-.4L4.5 20l1.2-3.9C4.3 14.8 3.5 13.1 3.5 11.2 3.5 7.2 7.3 4 12 4z"/>',
     barras: '<path d="M4 20h16M7 16v-5M12 16V6M17 16V9"/>',
     casa: '<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 9.5V20h12V9.5"/>',
+    pessoas: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.6 14.4a4.4 4.4 0 0 1 4.9 4.6"/>',
     sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/>',
     cerebro: '<path d="M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-2 5.2A3.2 3.2 0 0 0 7 18a2.7 2.7 0 0 0 5 1V6.5a2.5 2.5 0 0 0-3-2z"/><path d="M15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 2 5.2A3.2 3.2 0 0 1 17 18a2.7 2.7 0 0 1-5 1"/>',
     nota: '<path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M14.5 3.5V7.5h4M9 12h6M9 15.5h4"/>',

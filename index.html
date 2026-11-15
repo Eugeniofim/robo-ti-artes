@@ -629,11 +629,12 @@ html[data-v] { --d3-g2: 255, 138, 61; }
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">Incluso na assinatura</p>
-        <h2 style="margin-top:12px">Você assina o agente. O app de gestão <em>vem junto.</em></h2>
-        <p>Em todos os planos, inclusive no Secretária. Tudo o que os agentes fazem cai num app só seu, no celular e no computador. Sem planilha, sem caderno, sem caçar conversa antiga no direct.</p>
+        <h2 style="margin-top:12px">Você assina o agente. O CRM e a agenda <em>vêm junto.</em></h2>
+        <p>Em todos os planos, inclusive no Secretária. Cada pessoa que escreve vira uma ficha sozinha, e tudo o que os agentes fazem cai num app só seu, no celular e no computador. Sem planilha, sem caderno, sem caçar conversa antiga no direct.</p>
         <div class="app-vitrine">
           <div class="app-abas" role="tablist" aria-label="Telas do app">
             <button type="button" role="tab" aria-selected="true" data-tela="inicio">Início</button>
+            <button type="button" role="tab" aria-selected="false" data-tela="clientes">Clientes (CRM)</button>
             <button type="button" role="tab" aria-selected="false" data-tela="agenda">Agenda</button>
             <button type="button" role="tab" aria-selected="false" data-tela="arquivos">Arquivos</button>
           </div>
@@ -645,9 +646,10 @@ html[data-v] { --d3-g2: 255, 138, 61; }
         </div>
         <div class="app-recursos">
           <div class="vidro"><b>Agenda que se enche sozinha</b><p>Os horários que os clientes pedem chegam para você confirmar com um toque. E tudo aparece no seu Google Agenda.</p></div>
-          <div class="vidro"><b>Pedidos e recados</b><p>Quem pediu o quê, com o contato, em ordem. Nenhum cliente fica sem retorno.</p></div>
-          <div class="vidro drive"><b>Arquivos no seu Google Drive</b><p>Mande a nota fiscal ou o comprovante no direct e diga "guarda". O agente lê, dá um nome que diz o que é e põe na pasta certa.</p>
-            <ul class="arvore" aria-label="Exemplo de pastas no Drive"><li>Agentes Ti Artes · seu negócio<ul><li>Notas fiscais</li><li>Comprovantes</li><li>Contratos</li></ul></li></ul></div>
+          <div class="vidro"><b>CRM que se preenche sozinho</b><p>Cada pessoa que escreve vira uma ficha, com o contato, o que pediu e em que pé está: novo, conversando, fechado ou perdido. Você arrasta no funil e vê quem precisa de você.</p></div>
+          <div class="vidro"><b>Próximo passo na agenda</b><p>Marcou "ligar para a Marina sexta" na ficha? Vai para a agenda, e a Dora lembra você. Cada ficha mostra os pedidos e os compromissos com aquela pessoa.</p></div>
+          <div class="vidro drive"><b>Arquivos no seu Google Drive</b><p>Mande a nota fiscal ou o comprovante e diga "guarda": ela lê, dá um nome que diz o que é e põe na pasta certa. E a planilha dos seus clientes fica lá também, como cópia de segurança.</p>
+            <ul class="arvore" aria-label="Exemplo de pastas no Drive"><li>Agentes Ti Artes · seu negócio<ul><li>Clientes (planilha)</li><li>Notas fiscais</li><li>Comprovantes</li><li>Contratos</li></ul></li></ul></div>
           <div class="vidro"><b>Notas por áudio</b><p>Fale com a Dora como fala com uma pessoa. Ela anota, marca e, de manhã, manda o que você tem hoje.</p></div>
         </div>
       </div>
@@ -698,7 +700,7 @@ html[data-v] { --d3-g2: 255, 138, 61; }
             <p class="para">Para se organizar</p>
             <h3>Secretária</h3>
             <p class="preco num">R$ 99<small> por mês</small></p>
-            <ul><li>A Dora, sua secretária no WhatsApp: texto, áudio e foto</li><li>Resumo da manhã e avisos de compromisso e de conta</li><li>App de gestão no celular e no computador</li><li>Agenda, notas e arquivos no seu Google Drive</li><li>Para qualquer pessoa, com ou sem empresa</li><li>Sem atendimento de clientes</li></ul>
+            <ul><li>A Dora, sua secretária no WhatsApp: texto, áudio e foto</li><li>Resumo da manhã e avisos de compromisso e de conta</li><li>CRM e agenda no celular e no computador</li><li>Agenda, notas e arquivos no seu Google Drive</li><li>Para qualquer pessoa, com ou sem empresa</li><li>Sem atendimento de clientes</li></ul>
             <span class="selo" id="selo-plano-otto">abre com o número da Dora</span>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=otto">Testar a Dora grátis</a>
           </article>
@@ -706,21 +708,21 @@ html[data-v] { --d3-g2: 255, 138, 61; }
             <p class="para">Para quem vende no direct</p>
             <h3>Instagram</h3>
             <p class="preco num">R$ 149<small> por mês</small></p>
-            <ul><li>Agente de atendimento no direct do Instagram</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>CRM e agenda inclusos</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Testar no Instagram</a>
           </article>
           <article class="plano vidro">
             <p class="para">Para quem vende no WhatsApp</p>
             <h3>WhatsApp</h3>
             <p class="preco num">R$ 199<small> por mês</small></p>
-            <ul><li>Agente de atendimento no WhatsApp</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no WhatsApp</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Até 2.000 mensagens por mês</li><li>Dora, a sua secretária no WhatsApp</li><li>CRM e agenda inclusos</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=whatsapp">Testar no WhatsApp</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
             <h3>Completo</h3>
             <p class="preco num">R$ 249<small> por mês</small></p>
-            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Dora, a sua secretária no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Dora, a sua secretária no WhatsApp</li><li>CRM e agenda inclusos</li></ul>
             <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Testar tudo grátis <span aria-hidden="true">→</span></a>
           </article>
         </div>
@@ -773,6 +775,7 @@ html[data-v] { --d3-g2: 255, 138, 61; }
           <div class="vidro"><b>Passou do limite, não para</b><p>Ele continua respondendo. A gente avisa quando chegar a 80% e a 100% do plano.</p></div>
         </div>
         <div class="perguntas">
+          <details class="vidro"><summary>Tem CRM?</summary><p>Tem, em todos os planos. Cada pessoa que fala com o agente vira uma ficha sozinha, com o contato, o que pediu e em que pé está (novo, conversando, fechado ou perdido). Você move no funil, anota, marca o próximo passo (que vai para a agenda) e baixa tudo numa planilha. Com o Google Drive ligado, a planilha dos clientes fica lá também, como cópia de segurança. Dá até para pedir à Dora: "fechei com a Marina".</p></details>
           <details class="vidro"><summary>É um chatbot?</summary><p>Não. Chatbot é menu de botão ("digite 1 para preços") e resposta pronta. Aqui é um agente de inteligência artificial que conversa como gente: entende o que o cliente escreve do jeito dele, com erro de digitação, gíria, áudio e foto, lembra o que já foi dito e responde no tom que você escolheu. O que ele não sabe, não inventa: anota e passa para você.</p></details>
           <details class="vidro"><summary>Não tenho empresa. Serve para mim?</summary><p>Serve. O plano Secretária, de R$ 99 por mês, é só a Dora e o app: você manda áudio ou texto no WhatsApp e ela marca a agenda, anota e guarda os seus documentos no seu Google Drive. Professor, eletricista, estudante, mãe e pai, músico: qualquer pessoa que quer parar de guardar tudo de cabeça.</p></details>
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
