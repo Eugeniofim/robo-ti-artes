@@ -383,8 +383,10 @@ details.dobra[open] > summary::after { content: '–'; }
 .numeros div { border: 1px solid var(--card-borda); border-radius: 18px; padding: 16px; background: color-mix(in srgb, var(--folha) 40%, transparent); }
 .numeros b { display: block; font: 700 30px var(--serif); font-variant-numeric: tabular-nums; }
 .numeros span { font-size: 14px; color: var(--cinza); }
-.planos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.planos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
 .plano { border: 1.5px solid var(--card-borda); border-radius: var(--raio-g); padding: 22px; display: grid; gap: 12px; background: var(--card); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); position: relative; overflow: hidden; }
+.planos .plano { display: flex; flex-direction: column; }
+.planos .plano > .botoes, .planos .plano > .dica:last-child { margin-top: auto; }
 .plano.escolhido { border-color: var(--sinal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sinal) 14%, transparent); }
 .plano .preco { font: 700 40px var(--serif); font-variant-numeric: tabular-nums; }
 .plano .preco small { font: 400 15px var(--sans); color: var(--cinza); }

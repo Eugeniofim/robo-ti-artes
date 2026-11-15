@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacidade · Agentes Ti Artes</title>
+<meta name="description" content="O que os Agentes Ti Artes guardam, para quê, com quem compartilham e por quanto tempo.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caladea:wght@400;700&family=Carlito:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<style>
+body { background: var(--papel); color: var(--tinta); margin: 0; }
+.doc { max-width: 720px; margin: 0 auto; padding: 32px var(--gut-r, 16px) 64px var(--gut-l, 16px); }
+.marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinta); }
+.marca img { width: 32px; height: 32px; display: block; }
+.marca b { font: 700 16px var(--serif); }
+h1 { font: 700 34px/1.15 var(--serif); margin: 28px 0 6px; }
+h2 { font: 700 21px/1.25 var(--serif); margin: 32px 0 8px; }
+p, li { font: 400 17px/1.6 var(--sans); color: var(--tinta); }
+ul { padding-left: 22px; }
+.data { color: var(--cinza); margin: 0 0 20px; font-size: 15px; }
+.quadro { background: var(--folha); border: 1px solid var(--linha); border-radius: 14px; padding: 16px 18px; }
+.quadro p { margin: 0; }
+a { color: var(--teal); }
+footer { border-top: 1px solid var(--linha); margin-top: 40px; padding-top: 18px; display: flex; flex-wrap: wrap; gap: 16px; font-size: 15px; color: var(--cinza); }
+</style>
+</head>
+<body>
+<main class="doc">
+  <a class="marca" href="./"><img src="logo.svg" alt="" width="32" height="32"><b>Agentes Ti Artes</b></a>
+  <h1>Política de privacidade</h1>
+  <p class="data">Atualizada em 15 de novembro de 2026.</p>
+  <p>Esta página explica o que os Agentes Ti Artes fazem com os dados de quem assina e dos clientes que conversam com os agentes. Quem cuida deles é a Ti Artes e Projetos Ltda, CNPJ 17.927.729/0001-00, de Curitiba, PR. Para falar com a gente: <a href="mailto:contato@eugeniofim.com">contato@eugeniofim.com</a>.</p>
+
+  <h2>Se você assina</h2>
+  <ul>
+    <li><b>Conta</b>: o seu nome, o seu e-mail e o nome do negócio. Se você entra com o Google, recebemos dele só o nome, o e-mail e a foto.</li>
+    <li><b>O que você ensina</b>: o que o negócio faz, os serviços, os preços, as regras e os arquivos que você manda para o agente aprender. Isso é só seu, e nenhum outro assinante enxerga.</li>
+    <li><b>Instagram e WhatsApp</b>: a autorização da Meta para o agente ler e responder as mensagens da sua conta. Ela fica guardada no servidor, e nunca vemos a sua senha.</li>
+    <li><b>Google Drive</b>, se você ligar: o agente só mexe na pasta que ele mesmo cria ("Agentes Ti Artes · seu negócio"), nunca no resto do seu Drive.</li>
+    <li><b>App de gestão</b>: a agenda, os pedidos, as notas e os arquivos que você ou os agentes colocam lá. Um arquivo guardado fica 30 dias no app; o que foi para o seu Drive continua lá, porque é seu.</li>
+    <li><b>Pagamento</b>: o plano, as datas e se o pagamento entrou. O cartão fica com o Stripe, e a Ti Artes não vê o número dele.</li>
+  </ul>
+
+  <h2>Se você conversou com um agente</h2>
+  <p>Quando você escreve para um negócio que usa os Agentes Ti Artes, recebemos da Meta a sua mensagem e o identificador da conversa: no WhatsApp, o seu número; no Instagram, a sua conta. Se você manda um áudio, ele vira texto para o agente entender. O negócio pode ver a conversa e o pedido que o agente anotou, com o contato que você passou.</p>
+  <ul>
+    <li>A conversa fica guardada por até 4 dias, para o agente lembrar o que foi dito, e depois é apagada.</li>
+    <li>O pedido anotado (nome, contato e o que você pediu) fica no app do negócio, que é quem cuida dele.</li>
+    <li>Escreva <b>apagar</b> na conversa e ela some na hora.</li>
+  </ul>
+
+  <h2>Para que usamos</h2>
+  <p>Só para prestar o serviço: responder, anotar, organizar e mostrar no app. Não vendemos dados, não usamos as conversas para publicidade e não as usamos para treinar modelos de inteligência artificial.</p>
+
+  <h2>Quem nos ajuda</h2>
+  <ul>
+    <li><b>Anthropic</b> (Claude): escreve as respostas a partir do texto da conversa.</li>
+    <li><b>ElevenLabs</b>: transforma o áudio em texto.</li>
+    <li><b>Meta</b>: entrega as mensagens do Instagram e do WhatsApp.</li>
+    <li><b>Supabase</b>: guarda as contas e os dados, num banco fechado ao público.</li>
+    <li><b>Stripe</b>: recebe os pagamentos.</li>
+    <li><b>Google</b>: o login, o Drive e as fontes do site.</li>
+    <li><b>Brevo</b>: envia os e-mails da conta.</li>
+    <li><b>GitHub</b>: hospeda o site.</li>
+  </ul>
+  <p>Cada um recebe só o que precisa para a sua parte e trata os dados conforme as próprias regras.</p>
+
+  <h2>Por quanto tempo</h2>
+  <p>Mantemos os dados da conta enquanto ela existir. A conta de teste que não vira assinatura é apagada 7 dias depois do fim do teste. Se você pedir a exclusão, apagamos a conta e o que o agente aprendeu, salvo o que a lei obrigue a guardar, como os registros de pagamento.</p>
+
+  <div class="quadro">
+    <h2 style="margin-top:0">Os seus direitos</h2>
+    <p>Pela Lei Geral de Proteção de Dados (LGPD), você pode pedir acesso, correção ou exclusão dos seus dados e tirar dúvidas sobre o uso deles. Escreva para <a href="mailto:contato@eugeniofim.com">contato@eugeniofim.com</a>. Se você é cliente de um negócio que usa os agentes, também pode pedir direto ao negócio.</p>
+  </div>
+
+  <h2>No navegador</h2>
+  <p>O site guarda no seu navegador só o necessário para manter você conectado. Não usamos anúncios nem rastreadores de publicidade.</p>
+
+  <h2>Mudanças</h2>
+  <p>Se esta política mudar, a nova versão aparece aqui, com a data atualizada.</p>
+
+  <footer><span>© 2026 Ti Artes</span><a href="./">Início</a><a href="termos.html">Termos de uso</a><a href="mailto:contato@eugeniofim.com">contato@eugeniofim.com</a></footer>
+</main>
+</body>
+</html>

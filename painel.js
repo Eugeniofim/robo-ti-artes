@@ -250,7 +250,7 @@
   function telaComecarConta(nome) {
     $('neg').textContent = 'Bem-vindo';
     $('conteudo').innerHTML = `<section class="aba"><div class="cabeca-aba"><div><p class="rotulo">Falta um passo</p><h1>Qual é o nome do seu negócio?</h1></div></div>
-      <form class="cartao" id="f-comecar" style="max-width:560px"><label class="campo">Nome do negócio
+      <form class="cartao" id="f-comecar" style="max-width:560px"><label class="campo">Nome do negócio (ou o seu nome, se for só para você)
       <input id="c-negocio" placeholder="Ateliê Folha Miúda" autocomplete="organization"></label>
       <label class="aceite" style="display:flex;gap:10px;align-items:flex-start;font-weight:400"><input id="c-aceite" type="checkbox" checked style="width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--teal);flex:none"> Pode me escrever por e-mail sobre o meu teste e o meu agente.</label>
       <div><button class="bt" type="submit">Começar ${svg('seta')}</button></div><p id="c-erro" class="aviso erro" hidden></p></form></section>`;
@@ -820,9 +820,11 @@
         <article class="cartao"><div class="canal-topo"><span class="canal-ic ig" aria-hidden="true">${svg('camera')}</span><h2>Instagram</h2></div>
           ${ig.conectado ? `<div class="perfil">${ig.foto ? `<img src="${esc(ig.foto)}" alt="">` : `<span class="ini">${esc((ig.usuario || '?')[0].toUpperCase())}</span>`}
             <div><b>@${esc(ig.usuario)}</b><br><span class="selo ok">conectado</span></div></div>
+            ${ig.atende === false ? '<p class="dica">No seu plano, o Instagram não responde clientes: o atendimento é no WhatsApp. Para os dois, escolha o plano Completo.</p>' : ''}
             ${vence != null && vence < 15 ? aviso('atencao', `A autorização vence em ${vence} dia(s). Conecte de novo para renovar.`) : ''}
             <div class="botoes"><button class="bt pequeno fraco" id="ig-renovar" type="button">Conectar de novo</button>
             <button class="bt pequeno fraco" id="ig-desligar" type="button">Desconectar</button></div>`
+          : ig.atende === false ? `<p>O atendimento no Instagram entra nos planos <b>Instagram</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`
           : `<p>O ${esc(NOME())} passa a responder o direct da sua conta profissional (Empresa ou Criador).</p>
             <div><button class="bt" id="ig-conectar" type="button">Conectar meu Instagram</button></div>
             <p class="dica">Abre o login do Instagram. Ele vai pedir para você permitir que a "Ti Artes Atendimento" leia o seu perfil e responda as suas mensagens.</p>`}
@@ -832,7 +834,7 @@
           : wa.liberado ? `<p>Conecte o número que você já usa no WhatsApp Business, ou um número novo.</p>
             <div><button class="bt" id="wa-conectar" type="button">Conectar meu WhatsApp</button></div>
             <p class="dica">A Meta está liberando esta conexão para todos, com previsão para o começo de dezembro. As mensagens do WhatsApp são cobradas pela Meta, na conta Meta da sua empresa.</p>`
-          : `<p>O WhatsApp entra no plano <b>Instagram + WhatsApp</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`}
+          : `<p>O atendimento no WhatsApp entra nos planos <b>WhatsApp</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`}
         </article>
       </div>
       ${cartaoAssistente()}
@@ -862,10 +864,12 @@
   ];
   function cartaoModo() {
     if (!(EU.assistente || {}).disponivel) return '';
+    if (EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length)
+      return `<article class="cartao modos"><h2>Plano Assistente</h2><p>Só o ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
     const atual = EU.modo || 'ambos';
     return `<article class="cartao modos"><h2>Como os agentes trabalham nesta conta</h2>
       <div class="modos-opcoes" role="radiogroup" aria-label="Como os agentes trabalham">${MODOS.map((x) => `<button type="button" role="radio" class="modo ${atual === x.id ? 'on' : ''}" aria-checked="${atual === x.id}" data-modo="${x.id}"><b>${esc(x.nome)}</b><span>${esc(x.txt)}</span></button>`).join('')}</div>
-      <p class="dica">O preço é o mesmo nos três. Troque quando quiser.</p></article>`;
+      <p class="dica">Troque quando quiser, sem mudar o preço.</p></article>`;
   }
   function ligaModo(alvo) {
     alvo.querySelectorAll('[data-modo]').forEach((b) => b.onclick = async () => {
@@ -998,11 +1002,18 @@
     const p = EU.plano;
     const ST = { teste: `Em teste grátis até ${dia(EU.pago_ate)}. O cartão só é cobrado depois.`, ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}.` : `Ativa. Renova sozinha em ${dia(EU.pago_ate)}.`,
       atrasada: 'O último pagamento não passou. Atualize o cartão para o agente não parar.', cancelada: `Cancelada. O agente responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o agente parou.', novo: '' };
+    /* o plano Assistente vive no WhatsApp do Otto: sem o número no ar, o cartão aparece, mas não vende */
+    const semOtto = !(EU.assistente && EU.assistente.otto_wa);
+    const itens = (x) => (x.canais.length ? [
+      `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
+      `${ASSIST()}, o seu assistente no WhatsApp`, 'App de gestão: agenda, notas e arquivos',
+      ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
+    ] : [`${ASSIST()}, o seu assistente no WhatsApp`, 'App de gestão: agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
     const cartoes = EU.planos.map((x) => `<article class="plano ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
-      <ul><li>Até ${inteiro(x.respostas)} mensagens do agente por mês</li><li>Agenda, notas e arquivos</li>${x.canais.includes('whatsapp') ? '<li>WhatsApp assim que a Meta liberar (começo de dezembro)</li>' : '<li>Instagram sem custo da Meta</li>'}</ul>
-      <div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>
-      <button class="bt pequeno fraco" type="button" data-plano="${x.id}" data-forma="pix">Pagar 1 mês no Pix</button></div></article>`).join('');
+      <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+      ${x.id === 'otto' && semOtto ? `<p class="dica">Abre assim que o WhatsApp do ${esc(ASSIST())} estiver no ar.</p>` : `<div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>
+      <button class="bt pequeno fraco" type="button" data-plano="${x.id}" data-forma="pix">Pagar 1 mês no Pix</button></div>`}</article>`).join('');
     const pagando = p && EU.em_dia;
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">Conta</p><h1>Plano e uso</h1></div></div>
@@ -1022,10 +1033,13 @@
       ${EU.cartao ? '<p class="dica">Para trocar de plano, use "Trocar cartão ou cancelar": a troca fica na mesma assinatura e você não paga duas vezes.</p>'
         : `<h2 style="font-size:24px">${pagando ? 'Pagar mais um mês' : 'Escolha o plano'}</h2>
       <div class="planos">${cartoes}</div>
-      <p class="dica">No Pix, você paga um mês por vez (o Pix não renova sozinho). No cartão, renova todo mês e você cancela quando quiser.</p>`}</section>`;
+      <p class="dica">No Pix, você paga um mês por vez (o Pix não renova sozinho). No cartão, renova todo mês e você cancela quando quiser. Na primeira assinatura, você tem 7 dias para desistir e receber o dinheiro de volta (<a href="termos.html" target="_blank" rel="noopener">termos de uso</a>).</p>`}
+      ${EU.estudio && !EU.teste_pagamento ? `<div class="cartao leve"><h2>Teste de R$ 1 <span class="selo">só o estúdio</span></h2>
+        <p class="dica">Paga R$ 1 no Pix de verdade, para provar que a cobrança libera a conta e cai nas Mensalidades. Conta como um mês do plano Instagram nesta conta.</p>
+        <div><button class="bt pequeno fraco" type="button" data-plano="instagram" data-forma="pix" data-umreal="1">Pagar R$ 1 no Pix</button></div></div>` : ''}</section>`;
     alvo.querySelectorAll('[data-plano]').forEach((b) => b.onclick = async () => {
       b.disabled = true;
-      const r = await api('/assinar', { plano: b.dataset.plano, forma: b.dataset.forma });
+      const r = await api('/assinar', { plano: b.dataset.plano, forma: b.dataset.forma, ...(b.dataset.umreal ? { um_real: true } : {}) });
       if (r.url) location.href = r.url; else { b.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); }
     });
     const fc = $('f-cupom');
@@ -1158,7 +1172,7 @@
     if (abaAtual() !== 'estudio') return;
     if (r.erro) { alvo.innerHTML = aviso('erro', r.erro); return; }
     const t = r.total, l = r.assinantes || [];
-    const nomePlano = { instagram: 'Instagram', completo: 'Insta + Whats' };
+    const nomePlano = { otto: 'Assistente', instagram: 'Instagram', whatsapp: 'WhatsApp', completo: 'Completo' };
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Só a Ti Artes</p><h1>Estúdio · ${esc(nomeMes(r.mes))}</h1>
       <p class="lede">O que cada assinante paga e quanto a IA dele custou de verdade neste mês (medido em cada resposta). IA em reais a R$ 6,50 por dólar.</p></div></div>
       <div class="numeros"><div><b>${reais(t.receita)}</b><span>entra no mês</span></div><div><b>${reais(t.ia)}</b><span>IA de todos</span></div><div><b>${reais(t.lucro)}</b><span>sobra, depois de IA, taxa, imposto e casa</span></div></div>

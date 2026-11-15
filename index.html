@@ -172,8 +172,15 @@ main, .nav, footer { position: relative; z-index: 1; }
 .resultado .recomenda { border: 0; padding: 14px 16px; border-radius: 14px; background: rgba(53, 224, 191, .1); color: var(--texto); display: block; font-size: 16px; }
 .resultado .recomenda b { font-size: inherit; font-family: var(--sans); color: var(--sinal); }
 
-.planos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 40px; max-width: 900px; }
-.plano { padding: 30px; display: flex; flex-direction: column; gap: 16px; }
+.planos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+.plano { padding: 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.plano .para { margin: 0; font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--apoio); }
+.plano.otto-plano .para { color: var(--ambar); }
+.plano .selo { align-self: flex-start; }
+.planos .preco { font-size: clamp(40px, 3.2vw, 50px); white-space: nowrap; }
+.planos .preco small { white-space: nowrap; font-size: 15px; }
+.dica-planos { margin-top: 18px; color: var(--apoio); font-size: 15.5px; max-width: 52em; }
+@media (max-width: 1180px) { .planos { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 900px; } }
 .plano.destaque { border-color: rgba(53, 224, 191, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 0 1px rgba(53, 224, 191, .25), 0 30px 80px -30px rgba(53, 224, 191, .35); }
 .plano .tag { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--sinal); color: #04211D; font: 600 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
 .plano h3 { font-size: 26px; }
@@ -326,6 +333,23 @@ h1, h2, .lede, .garantias, .dores li, .legenda p { text-shadow: 0 1px 2px rgba(7
 footer .assina { display: inline-flex; align-items: center; gap: 8px; }
 footer .assina img { width: 22px; height: 22px; }
 .vend header .logo-vend { width: 36px; height: 36px; flex: none; }
+/* 15/11: não é chatbot (o lado a lado) e o plano Assistente para qualquer pessoa */
+.compara { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 32px; max-width: 980px; }
+.compara .lado { padding: 24px; min-width: 0; }
+.compara h3 { font-size: 24px; margin-bottom: 14px; }
+.compara ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 16px; }
+.compara li { padding-left: 28px; position: relative; color: var(--texto); }
+.compara .chat h3, .compara .chat li { color: var(--apoio); }
+.compara .chat li::before { content: '✕'; position: absolute; left: 2px; color: #F07A6A; font-weight: 700; }
+.compara .agente { border-color: rgba(53, 224, 191, .45); }
+.compara .agente li::before { content: '✓'; position: absolute; left: 2px; color: var(--sinal); font-weight: 700; }
+.humano-fio { max-width: 640px; margin-top: 18px; padding: 18px; }
+.humano-fio .b { max-width: 86%; font-size: 15px; }
+.humano-fio .nota-ex { margin: 0; font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--apoio); }
+.jeitos.todos .jeito h3 { font-size: 22px; }
+.jeitos.todos .antes { font-size: 15px; }
+.acoes-todos { margin-top: 26px; }
+@media (max-width: 760px) { .compara { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -335,7 +359,7 @@ footer .assina img { width: 22px; height: 22px; }
 <nav class="nav" aria-label="Principal">
   <div class="pilula-nav">
     <a class="marca" href="#topo"><img src="logo.svg" alt="" width="32" height="32"><b><small>studio</small>Ti Artes</b></a>
-    <div class="links"><a href="#virada">Como é</a><a href="#exemplos">Exemplos</a><a href="#app">O app</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <div class="links"><a href="#virada">Como é</a><a href="#humano">Não é chatbot</a><a href="#exemplos">Exemplos</a><a href="#app">O app</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
     <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
     <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
   </div>
@@ -346,9 +370,9 @@ footer .assina img { width: 22px; height: 22px; }
   <section class="ato heroi" id="topo" data-cena="heroi">
     <div class="miolo">
       <div class="esq">
-        <p class="rotulo">Agentes de IA · Instagram e WhatsApp</p>
+        <p class="rotulo">Agentes de IA humanizada · Instagram e WhatsApp</p>
         <h1 style="margin-top:16px">Cada mensagem sem resposta é uma venda <em>que foi para outro.</em></h1>
-        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. E o <b>Otto</b>, o seu agente assistente no WhatsApp, marca, anota e organiza o seu dia.</p>
+        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. Não é chatbot de menu: ele entende texto, áudio e foto e conversa como gente. E o <b>Otto</b>, o seu agente assistente no WhatsApp, marca, anota e organiza o seu dia.</p>
         <div class="acoes">
           <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
           <a class="bt fraco" href="#rostos">Ver o agente conversando</a>
@@ -426,13 +450,37 @@ footer .assina img { width: 22px; height: 22px; }
     </div>
   </section>
 
+  <!-- 4a. não é chatbot (15/11, pedido dele: "pegar bem na IA humanizada, que não é chatbot") -->
+  <section class="ato" id="humano" data-cena="humano">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">IA humanizada</p>
+        <h2 style="margin-top:12px">Não é chatbot de menu. <em>É um agente que conversa.</em></h2>
+        <p>O seu cliente já desistiu de algum "digite 1 para preços". Aqui ele escreve do jeito dele, manda áudio ou foto, e recebe resposta de gente: com o seu preço, no seu tom e sem inventar nada.</p>
+        <div class="compara">
+          <div class="vidro lado chat"><h3>Chatbot de menu</h3>
+            <ul><li>"Digite 1 para preços, 2 para horários"</li><li>Não entende áudio, foto nem erro de digitação</li><li>Esquece o que a pessoa disse duas mensagens atrás</li><li>Responde igual para todo mundo</li><li>Travou, o cliente vai embora</li></ul></div>
+          <div class="vidro lado agente"><h3>Agente Ti Artes</h3>
+            <ul><li>Entende o que a pessoa escreve, do jeito que ela escreve</li><li>Ouve o áudio e olha a foto</li><li>Lembra o que já foi dito na conversa</li><li>Fala no tom que você escolheu e no idioma do cliente</li><li>O que não sabe, anota e passa para você</li></ul></div>
+        </div>
+        <div class="mini-fio humano-fio vidro" aria-label="Exemplo de conversa com o agente de atendimento">
+          <p class="nota-ex">exemplo de conversa</p>
+          <p class="b ela">oi vcs tem aquele bolo de pote de ninho?? qro 10 pra sabado de manha</p>
+          <p class="b robo">Oi! Temos, sim: o de ninho sai R$ 12 cada, então os 10 ficam R$ 120. Sábado de manhã dá certinho. Anoto no seu nome para a Ana confirmar?</p>
+          <p class="b ela">(áudio de 12 segundos)</p>
+          <p class="b robo">Combinado, Júlia: 10 de ninho e, como você pediu no áudio, mais 2 de chocolate. Ficou anotado para sábado às 9h, e a Ana te confirma.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 4b. exemplos: os três jeitos de usar (15/11, pedido dele: "a veterinária, a pousada, a ceramista") -->
   <section class="ato" id="exemplos" data-cena="exemplos">
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">Exemplos · três jeitos de usar</p>
         <h2 style="margin-top:12px">Atendimento, assistente ou os dois. <em>Você escolhe.</em></h2>
-        <p>Mesmo plano, mesmo preço, e você troca no painel quando quiser. Veja como fica o dia de quem usa:</p>
+        <p>Só o assistente é o plano Assistente. Nos planos com atendimento, você liga ou desliga o Otto no painel quando quiser. Veja como fica o dia de quem usa:</p>
         <div class="jeitos">
           <article class="jeito vidro">
             <p class="tipo sol">Só atendimento</p>
@@ -446,17 +494,58 @@ footer .assina img { width: 22px; height: 22px; }
             <h3>Uma ceramista</h3>
             <p class="antes"><b>O problema:</b> encomenda anotada em papel, queima do forno guardada de cabeça e feira esquecida.</p>
             <ul><li>Marca queima, entrega e feira na agenda, que vai para o Google Agenda</li><li>Anota encomenda por áudio, com a mão no barro</li><li>Diz o que tem para hoje e quem está esperando</li></ul>
-            <div class="mini-fio" aria-label="Exemplo de conversa no WhatsApp do Otto"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 21/11 e marquei a queima na qui 20/11 às 8h.</p></div>
+            <div class="mini-fio" aria-label="Exemplo de conversa no WhatsApp do Otto"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 20/11 e marquei a queima na qui 19/11 às 8h.</p></div>
           </article>
           <article class="jeito vidro dois">
             <p class="tipo ambos">Os dois</p>
             <h3>Uma clínica veterinária</h3>
             <p class="antes"><b>O problema:</b> a recepção parando para responder "tem horário pro banho?" no Instagram e no WhatsApp, no meio da consulta.</p>
             <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pelo Otto, no WhatsApp, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
-            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Otto, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 21/11 às 10h, na sua agenda.</p></div>
+            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Otto, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 20/11 às 10h, na sua agenda.</p></div>
           </article>
         </div>
         <p class="tambem"><b>Também serve para</b> <span>salão de beleza</span><span>confeitaria</span><span>estúdio de tatuagem</span><span>personal trainer</span><span>imobiliária</span><span>guia de turismo</span><span>fotógrafo</span><span>loja de roupa</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4b2. o plano Assistente serve para qualquer pessoa (15/11, pedido dele: "qualquer cidadão pra se organizar, qualquer área") -->
+  <section class="ato" id="todos" data-cena="todos">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Plano Assistente · R$ 69 por mês</p>
+        <h2 style="margin-top:12px">Não tem empresa? <em>O Otto organiza a sua vida também.</em></h2>
+        <p>Você fala com ele no WhatsApp que já usa, por texto, áudio ou foto. Tudo cai num app só seu, no celular e no notebook. Serve para qualquer área.</p>
+        <ul class="dores">
+          <li><b>Compromisso guardado de cabeça</b> que você só lembra quando já passou.</li>
+          <li><b>Conversa com você mesmo no WhatsApp</b>, cheia de recado que ninguém acha depois.</li>
+          <li><b>Comprovante e nota fiscal</b> perdidos no meio das fotos da galeria.</li>
+        </ul>
+        <div class="jeitos todos">
+          <article class="jeito vidro"><p class="tipo otto">Professor particular</p><h3>As aulas e quem pagou</h3>
+            <p class="antes"><b>Antes:</b> aulas espalhadas pela semana e o pagamento do mês anotado num caderno.</p>
+            <div class="mini-fio"><p class="b ela">(áudio) marca a aula do Pedro terça às 16h e anota que a mãe dele pagou novembro</p><p class="b otto">Marquei a aula do Pedro na ter 17/11 às 16h e anotei: novembro pago.</p></div></article>
+          <article class="jeito vidro"><p class="tipo otto">Eletricista ou diarista</p><h3>O serviço de amanhã</h3>
+            <p class="antes"><b>Antes:</b> serviço combinado por telefone, com a mão ocupada, e o endereço esquecido no dia seguinte.</p>
+            <div class="mini-fio"><p class="b ela">(áudio) amanhã 8h troca do chuveiro na casa da dona Lúcia, rua das Flores 120</p><p class="b otto">Marquei: seg 16/11 às 8h, troca do chuveiro, dona Lúcia, Rua das Flores, 120.</p></div></article>
+          <article class="jeito vidro"><p class="tipo otto">Advogada ou corretor</p><h3>Prazos e documentos</h3>
+            <p class="antes"><b>Antes:</b> prazo, visita e documento de cliente em três lugares diferentes.</p>
+            <div class="mini-fio"><p class="b ela">(foto) guarda esse contrato do Sr. Paulo</p><p class="b otto">Guardei no seu Google Drive, na pasta Contratos, como "Contrato do Sr. Paulo".</p></div></article>
+          <article class="jeito vidro"><p class="tipo otto">Mãe e pai</p><h3>A casa e as crianças</h3>
+            <p class="antes"><b>Antes:</b> pediatra, reunião da escola e conta de luz, tudo na cabeça.</p>
+            <div class="mini-fio"><p class="b ela">marca a vacina da Lia dia 25 às 9h e anota pagar a luz até sexta</p><p class="b otto">Marquei a vacina da Lia na qua 25/11 às 9h e anotei: pagar a luz até sex 20/11.</p></div></article>
+          <article class="jeito vidro"><p class="tipo otto">Estudante</p><h3>A semana inteira</h3>
+            <p class="antes"><b>Antes:</b> prova, trabalho em grupo e estágio no mesmo semestre.</p>
+            <div class="mini-fio"><p class="b ela">o que eu tenho essa semana?</p><p class="b otto">Seg 16/11: estágio às 14h. Qua 18/11: entrega do trabalho de Química. Sex 20/11: prova de Cálculo às 10h.</p></div></article>
+          <article class="jeito vidro"><p class="tipo otto">Músico</p><h3>Shows e ensaios</h3>
+            <p class="antes"><b>Antes:</b> ensaio, show e cachê a receber espalhados pelo direct.</p>
+            <div class="mini-fio"><p class="b ela">(áudio) show sábado 21h no Bar do Zé, cachê 400, e ensaio quinta 19h</p><p class="b otto">Marquei o show no sáb 21/11 às 21h, no Bar do Zé (cachê R$ 400), e o ensaio na qui 19/11 às 19h.</p></div></article>
+        </div>
+        <p class="tambem"><b>Também serve para</b> <span>personal trainer</span><span>manicure</span><span>motorista de aplicativo</span><span>pedreiro</span><span>terapeuta</span><span>vendedora autônoma</span><span>fotógrafo</span></p>
+        <div class="acoes acoes-todos">
+          <a class="bt" href="entrar.html?criar=1&amp;plano=otto">Testar o Otto grátis <span aria-hidden="true">→</span></a>
+          <a class="bt fraco" href="#app">Ver o app no celular e no notebook</a>
+        </div>
       </div>
     </div>
   </section>
@@ -467,7 +556,7 @@ footer .assina img { width: 22px; height: 22px; }
       <div class="largo secao-titulo">
         <p class="rotulo">Incluso na assinatura</p>
         <h2 style="margin-top:12px">Você assina o agente. O app de gestão <em>vem junto.</em></h2>
-        <p>Tudo o que os agentes fazem cai num app só seu, no celular e no computador. Sem planilha, sem caderno, sem caçar conversa antiga no direct.</p>
+        <p>Em todos os planos, inclusive no Assistente. Tudo o que os agentes fazem cai num app só seu, no celular e no computador. Sem planilha, sem caderno, sem caçar conversa antiga no direct.</p>
         <div class="app-vitrine">
           <div class="app-abas" role="tablist" aria-label="Telas do app">
             <button type="button" role="tab" aria-selected="true" data-tela="inicio">Início</button>
@@ -526,27 +615,43 @@ footer .assina img { width: 22px; height: 22px; }
           <div class="resultado" aria-live="polite">
             <div><span>Respostas do agente no mês</span><b class="num" id="r-mes">1.200</b></div>
             <div><span>Tempo seu que ele assume no mês</span><b class="num" id="r-horas">30 h</b></div>
-            <div id="linha-meta"><span>WhatsApp, na sua conta Meta</span><b class="num" id="r-meta">R$ 0</b></div>
+            <div id="linha-meta"><span>WhatsApp: na linha nova, está na mensalidade. No seu número, a Meta cobra</span><b class="num" id="r-meta">R$ 0</b></div>
             <p class="recomenda" id="r-plano">O plano <b>Instagram</b> cabe com folga.</p>
           </div>
         </div>
         <div class="planos">
+          <article class="plano otto-plano vidro">
+            <p class="para">Para se organizar</p>
+            <h3>Assistente</h3>
+            <p class="preco num">R$ 69<small> por mês</small></p>
+            <ul><li>Otto, o seu assistente no WhatsApp: texto, áudio e foto</li><li>App de gestão no celular e no computador</li><li>Agenda, notas e arquivos no seu Google Drive</li><li>Para qualquer pessoa, com ou sem empresa</li><li>Sem atendimento de clientes</li></ul>
+            <span class="selo" id="selo-plano-otto">abre com o número do Otto</span>
+            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=otto">Testar o Otto grátis</a>
+          </article>
           <article class="plano vidro">
+            <p class="para">Para quem vende no direct</p>
             <h3>Instagram</h3>
-            <p class="preco num">R$ 147<small> por mês</small></p>
-            <ul><li>Agente de atendimento no direct do Instagram</li><li>Otto, o seu assistente no WhatsApp</li><li>Até 2.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Suporte da Ti Artes</li></ul>
-            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Começar com o Instagram</a>
+            <p class="preco num">R$ 120<small> por mês</small></p>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Até 2.000 mensagens por mês</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Testar no Instagram</a>
+          </article>
+          <article class="plano vidro">
+            <p class="para">Para quem vende no WhatsApp</p>
+            <h3>WhatsApp</h3>
+            <p class="preco num">R$ 159<small> por mês</small></p>
+            <ul><li>Agente de atendimento no WhatsApp</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Até 2.000 mensagens por mês</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <a class="bt fraco" href="entrar.html?criar=1&amp;plano=whatsapp">Testar no WhatsApp</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
-            <h3>Instagram + WhatsApp</h3>
-            <p class="preco num">R$ 197<small> por mês</small></p>
-            <ul><li>Agente de atendimento no Instagram e no WhatsApp do seu negócio</li><li>Otto, o seu assistente no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>No número que você já usa, ou numa linha nova só para o atendimento</li><li>Suporte da Ti Artes</li></ul>
-            <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Começar com os dois <span aria-hidden="true">→</span></a>
-            <p class="dica">Numa linha nova, o atendimento no WhatsApp já funciona. No número que você já usa, entra assim que a Meta liberar para todos, com previsão para o começo de dezembro.</p>
+            <h3>Completo</h3>
+            <p class="preco num">R$ 226<small> por mês</small></p>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>Linha nova inclusa, ou o número que você já usa</li><li>Otto, o seu assistente no WhatsApp</li><li>App de gestão incluso</li></ul>
+            <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Testar tudo grátis <span aria-hidden="true">→</span></a>
           </article>
         </div>
-        <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o agente com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação.</p>
+        <p class="dica-planos"><b>No WhatsApp:</b> numa linha nova, que a Ti Artes liga para você, o atendimento já funciona, e as mensagens da Meta estão na mensalidade (vagas limitadas nesta primeira fase). No número que você já usa, entra quando a Meta liberar para todos, com previsão para o começo de dezembro.</p>
+        <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o agente com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação e sem fidelidade. Na primeira assinatura, você tem 7 dias para desistir e receber o dinheiro de volta.</p>
       </div>
     </div>
   </section>
@@ -566,8 +671,8 @@ footer .assina img { width: 22px; height: 22px; }
             <div class="item"><i>?</i><div><b>Suporte</b><p>Gente da Ti Artes para ajudar quando você precisar.</p></div></div>
           </div>
           <div class="vidro meta">
-            <h3>Fica com a Meta, na conta da sua empresa</h3>
-            <p>No WhatsApp, quem cobra as mensagens é a Meta, direto da conta Meta da sua empresa, no seu cartão. A Ti Artes não fica no meio dessa conta.</p>
+            <h3>WhatsApp: quem paga a Meta</h3>
+            <p><b>Na linha nova</b> que a Ti Artes liga para você, a linha e as mensagens da Meta das respostas do agente estão na mensalidade, até o limite do plano. <b>No número que você já usa</b>, quem cobra as mensagens é a Meta, direto da conta Meta da sua empresa, no seu cartão, pela tabela abaixo.</p>
             <div class="tabela">
               <div><span>Respostas do agente, por número, por mês</span><span>1.000 grátis</span></div>
               <div><span>Da 1.001ª em diante</span><span>~R$ 0,035 cada</span></div>
@@ -594,15 +699,17 @@ footer .assina img { width: 22px; height: 22px; }
           <div class="vidro"><b>Passou do limite, não para</b><p>Ele continua respondendo. A gente avisa quando chegar a 80% e a 100% do plano.</p></div>
         </div>
         <div class="perguntas">
+          <details class="vidro"><summary>É um chatbot?</summary><p>Não. Chatbot é menu de botão ("digite 1 para preços") e resposta pronta. Aqui é um agente de inteligência artificial que conversa como gente: entende o que o cliente escreve do jeito dele, com erro de digitação, gíria, áudio e foto, lembra o que já foi dito e responde no tom que você escolheu. O que ele não sabe, não inventa: anota e passa para você.</p></details>
+          <details class="vidro"><summary>Não tenho empresa. Serve para mim?</summary><p>Serve. O plano Assistente, de R$ 69 por mês, é só o Otto e o app: você manda áudio ou texto no WhatsApp e ele marca a agenda, anota e guarda os seus documentos no seu Google Drive. Professor, eletricista, estudante, mãe e pai, músico: qualquer pessoa que quer parar de guardar tudo de cabeça.</p></details>
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
           <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o agente com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
           <details class="vidro"><summary>Como eu falo com o meu assistente?</summary><p>Pelo WhatsApp. O Otto é um número da Ti Artes: no painel, toque em "Falar com o Otto" e o WhatsApp abre com um código já escrito. Envie, e ele passa a te reconhecer pelo seu número. Você não precisa de outra conta nem de outro chip. Ele só conversa com você e só vê o seu negócio.</p></details>
-          <details class="vidro"><summary>O atendimento no WhatsApp usa o meu número?</summary><p>Pode usar. Com uma linha nova só para o atendimento, já funciona hoje. No número que você já usa no WhatsApp Business, entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro, e você continua usando o WhatsApp no celular normalmente.</p></details>
+          <details class="vidro"><summary>O atendimento no WhatsApp usa o meu número?</summary><p>Pode usar. Com uma linha nova, que a Ti Artes liga só para o seu atendimento, já funciona hoje, e as mensagens da Meta estão na mensalidade. No número que você já usa no WhatsApp Business, entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro; aí as mensagens são cobradas pela Meta na conta da sua empresa, e você continua usando o WhatsApp no celular normalmente.</p></details>
           <details class="vidro"><summary>O app de gestão é pago à parte?</summary><p>Não. Ele vem junto com a assinatura, sem pagar nada a mais: agenda, pedidos, notas e os arquivos que o agente guarda no seu Google Drive. No teste grátis você já usa tudo. Se não assinar, a conta fica guardada 7 dias e depois é apagada; o que já foi para o seu Google Drive continua lá, porque é seu.</p></details>
           <details class="vidro"><summary>O agente pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
           <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O agente entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
-          <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O agente segue ligado até o fim do mês que você já pagou, e depois para.</p></details>
-          <details class="vidro"><summary>Quem guarda as conversas?</summary><p>Ficam guardadas por 72 horas, para o agente lembrar do que foi dito. Se a pessoa escrever "apagar", tudo some na hora.</p></details>
+          <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O agente segue ligado até o fim do mês que você já pagou, e depois para. Sem multa e sem fidelidade. Na primeira assinatura, você tem 7 dias para desistir e receber o dinheiro de volta.</p></details>
+          <details class="vidro"><summary>Quem guarda as conversas?</summary><p>Ficam guardadas por até 4 dias, para o agente lembrar do que foi dito, e depois são apagadas. Se a pessoa escrever "apagar", tudo some na hora. Os detalhes estão na <a href="privacidade.html">política de privacidade</a>.</p></details>
           <details class="vidro"><summary>Quem é a Ti Artes?</summary><p>Um estúdio de Curitiba que faz agentes de atendimento com IA e apps para pequenos negócios: guias de turismo, imobiliárias, confeitarias e pousadas. A Ti Artes é empresa verificada na Meta, e a conexão é sempre pelo login oficial da Meta.</p></details>
         </div>
       </div>
@@ -681,6 +788,8 @@ footer .assina img { width: 22px; height: 22px; }
   fetch(ROBO.funcao + '/planos').then((x) => x.json()).then((j) => {
     const selo = $('selo-otto');
     if (j && j.assistente && j.otto_wa && selo) { selo.textContent = 'já incluso'; selo.classList.add('pronto'); }
+    const sp = $('selo-plano-otto');
+    if (j && j.otto_wa && sp) sp.hidden = true;
   }).catch(() => {});
   $('vend-fecha').onclick = () => { $('vend').hidden = true; $('vend-abre').hidden = false; };
   $('vend-form').onsubmit = (e) => { e.preventDefault(); manda($('vend-txt').value); };
@@ -688,7 +797,7 @@ footer .assina img { width: 22px; height: 22px; }
   $('vend-sug').querySelectorAll('button').forEach((b) => b.onclick = () => manda(b.textContent));
 })();
 </script>
-<footer><div class="miolo"><span class="assina"><img src="logo.svg" alt="" width="22" height="22">studio Ti Artes · Curitiba, PR</span><span><a href="https://guia.eugeniofim.com/privacidade.html">Privacidade</a></span></div></footer>
+<footer><div class="miolo"><span class="assina"><img src="logo.svg" alt="" width="22" height="22">studio Ti Artes · Curitiba, PR</span><span><a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a></span></div></footer>
 
 <!-- a conversa e a calculadora funcionam sem 3D -->
 <script>
@@ -722,7 +831,7 @@ footer .assina img { width: 22px; height: 22px; }
     const pagas = Math.max(0, doWhats - 1000);
     $('linha-meta').hidden = !whats;
     $('r-meta').textContent = pagas ? '~R$ ' + (pagas * 0.035).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'R$ 0 (dentro das 1.000 grátis)';
-    const plano = whats ? { nome: 'Instagram + WhatsApp', lim: 4000 } : { nome: 'Instagram', lim: 2000 };
+    const plano = whats ? { nome: 'Completo', lim: 4000 } : { nome: 'Instagram', lim: 2000 };
     $('r-plano').innerHTML = mes <= plano.lim
       ? `O plano <b>${plano.nome}</b> cabe ${mes <= plano.lim * 0.6 ? 'com folga' : 'certinho'}.`
       : `Passa das ${fmt(plano.lim)} do plano <b>${plano.nome}</b>. O agente continua respondendo, e a gente conversa sobre um pacote maior.`;
@@ -843,7 +952,9 @@ const ROTEIRO = {
   noite:     { x: -0.56, y: 0.0, ym: 2.15, z: -0.4, s: 0.84, giro: 0.42, cam: 7.4, enxame: 0.7 },
   virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
   rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
+  humano:    { x: -0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: 0.5, cam: 9.0, enxame: 0.3 },
   exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
+  todos:     { x: 0.78, y: -2.0, ym: 2.6, z: -2.8, s: 0.4, giro: -0.4, cam: 9.0, enxame: 0.25 },
   app:       { x: -0.8, y: 2.1, ym: 2.6, z: -3.0, s: 0.38, giro: 0.5, cam: 9.0, enxame: 0.25 },
   como:      { x: 0.62, y: 1.9, ym: 2.3, z: -1.6, s: 0.55, giro: -0.6, cam: 8.8, enxame: 0.4 },
   planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
