@@ -348,7 +348,7 @@ footer .assina img { width: 22px; height: 22px; }
       <div class="esq">
         <p class="rotulo">Agentes de IA · Instagram e WhatsApp</p>
         <h1 style="margin-top:16px">Cada mensagem sem resposta é uma venda <em>que foi para outro.</em></h1>
-        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. E quando quem escreve é você, quem responde é o seu <b>agente assistente</b>: marca, anota e organiza o seu dia.</p>
+        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. E o <b>Otto</b>, o seu agente assistente no WhatsApp, marca, anota e organiza o seu dia.</p>
         <div class="acoes">
           <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
           <a class="bt fraco" href="#rostos">Ver o agente conversando</a>
@@ -379,7 +379,7 @@ footer .assina img { width: 22px; height: 22px; }
   <section class="virada" id="virada" data-cena="virada" aria-label="Dois agentes, uma conta só">
     <div class="gruda">
       <div class="legenda sol"><p class="rotulo">quando o cliente escreve</p><h2 style="margin-top:10px">O agente de <em>atendimento</em> vende.</h2><p>Responde, mostra os preços e anota o pedido.</p></div>
-      <div class="legenda otto"><p class="rotulo otto-r">quando você escreve</p><h2 style="margin-top:10px">O agente <em>assistente</em> organiza.</h2><p>Marca, anota e confirma os horários.</p></div>
+      <div class="legenda otto"><p class="rotulo otto-r">quando você chama o Otto</p><h2 style="margin-top:10px">O agente <em>assistente</em> organiza.</h2><p>Marca, anota e confirma os horários.</p></div>
       <p class="dica-virada">uma conta só · role para virar</p>
     </div>
   </section>
@@ -389,15 +389,15 @@ footer .assina img { width: 22px; height: 22px; }
     <div class="miolo">
       <div class="esq">
         <p class="rotulo">Os dois agentes</p>
-        <h2 style="margin-top:12px">Dois agentes. Uma conta só.</h2>
-        <p class="lede">Quem é cliente fala com o agente de atendimento. Quando é você, do seu perfil pessoal, quem responde é o seu agente assistente. Sem outro número e sem outro aplicativo.</p>
+        <h2 style="margin-top:12px">Dois agentes. Cada um no seu lugar.</h2>
+        <p class="lede">O agente de atendimento fica no Instagram (e no WhatsApp) do seu negócio, falando com os seus clientes. O Otto fica no WhatsApp, falando só com você: salve o número dele e pronto. Sem conta nova e sem chip novo.</p>
         <div class="cartoes-rosto">
           <article class="rosto vidro"><h3>Sol</h3><p class="papel">Agente de atendimento · para os seus clientes</p>
             <p class="ganho">Você para de perder venda por demora.</p>
             <ul><li>Responde na hora, de madrugada e no fim de semana</li><li>Fala dos seus serviços e preços, do seu jeito</li><li>Anota pedidos, visitas e orçamentos para você</li><li>Entende áudio e foto</li><li>Nunca inventa preço nem prazo: o que não sabe, passa para você</li></ul></article>
-          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Agente assistente · para você <span class="selo" id="selo-otto">chega em breve</span></p>
+          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Agente assistente · no seu WhatsApp <span class="selo" id="selo-otto">chega em breve</span></p>
             <p class="ganho">Você para de esquecer quem pediu horário.</p>
-            <ul><li>Marca atendimento, visita e entrega na agenda</li><li>Anota o que você pedir, por texto, áudio ou foto</li><li>Confirma os horários que os clientes pediram</li><li>Diz o que você tem hoje e quem está esperando</li><li>Leva a agenda para o seu Google Agenda</li></ul></article>
+            <ul><li>Marca atendimento, visita e entrega na agenda</li><li>Anota o que você pedir, por texto, áudio ou foto</li><li>Confirma os horários que os clientes pediram</li><li>Guarda nota fiscal e comprovante no seu Google Drive</li><li>Diz o que você tem hoje e quem está esperando</li></ul></article>
         </div>
       </div>
       <div class="dir" style="align-self:center">
@@ -405,9 +405,9 @@ footer .assina img { width: 22px; height: 22px; }
           <div class="chave" id="chave" data-rosto="sol" role="group" aria-label="Quem está escrevendo">
             <span class="corre" aria-hidden="true"></span>
             <button type="button" id="ver-sol" aria-pressed="true">Quando o cliente escreve</button>
-            <button type="button" id="ver-otto" aria-pressed="false">Quando você escreve</button>
+            <button type="button" id="ver-otto" aria-pressed="false">Quando você chama o Otto</button>
           </div>
-          <div class="quem"><i aria-hidden="true"></i><div><b>Ateliê Folha Miúda</b><span>@folhamiuda · exemplo</span></div></div>
+          <div class="quem"><i aria-hidden="true"></i><div><b id="quem-nome">Ateliê Folha Miúda</b><span id="quem-onde">@folhamiuda · exemplo</span></div></div>
           <div class="fio" id="fio-sol">
             <div class="b ela">Oi! Vocês fazem arranjo para casamento? É dia 29, umas 12 mesas<small>Marina · 23:41</small></div>
             <div class="b robo">Oi, Marina! Fazemos, sim. O arranjo de mesa sai a partir de R$ 85 cada, e o de altar é sob consulta. Para 12 mesas no dia 29, eu anoto o seu pedido e a Rosa te responde amanhã cedo. Já tem as cores?<small>Sol · 23:41</small></div>
@@ -415,7 +415,7 @@ footer .assina img { width: 22px; height: 22px; }
             <div class="b robo">Dá, sim. Anotei: visita ao ateliê, verde e branco, 12 mesas no dia 29. A Rosa confirma o horário com você.<small>Sol · 23:43</small></div>
           </div>
           <div class="fio" id="fio-otto" hidden>
-            <p class="nota">a dona escreve no mesmo direct</p>
+            <p class="nota">a dona chama o Otto no WhatsApp dela</p>
             <div class="b ela">Otto, marca a visita da Marina quinta às 15h e anota pra eu pedir eucalipto<small>Rosa · 08:02</small></div>
             <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". E anotei: pedir eucalipto.<small>Otto · 08:02</small></div>
             <div class="b ela">Quem me escreveu ontem que eu não respondi?<small>Rosa · 08:03</small></div>
@@ -446,13 +446,13 @@ footer .assina img { width: 22px; height: 22px; }
             <h3>Uma ceramista</h3>
             <p class="antes"><b>O problema:</b> encomenda anotada em papel, queima do forno guardada de cabeça e feira esquecida.</p>
             <ul><li>Marca queima, entrega e feira na agenda, que vai para o Google Agenda</li><li>Anota encomenda por áudio, com a mão no barro</li><li>Diz o que tem para hoje e quem está esperando</li></ul>
-            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 21/11 e marquei a queima na qui 20/11 às 8h.</p></div>
+            <div class="mini-fio" aria-label="Exemplo de conversa no WhatsApp do Otto"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 21/11 e marquei a queima na qui 20/11 às 8h.</p></div>
           </article>
           <article class="jeito vidro dois">
             <p class="tipo ambos">Os dois</p>
             <h3>Uma clínica veterinária</h3>
             <p class="antes"><b>O problema:</b> a recepção parando para responder "tem horário pro banho?" no Instagram e no WhatsApp, no meio da consulta.</p>
-            <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pelo assistente, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
+            <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pelo Otto, no WhatsApp, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
             <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Otto, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 21/11 às 10h, na sua agenda.</p></div>
           </article>
         </div>
@@ -534,16 +534,16 @@ footer .assina img { width: 22px; height: 22px; }
           <article class="plano vidro">
             <h3>Instagram</h3>
             <p class="preco num">R$ 147<small> por mês</small></p>
-            <ul><li>Agente de atendimento no direct do Instagram</li><li>Agente assistente para você</li><li>Até 2.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Otto, o seu assistente no WhatsApp</li><li>Até 2.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Começar com o Instagram</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
             <h3>Instagram + WhatsApp</h3>
             <p class="preco num">R$ 197<small> por mês</small></p>
-            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Agente assistente para você</li><li>Até 4.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp do seu negócio</li><li>Otto, o seu assistente no WhatsApp</li><li>Até 4.000 mensagens por mês</li><li>App de gestão incluso: agenda, pedidos, notas e arquivos no seu Drive</li><li>No número que você já usa, ou numa linha nova só para o atendimento</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Começar com os dois <span aria-hidden="true">→</span></a>
-            <p class="dica">O WhatsApp entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro.</p>
+            <p class="dica">Numa linha nova, o atendimento no WhatsApp já funciona. No número que você já usa, entra assim que a Meta liberar para todos, com previsão para o começo de dezembro.</p>
           </article>
         </div>
         <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o agente com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação.</p>
@@ -596,8 +596,8 @@ footer .assina img { width: 22px; height: 22px; }
         <div class="perguntas">
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
           <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o agente com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
-          <details class="vidro"><summary>Como o agente sabe que sou eu, e não um cliente?</summary><p>Você liga o agente assistente no painel: aparece um código, e você manda esse código do seu perfil pessoal no direct do seu negócio. Pronto. Daí em diante, quando você escreve desse perfil, quem responde é o assistente. Qualquer outra pessoa fala com o atendimento. Para ver o atendimento como um cliente vê, escreva "modo cliente".</p></details>
-          <details class="vidro"><summary>Preciso de duas contas?</summary><p>Para usar o agente assistente, sim, e quase todo mundo já tem: a conta do <b>negócio</b> (onde o agente atende os clientes) e o seu <b>perfil pessoal</b> (de onde você conversa com o assistente). No WhatsApp é igual: o número do negócio atende, e você fala com o assistente do seu número pessoal. Só tem uma conta? Crie um perfil pessoal em dois minutos. Quer usar só o assistente, sem atender cliente? Crie uma conta profissional só para ele (por exemplo, @assistente.seunegocio), conecte, e fale com ela do seu perfil.</p></details>
+          <details class="vidro"><summary>Como eu falo com o meu assistente?</summary><p>Pelo WhatsApp. O Otto é um número da Ti Artes: no painel, toque em "Falar com o Otto" e o WhatsApp abre com um código já escrito. Envie, e ele passa a te reconhecer pelo seu número. Você não precisa de outra conta nem de outro chip. Ele só conversa com você e só vê o seu negócio.</p></details>
+          <details class="vidro"><summary>O atendimento no WhatsApp usa o meu número?</summary><p>Pode usar. Com uma linha nova só para o atendimento, já funciona hoje. No número que você já usa no WhatsApp Business, entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro, e você continua usando o WhatsApp no celular normalmente.</p></details>
           <details class="vidro"><summary>O app de gestão é pago à parte?</summary><p>Não. Ele vem junto com a assinatura, sem pagar nada a mais: agenda, pedidos, notas e os arquivos que o agente guarda no seu Google Drive. No teste grátis você já usa tudo. Se não assinar, a conta fica guardada 7 dias e depois é apagada; o que já foi para o seu Google Drive continua lá, porque é seu.</p></details>
           <details class="vidro"><summary>O agente pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
           <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O agente entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
@@ -677,10 +677,10 @@ footer .assina img { width: 22px; height: 22px; }
   }
   $('vend-abre').hidden = false;
   $('vend-abre').onclick = abre;
-  /* o agente assistente: "chega em breve" até a nuvem dizer que está ligado */
+  /* o Otto: "chega em breve" até a nuvem dizer que o número dele está ligado */
   fetch(ROBO.funcao + '/planos').then((x) => x.json()).then((j) => {
     const selo = $('selo-otto');
-    if (j && j.assistente && selo) { selo.textContent = 'já incluso'; selo.classList.add('pronto'); }
+    if (j && j.assistente && j.otto_wa && selo) { selo.textContent = 'já incluso'; selo.classList.add('pronto'); }
   }).catch(() => {});
   $('vend-fecha').onclick = () => { $('vend').hidden = true; $('vend-abre').hidden = false; };
   $('vend-form').onsubmit = (e) => { e.preventDefault(); manda($('vend-txt').value); };
@@ -703,6 +703,8 @@ footer .assina img { width: 22px; height: 22px; }
     $('chave').dataset.rosto = r;
     $('ver-sol').setAttribute('aria-pressed', String(r === 'sol')); $('ver-otto').setAttribute('aria-pressed', String(r === 'otto'));
     $('fio-sol').hidden = r !== 'sol'; $('fio-otto').hidden = r !== 'otto';
+    $('quem-nome').textContent = r === 'otto' ? 'Otto · Ti Artes' : 'Ateliê Folha Miúda';
+    $('quem-onde').textContent = r === 'otto' ? 'WhatsApp · o assistente da Rosa' : '@folhamiuda · exemplo';
     window.dispatchEvent(new CustomEvent('rosto', { detail: { rosto: r, deQuem: deQuem || 'clique' } }));
   };
   $('ver-sol').addEventListener('click', () => mostraRosto('sol'));

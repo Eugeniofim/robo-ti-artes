@@ -851,11 +851,14 @@
     ligaDrive(alvo);
   }
 
+  /* +55 41 96349-3440 a partir dos dígitos */
+  const foneBonito = (d) => { const x = String(d || '').replace(/\D/g, ''); return /^55\d{10,11}$/.test(x) ? `+55 ${x.slice(2, 4)} ${x.slice(4, -4)}-${x.slice(-4)}` : '+' + x; };
+
   /* ---------- o modo da conta: os dois agentes, só o atendimento ou só o assistente ---------- */
   const MODOS = [
-    { id: 'ambos', nome: 'Os dois', txt: 'Clientes falam com o agente de atendimento. Quando é você, quem responde é o assistente.' },
-    { id: 'atendimento', nome: 'Só atendimento', txt: 'O agente responde os clientes. Você não usa o assistente.' },
-    { id: 'assistente', nome: 'Só assistente', txt: 'Os clientes não recebem resposta automática. O agente organiza a sua agenda e as suas anotações.' },
+    { id: 'ambos', nome: 'Os dois', txt: 'Os clientes falam com o agente de atendimento, e você fala com o Otto, o seu assistente.' },
+    { id: 'atendimento', nome: 'Só atendimento', txt: 'O agente responde os clientes. O Otto fica desligado.' },
+    { id: 'assistente', nome: 'Só assistente', txt: 'Os clientes não recebem resposta automática. Você usa só o Otto para a agenda, as notas e os arquivos.' },
   ];
   function cartaoModo() {
     if (!(EU.assistente || {}).disponivel) return '';
@@ -883,6 +886,18 @@
     const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Agente assistente <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
     if (!a.disponivel) return `<article class="cartao" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
     if (EU.modo === 'atendimento') return `<article class="cartao" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar o ${esc(ASSIST())}, escolha "Os dois" ou "Só assistente" aqui em cima.</p></article>`;
+    /* o Otto central: um WhatsApp da Ti Artes, o mesmo para todos; o dono liga mandando o código de um toque */
+    if (a.otto_wa) {
+      const num = foneBonito(a.otto_wa);
+      if (a.whatsapp) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado no WhatsApp</span></p>
+        <p>Fale com o ${esc(ASSIST())} pelo WhatsApp <b class="num">${esc(num)}</b>, do seu celular: texto, áudio, foto ou PDF. Ele marca na sua agenda, anota, confirma os horários que os clientes pediram e guarda nota fiscal e comprovante no seu Drive.</p>
+        <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp do ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
+      return `<article class="cartao" id="assist">${topo}
+        <p>O ${esc(ASSIST())} é o seu assistente no WhatsApp: você manda texto, áudio, foto ou PDF, e ele marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
+        <ol class="passinhos"><li>Toque em <b>Falar com o ${esc(ASSIST())}</b>: o WhatsApp abre com o seu código já escrito.</li><li>Envie. Pronto: ele te reconhece pelo seu número.</li></ol>
+        <div class="botoes"><button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Falar com o ${esc(ASSIST())} no WhatsApp</button></div>
+        <div id="assist-mostra" hidden></div></article>`;
+    }
     if (a.ligado) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
       <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é o ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
       <p class="dica">Para ver como os clientes são atendidos, escreva "modo cliente" (volta com "modo dono").</p>
@@ -896,6 +911,19 @@
       <div id="assist-mostra" hidden></div></article>`;
   }
   function ligaAssistente(alvo) {
+    const bw = $('assist-wa');
+    if (bw) bw.onclick = async () => {
+      bw.disabled = true;
+      const r = await api('/dono-codigo', {});
+      bw.disabled = false;
+      const m = $('assist-mostra'); m.hidden = false;
+      if (r.erro || !r.codigo || !r.otto_wa) { m.innerHTML = aviso('erro', r.erro || 'Não deu para gerar o código.'); return; }
+      const link = `https://wa.me/${r.otto_wa}?text=${encodeURIComponent(r.codigo)}`;
+      m.innerHTML = `<p class="dica">Se o WhatsApp não abriu, mande este código para <b class="num">${esc(foneBonito(r.otto_wa))}</b>: <b class="num">${esc(r.codigo)}</b> (vale ${r.minutos} minutos).</p>
+        <div class="botoes"><a class="bt pequeno fraco" href="${esc(link)}" target="_blank" rel="noopener">Abrir de novo</a><button class="bt pequeno fraco" id="assist-ja" type="button">Já mandei</button></div>`;
+      $('assist-ja').onclick = () => carrega();
+      window.open(link, '_blank', 'noopener');
+    };
     const bc = $('assist-codigo');
     if (bc) bc.onclick = async () => {
       bc.disabled = true;
