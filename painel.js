@@ -61,16 +61,20 @@
   if (q.get('ig') === 'cancelou') avisoVolta = { tipo: 'atencao', texto: 'Você cancelou a conexão do Instagram.' };
   /* conectou o Instagram agora: se ele ainda não leu esta conta, já começa a ler sozinho (a pessoa não precisa voltar e apertar) */
   let lerIgAoVoltar = q.get('ig') === 'ok';
-  if (q.get('drive') === 'ok') avisoVolta = { tipo: 'info', texto: 'Google Drive conectado. Tudo o que você mandar vai sozinho para a pasta do robô no seu Drive.' };
+  if (q.get('drive') === 'ok') avisoVolta = { tipo: 'info', texto: 'Google Drive conectado. Tudo o que você mandar vai sozinho para a pasta do agente no seu Drive.' };
   if (q.get('drive') === 'erro') avisoVolta = { tipo: 'erro', texto: 'Não deu para conectar o Google Drive. ' + (q.get('motivo') || 'Tente de novo.') };
   if (q.get('pago') === '1') avisoVolta = { tipo: 'info', texto: 'Pagamento recebido. Pode levar alguns segundos para o plano aparecer aqui.' };
   if (q.get('cancelou') === '1') avisoVolta = { tipo: 'atencao', texto: 'Você saiu do pagamento sem concluir. Nada foi cobrado.' };
   const planoPedido = q.get('plano');
+  /* o cupom dos chegados: o entrar.html guarda o código; aqui ele vale na conta (uma vez) */
+  const cupomGuardado = () => { try { return localStorage.getItem('robo-cupom') || ''; } catch (_) { return ''; } };
+  const esqueceCupom = () => { try { localStorage.removeItem('robo-cupom'); } catch (_) { /* sem armazenamento: tudo bem */ } };
   const abaUrl = q.get('aba');
   if (location.search) history.replaceState(null, '', location.pathname + (abaUrl ? '#' + abaUrl : location.hash));
 
   let EU = null, MENU = null;
   const NOME = () => (EU && EU.nomes && EU.nomes.atendimento) || 'Sol';
+  const ASSIST = () => (EU && EU.nomes && EU.nomes.assistente) || 'Otto';
   const ABAS = {
     inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
@@ -91,7 +95,7 @@
     funciona: { nome: 'Como funciona o atendimento', frase: 'Como funciona: o meu horário é ..., atendo/entrego em ..., o prazo é ... e aceito ... como pagamento.' },
     perguntas: { nome: 'As perguntas que mais fazem', frase: 'As perguntas que os clientes mais me fazem, com a minha resposta: ' },
     jeito: { nome: 'O seu jeito de falar', frase: `Quero que o Sol fale assim com os meus clientes: ` },
-    limites: { nome: 'O que ele nunca faz', frase: 'O robô nunca pode ... e deve passar a conversa para mim quando ... ' },
+    limites: { nome: 'O que ele nunca faz', frase: 'O agente nunca pode ... e deve passar a conversa para mim quando ... ' },
   };
   function cerebroDe() {
     if (EU && EU.cerebro && Array.isArray(EU.cerebro.itens)) return EU.cerebro;
@@ -114,10 +118,10 @@
   function montaMenu() {
     const c = cerebroDe();
     MENU = criaMenuVidro($('menu'), {
-      marca: EU.negocio || 'Seu negócio', subtitulo: 'Robô Ti Artes', chave: 'robo-painel-menu', ativo: abaAtual(), noite: true,
+      marca: EU.negocio || 'Seu negócio', subtitulo: 'Agentes Ti Artes', logo: 'logo.svg', chave: 'robo-painel-menu', ativo: abaAtual(), noite: true,
       usuario: { nome: EU.nome || primeiro((EU.email || '').split('@')[0]) || 'Você', email: EU.email || '' },
       menu: [
-        { secao: 'O robô', itens: [
+        { secao: 'O agente', itens: [
           { id: 'inicio', rotulo: 'Início', icone: 'casa', href: '#inicio' },
           { id: 'cerebro', rotulo: 'Cérebro', icone: 'cerebro', href: '#cerebro', ponto: !c.pronto },
           { id: 'testar', rotulo: 'Testar', icone: 'balao', href: '#testar' },
@@ -179,7 +183,7 @@
     const aba = abaAtual();
     $('neg').textContent = aba === 'inicio' ? (EU.negocio || 'Seu negócio') : ABAS[aba];
     $('barra-sec').textContent = aba === 'inicio' ? 'Painel' : (EU.negocio || 'Painel');
-    document.title = `${ABAS[aba]} · Robô Ti Artes`;
+    document.title = `${ABAS[aba]} · Agentes Ti Artes`;
     const s = $('selo');
     if (EU.robo.ativo) { s.className = 'selo ok robo-estado'; s.textContent = `${NOME()} ligado`; }
     else if (EU.pausado) { s.className = 'selo atencao robo-estado'; s.textContent = 'Pausado'; }
@@ -196,7 +200,7 @@
     r.hidden = false;
     if (falta <= 0) { r.className = 'selo atencao'; r.textContent = 'Teste acabou · ver planos'; return; }
     const h = Math.floor(falta / 3600000), m = Math.floor((falta % 3600000) / 60000);
-    r.className = 'selo ok'; r.textContent = `Teste grátis · ${h ? h + 'h' : ''}${String(m).padStart(h ? 2 : 1, '0')}${h ? '' : ' min'}`;
+    r.className = 'selo ok'; r.textContent = h >= 48 ? `Teste grátis · ${Math.floor(h / 24)} dias` : `Teste grátis · ${h ? h + 'h' : ''}${String(m).padStart(h ? 2 : 1, '0')}${h ? '' : ' min'}`;
   }
   setInterval(() => { if (EU) { const antes = EU.teste && EU.teste.ligado; relogio(); if (antes && Date.parse(EU.teste.ate) <= Date.now()) carrega(); } }, 30000);
 
@@ -205,6 +209,12 @@
     if (r.codigo === 'comecar') return telaComecarConta(r.nome);
     if (r.erro) { $('conteudo').innerHTML = aviso('erro', r.erro); return; }
     EU = r;
+    if (cupomGuardado() && EU.teste && !EU.teste.pagou && !EU.teste.cupom) {
+      const c = await api('/cupom', { codigo: cupomGuardado() });
+      esqueceCupom();
+      if (c && !c.erro && c.teste) { EU = c; avisoVolta = { tipo: 'info', texto: `Cupom aplicado: o seu teste grátis vai até ${hora(c.teste.ate)}.` }; }
+      else if (c && c.erro) avisoVolta = { tipo: 'atencao', texto: c.erro };
+    }
     if (!MENU) montaMenu();
     if (lerIgAoVoltar) {
       lerIgAoVoltar = false;
@@ -241,12 +251,16 @@
     $('conteudo').innerHTML = `<section class="aba"><div class="cabeca-aba"><div><p class="rotulo">Falta um passo</p><h1>Qual é o nome do seu negócio?</h1></div></div>
       <form class="cartao" id="f-comecar" style="max-width:560px"><label class="campo">Nome do negócio
       <input id="c-negocio" placeholder="Ateliê Folha Miúda" autocomplete="organization"></label>
-      <label class="aceite" style="display:flex;gap:10px;align-items:flex-start;font-weight:400"><input id="c-aceite" type="checkbox" checked style="width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--teal);flex:none"> Pode me escrever por e-mail sobre o meu teste e o meu robô.</label>
+      <label class="aceite" style="display:flex;gap:10px;align-items:flex-start;font-weight:400"><input id="c-aceite" type="checkbox" checked style="width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--teal);flex:none"> Pode me escrever por e-mail sobre o meu teste e o meu agente.</label>
       <div><button class="bt" type="submit">Começar ${svg('seta')}</button></div><p id="c-erro" class="aviso erro" hidden></p></form></section>`;
     $('f-comecar').onsubmit = async (e) => {
       e.preventDefault();
-      const r = await api('/comecar', { negocio: $('c-negocio').value.trim(), nome, aceita_contato: $('c-aceite').checked });
+      const r = await api('/comecar', { negocio: $('c-negocio').value.trim(), nome, aceita_contato: $('c-aceite').checked, cupom: cupomGuardado() || undefined });
       if (r.erro) { $('c-erro').textContent = r.erro; $('c-erro').hidden = false; return; }
+      if (cupomGuardado()) {
+        esqueceCupom();
+        avisoVolta = r.aviso_cupom ? { tipo: 'atencao', texto: r.aviso_cupom } : (r.teste && r.teste.cupom ? { tipo: 'info', texto: `Cupom aplicado: o seu teste grátis vai até ${hora(r.teste.ate)}.` } : null);
+      }
       EU = r; location.hash = 'cerebro'; if (!MENU) montaMenu(); mostra();
     };
   }
@@ -305,7 +319,7 @@
         <a class="heroi-anel" href="#cerebro" aria-label="Abrir o cérebro do ${esc(NOME())}">${anel(c.nivel)}</a>
       </div>
       ${quadroTeste()}
-      <ol class="passos" aria-label="O caminho até o robô atender">${passos.map((x, i) => `<li class="${x.feito ? 'feito' : ''} ${i === agora ? 'agora' : ''}"><a href="#${x.aba}">
+      <ol class="passos" aria-label="O caminho até o agente atender">${passos.map((x, i) => `<li class="${x.feito ? 'feito' : ''} ${i === agora ? 'agora' : ''}"><a href="#${x.aba}">
         <span class="bola">${x.feito ? svg('check').replace('<svg', '<svg style="width:15px;height:15px;stroke-width:2.6;fill:none;stroke:currentColor"') : i + 1}</span><span>${esc(x.nome)}</span></a></li>`).join('')}</ol>
       <div class="bento">
         <article class="cartao tile"><h2>${ic('agenda')} Hoje</h2><div id="t-hoje"><p class="dica">Carregando…</p></div><a class="lnk" href="#agenda">Abrir a agenda</a></article>
@@ -315,9 +329,11 @@
           <a class="lnk" href="#cerebro">Alimentar</a></article>
         ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<article class="cartao tile largo"><h2>${ic(EU.pausado ? 'play' : 'pausa')} ${EU.pausado ? 'Ele está pausado' : 'Ligar e desligar'}</h2>
           <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
-          <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o robô' : 'Pausar o robô'}</button></div></article>` : ''}
-        <article class="cartao tile ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} O ${esc((EU.nomes || {}).assistente || 'Otto')}, o seu assistente</h2>
-          <p>Quando quem escreve no direct é você, o ${esc((EU.nomes || {}).assistente || 'Otto')} marca, lembra e anota no seu lugar. <span class="selo breve">chega em dezembro</span></p></article>
+          <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></article>` : ''}
+        <article class="cartao tile ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} O ${esc(ASSIST())}, o seu agente assistente</h2>
+          <p>Quando quem escreve no direct é você, do seu perfil pessoal, o ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.
+          ${!(EU.assistente || {}).disponivel ? '<span class="selo breve">chega em breve</span>' : EU.assistente.ligado ? '<span class="selo ok">ligado</span>' : ''}</p>
+          ${(EU.assistente || {}).disponivel && !EU.assistente.ligado ? '<a class="lnk" href="#conectar">Ligar em 1 minuto</a>' : ''}</article>
       </div></section>`;
     enche(alvo);
     const bp = $('pausar');
@@ -402,7 +418,7 @@
   }
 
   /* =====================================================================
-     O CÉREBRO: a pessoa alimenta o robô com o que já tem (arquivo, site, texto) e conversa com o treinador.
+     O CÉREBRO: a pessoa alimenta o agente com o que já tem (arquivo, site, texto) e conversa com o treinador.
      ===================================================================== */
   const ACEITA = { 'application/pdf': 'pdf', 'image/jpeg': 'foto', 'image/png': 'foto', 'image/webp': 'foto', 'text/plain': 'texto', 'text/csv': 'texto' };
   const POR_EXT = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', txt: 'text/plain', csv: 'text/csv' };
@@ -656,7 +672,7 @@
       ${quadroTeste()}
       <div class="cerebro">
         <div class="cerebro-col">
-          <div class="cartao boas-vindas" id="cb-boas" ${contaNova() ? '' : 'hidden'}><h2>Alimente o seu robô em 3 minutos</h2>
+          <div class="cartao boas-vindas" id="cb-boas" ${contaNova() ? '' : 'hidden'}><h2>Alimente o seu agente em 3 minutos</h2>
             <p class="lede">Nada de formulário: mande o que você já tem e converse do seu jeito. Ele lê, organiza e grava sozinho.</p>
             <ol class="tres"><li><span class="n">1</span><b>Mande um arquivo</b><span class="dica">o cardápio, a tabela de preços, a apresentação</span></li>
               <li><span class="n">2</span><b>Cole o seu site</b><span class="dica">ou cole um texto, uma conversa com cliente</span></li>
@@ -671,7 +687,7 @@
               <div><button class="bt fraco" type="submit">Mandar para ele ler</button></div></form>
           </div>
           <div class="cartao leve insta-c" id="cb-insta"></div>
-          <div class="cartao"><h2>${ic('cerebro')} O que ele precisa saber</h2><p class="dica">Os seis pontos que deixam o robô bom de verdade. Toque em "Contar" e fale do seu jeito no chat.</p>
+          <div class="cartao"><h2>${ic('cerebro')} O que ele precisa saber</h2><p class="dica">Os seis pontos que deixam o agente bom de verdade. Toque em "Contar" e fale do seu jeito no chat.</p>
             <ul class="checklist" id="cb-check"></ul></div>
           <div class="cartao"><h2>${ic('doc')} O que ele já leu</h2><div id="cb-fontes"></div></div>
           <div class="cartao"><h2>${ic('balao')} O jeito de falar</h2><p class="dica">Toque no jeito que combina com você. Dá para trocar quando quiser.</p><div id="cb-pers"></div></div>
@@ -708,7 +724,7 @@
       sugestoes: [
         { rotulo: 'Colar a tabela de preços', texto: 'Esta é a minha tabela de preços:\n' },
         { rotulo: 'Meu horário e entrega', texto: 'Atendo de segunda a sexta, das 9h às 18h. Entrego em ' },
-        { rotulo: 'Nunca dá desconto', texto: 'O robô nunca pode dar desconto nem prometer prazo. Isso é comigo.', manda: true },
+        { rotulo: 'Nunca dá desconto', texto: 'O agente nunca pode dar desconto nem prometer prazo. Isso é comigo.', manda: true },
         { rotulo: 'Reclamação vem para mim', texto: 'Quando for reclamação ou pedido de desconto, passa para mim.', manda: true },
         { rotulo: 'Pedir nome e @', texto: 'Para orçamento, pede o nome e o @ do Instagram da pessoa.', manda: true },
       ],
@@ -777,10 +793,10 @@
       <h2>Google Drive <span class="selo breve">em breve</span></h2><p>Tudo o que você mandar aqui vai sozinho para uma pasta no seu Drive. Estamos ligando essa conexão.</p>
       <div class="acoes"><button class="bt fraco" type="button" disabled>Conectar Google Drive</button></div></div></article>`;
     if (!d.ligado) return `<article class="cartao drive"><span class="canal-ic dr" aria-hidden="true">${svg('nuvem')}</span><div style="display:grid;gap:10px">
-      <h2>Google Drive</h2><p>Tudo o que você mandar aqui vai sozinho para uma pasta no seu Drive.${curto ? '' : ' A Ti Artes só mexe na pasta que o robô criar: o resto do seu Drive fica fechado.'}</p>
+      <h2>Google Drive</h2><p>Tudo o que você mandar aqui vai sozinho para uma pasta no seu Drive.${curto ? '' : ' A Ti Artes só mexe na pasta que o agente criar: o resto do seu Drive fica fechado.'}</p>
       <div class="acoes"><button class="bt" type="button" id="drive-ligar">${svg('nuvem')} Conectar Google Drive</button></div></div></article>`;
     return `<article class="cartao drive"><span class="canal-ic dr" aria-hidden="true">${svg('nuvem')}</span><div style="display:grid;gap:10px">
-      <h2>Google Drive <span class="selo ok">conectado</span></h2><p>${d.email ? `Conta <b>${esc(d.email)}</b>. ` : ''}Tudo o que você mandar vai sozinho para a pasta do robô.</p>
+      <h2>Google Drive <span class="selo ok">conectado</span></h2><p>${d.email ? `Conta <b>${esc(d.email)}</b>. ` : ''}Tudo o que você mandar vai sozinho para a pasta do agente.</p>
       <div class="acoes">${d.pasta_link ? `<a class="bt" href="${esc(d.pasta_link)}" target="_blank" rel="noopener">${svg('pasta')} Abrir a pasta</a>` : ''}<button class="bt fraco" type="button" id="drive-desligar">Desconectar</button></div></div></article>`;
   }
   function ligaDrive(alvo) {
@@ -798,6 +814,7 @@
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">Contas</p><h1>Conectar as suas contas</h1>
       <p class="lede">A conexão é pelo login oficial do Instagram, da Meta e do Google. A Ti Artes nunca vê a sua senha.</p></div></div>
+      ${cartaoModo()}
       <div class="grade">
         <article class="cartao"><div class="canal-topo"><span class="canal-ic ig" aria-hidden="true">${svg('camera')}</span><h2>Instagram</h2></div>
           ${ig.conectado ? `<div class="perfil">${ig.foto ? `<img src="${esc(ig.foto)}" alt="">` : `<span class="ini">${esc((ig.usuario || '?')[0].toUpperCase())}</span>`}
@@ -810,14 +827,17 @@
             <p class="dica">Abre o login do Instagram. Ele vai pedir para você permitir que a "Ti Artes Atendimento" leia o seu perfil e responda as suas mensagens.</p>`}
         </article>
         <article class="cartao"><div class="canal-topo"><span class="canal-ic wa" aria-hidden="true">${svg('balao')}</span><h2>WhatsApp</h2></div>
-          ${wa.conectado ? '<p><span class="selo ok">conectado</span></p><p>O robô responde no seu número. O que você digitar no celular, ele vê e se cala naquela conversa.</p>'
+          ${wa.conectado ? '<p><span class="selo ok">conectado</span></p><p>O agente responde no seu número. O que você digitar no celular, ele vê e se cala naquela conversa.</p>'
           : wa.liberado ? `<p>Conecte o número que você já usa no WhatsApp Business, ou um número novo.</p>
             <div><button class="bt" id="wa-conectar" type="button">Conectar meu WhatsApp</button></div>
             <p class="dica">A Meta está liberando esta conexão para todos, com previsão para o começo de dezembro. As mensagens do WhatsApp são cobradas pela Meta, na conta Meta da sua empresa.</p>`
           : `<p>O WhatsApp entra no plano <b>Instagram + WhatsApp</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`}
         </article>
       </div>
+      ${cartaoAssistente()}
       ${cartaoDrive(true)}</section>`;
+    ligaAssistente(alvo);
+    ligaModo(alvo);
     const vai = async (rota, bt) => { bt.disabled = true; const r = await api(rota, {}); if (r.url) location.href = r.url; else { bt.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); } };
     if ($('ig-conectar')) $('ig-conectar').onclick = (e) => vai('/instagram', e.currentTarget);
     if ($('ig-renovar')) $('ig-renovar').onclick = (e) => vai('/instagram', e.currentTarget);
@@ -828,6 +848,69 @@
       bd.disabled = true; const r = await api('/instagram-desligar', {}); if (!r.erro) EU = r; mostra();
     };
     ligaDrive(alvo);
+  }
+
+  /* ---------- o modo da conta: os dois agentes, só o atendimento ou só o assistente ---------- */
+  const MODOS = [
+    { id: 'ambos', nome: 'Os dois', txt: 'Clientes falam com o agente de atendimento. Quando é você, quem responde é o assistente.' },
+    { id: 'atendimento', nome: 'Só atendimento', txt: 'O agente responde os clientes. Você não usa o assistente.' },
+    { id: 'assistente', nome: 'Só assistente', txt: 'Os clientes não recebem resposta automática. O agente organiza a sua agenda e as suas anotações.' },
+  ];
+  function cartaoModo() {
+    if (!(EU.assistente || {}).disponivel) return '';
+    const atual = EU.modo || 'ambos';
+    return `<article class="cartao modos"><h2>Como os agentes trabalham nesta conta</h2>
+      <div class="modos-opcoes" role="radiogroup" aria-label="Como os agentes trabalham">${MODOS.map((x) => `<button type="button" role="radio" class="modo ${atual === x.id ? 'on' : ''}" aria-checked="${atual === x.id}" data-modo="${x.id}"><b>${esc(x.nome)}</b><span>${esc(x.txt)}</span></button>`).join('')}</div>
+      <p class="dica">O preço é o mesmo nos três. Troque quando quiser.</p></article>`;
+  }
+  function ligaModo(alvo) {
+    alvo.querySelectorAll('[data-modo]').forEach((b) => b.onclick = async () => {
+      if (b.classList.contains('on')) return;
+      alvo.querySelectorAll('[data-modo]').forEach((x) => { x.disabled = true; });
+      const r = await api('/modo', { modo: b.dataset.modo });
+      if (r.erro) { alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro)); alvo.querySelectorAll('[data-modo]').forEach((x) => { x.disabled = false; }); return; }
+      EU = r;
+      avisoVolta = { tipo: 'info', texto: r.modo === 'assistente' ? `Pronto: agora só você recebe resposta, do ${ASSIST()}. Os clientes não recebem resposta automática.`
+        : r.modo === 'atendimento' ? 'Pronto: o agente responde os clientes e o assistente fica desligado.' : 'Pronto: os dois agentes estão valendo.' };
+      mostra();
+    });
+  }
+
+  /* ---------- o agente assistente: o dono manda um código do perfil pessoal e passa a falar com o assistente ---------- */
+  function cartaoAssistente() {
+    const a = EU.assistente || {}, ig = EU.instagram || {};
+    const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Agente assistente <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
+    if (!a.disponivel) return `<article class="cartao" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
+    if (EU.modo === 'atendimento') return `<article class="cartao" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar o ${esc(ASSIST())}, escolha "Os dois" ou "Só assistente" aqui em cima.</p></article>`;
+    if (a.ligado) return `<article class="cartao" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
+      <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é o ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
+      <p class="dica">Para ver como os clientes são atendidos, escreva "modo cliente" (volta com "modo dono").</p>
+      <div class="botoes"><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
+    if (!ig.conectado) return `<article class="cartao" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga o ${esc(ASSIST())} em 1 minuto.</p></article>`;
+    return `<article class="cartao" id="assist">${topo}
+      <p>Quando quem escreve no direct é você, quem responde é o ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ele saber que é você:</p>
+      <ol class="passinhos"><li>Toque em <b>Mostrar o meu código</b>.</li><li>Abra o Instagram no <b>seu perfil pessoal</b> (não no do negócio).</li><li>Mande o código numa mensagem para <b>@${esc(ig.usuario || 'o seu negócio')}</b>.</li></ol>
+      <div class="botoes"><button class="bt pequeno" id="assist-codigo" type="button">Mostrar o meu código</button></div>
+      <div id="assist-mostra" hidden></div></article>`;
+  }
+  function ligaAssistente(alvo) {
+    const bc = $('assist-codigo');
+    if (bc) bc.onclick = async () => {
+      bc.disabled = true;
+      const r = await api('/dono-codigo', {});
+      bc.disabled = false;
+      const m = $('assist-mostra'); m.hidden = false;
+      if (r.erro || !r.codigo) { m.innerHTML = aviso('erro', r.erro || 'Não deu para gerar o código.'); return; }
+      m.innerHTML = `<p class="codigo-dono num" aria-label="Código">${esc(r.codigo.slice(0, 3))} ${esc(r.codigo.slice(3))}</p>
+        <p class="dica">Vale por ${r.minutos} minutos e uma vez só. Mande só os 6 números para <b>@${esc(r.conta || 'o seu negócio')}</b>, do seu perfil pessoal. Ele responde confirmando.</p>
+        <div class="botoes"><button class="bt pequeno fraco" id="assist-ja" type="button">Já mandei</button></div>`;
+      $('assist-ja').onclick = () => carrega();
+    };
+    const bd = $('assist-desligar');
+    if (bd) bd.onclick = async () => {
+      if (bd.dataset.certeza !== '1') { bd.dataset.certeza = '1'; bd.textContent = 'Tem certeza? Toque de novo'; return; }
+      bd.disabled = true; const r = await api('/dono-desligar', {}); if (!r.erro) EU = r; mostra();
+    };
   }
 
   /* ---------- Arquivos ---------- */
@@ -856,16 +939,19 @@
   async function telaPlano(alvo, topo) {
     const p = EU.plano;
     const ST = { teste: `Em teste grátis até ${dia(EU.pago_ate)}. O cartão só é cobrado depois.`, ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}.` : `Ativa. Renova sozinha em ${dia(EU.pago_ate)}.`,
-      atrasada: 'O último pagamento não passou. Atualize o cartão para o robô não parar.', cancelada: `Cancelada. O robô responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o robô parou.', novo: '' };
+      atrasada: 'O último pagamento não passou. Atualize o cartão para o agente não parar.', cancelada: `Cancelada. O agente responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o agente parou.', novo: '' };
     const cartoes = EU.planos.map((x) => `<article class="plano ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
-      <ul><li>Até ${inteiro(x.respostas)} mensagens do robô por mês</li><li>Agenda, notas e arquivos</li>${x.canais.includes('whatsapp') ? '<li>WhatsApp assim que a Meta liberar (começo de dezembro)</li>' : '<li>Instagram sem custo da Meta</li>'}</ul>
+      <ul><li>Até ${inteiro(x.respostas)} mensagens do agente por mês</li><li>Agenda, notas e arquivos</li>${x.canais.includes('whatsapp') ? '<li>WhatsApp assim que a Meta liberar (começo de dezembro)</li>' : '<li>Instagram sem custo da Meta</li>'}</ul>
       <div class="botoes"><button class="bt pequeno" type="button" data-plano="${x.id}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Cartão: ${EU.teste_dias} dias grátis` : 'Assinar no cartão'}</button>
       <button class="bt pequeno fraco" type="button" data-plano="${x.id}" data-forma="pix">Pagar 1 mês no Pix</button></div></article>`).join('');
     const pagando = p && EU.em_dia;
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">Conta</p><h1>Plano e uso</h1></div></div>
       ${quadroTeste()}
+      ${(EU.teste && !EU.teste.pagou && !EU.teste.cupom && !EU.plano) ? `<form class="cartao leve cupom" id="f-cupom"><label class="campo">Tem um cupom?
+        <span class="linha-cupom"><input id="cupom" autocomplete="off" autocapitalize="characters" placeholder="Código do cupom"><button class="bt pequeno fraco" type="submit">Usar</button></span></label>
+        <p id="cupom-msg" class="dica" hidden></p></form>` : ''}
       ${EU.teste_pagamento ? aviso('atencao', 'Modo de teste: nada é cobrado de verdade. No cartão, use 4242 4242 4242 4242, qualquer data futura e qualquer código.') : ''}
       ${pagando ? `<div class="cartao"><h2>${esc(p.nome)} <span class="selo ok">${esc(EU.status)}</span></h2><p>${esc(ST[EU.status] || '')}</p>
         <div class="botoes"><button class="bt pequeno" id="portal" type="button">Trocar cartão ou cancelar</button></div>
@@ -874,7 +960,7 @@
       <div class="cartao" id="uso"><h2>${ic('relogio')} Uso do mês</h2><p class="dica">Carregando…</p></div>
       ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<div class="cartao"><h2>${ic(EU.pausado ? 'play' : 'pausa')} Ligar e desligar</h2>
         <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
-        <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o robô' : 'Pausar o robô'}</button></div></div>` : ''}
+        <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></div>` : ''}
       ${EU.cartao ? '<p class="dica">Para trocar de plano, use "Trocar cartão ou cancelar": a troca fica na mesma assinatura e você não paga duas vezes.</p>'
         : `<h2 style="font-size:24px">${pagando ? 'Pagar mais um mês' : 'Escolha o plano'}</h2>
       <div class="planos">${cartoes}</div>
@@ -884,6 +970,14 @@
       const r = await api('/assinar', { plano: b.dataset.plano, forma: b.dataset.forma });
       if (r.url) location.href = r.url; else { b.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); }
     });
+    const fc = $('f-cupom');
+    if (fc) fc.onsubmit = async (e) => {
+      e.preventDefault();
+      const cod = $('cupom').value.trim(); if (!cod) return;
+      const r = await api('/cupom', { codigo: cod });
+      if (r.erro) { $('cupom-msg').textContent = r.erro; $('cupom-msg').hidden = false; return; }
+      EU = r; avisoVolta = { tipo: 'info', texto: `Cupom aplicado: o seu teste grátis vai até ${hora(r.teste.ate)}.` }; mostra();
+    };
     if ($('portal')) $('portal').onclick = async (e) => { e.currentTarget.disabled = true; const r = await api('/portal', {}); if (r.url) location.href = r.url; else alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); };
     const bp = $('pausar');
     if (bp) bp.onclick = async () => { bp.disabled = true; const r = await api('/pausar', { pausado: !EU.pausado }); if (!r.erro) EU = r; mostra(); };
@@ -900,9 +994,9 @@
     el.innerHTML = `<h2>${ic('relogio')} Uso de ${esc(nomeMes(r.mes))}</h2>
       <p class="num"><b style="font:700 34px var(--serif)">${inteiro(r.franquia.usadas)}</b> de ${inteiro(r.franquia.incluidas)} mensagens incluídas no seu plano</p>
       <div class="medidor ${pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="Mensagens usadas" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, pct)}%"></i></div>
-      <p class="dica">${pct >= 100 ? 'Passou do limite do plano. O robô continua respondendo.' : pct >= 80 ? 'Já usou mais de 80%. O robô continua respondendo normalmente.' : 'Conta cada mensagem que o robô envia (texto e foto). Os testes do painel não entram.'}</p>
+      <p class="dica">${pct >= 100 ? 'Passou do limite do plano. O agente continua respondendo.' : pct >= 80 ? 'Já usou mais de 80%. O agente continua respondendo normalmente.' : 'Conta cada mensagem que o agente envia (texto e foto). Os testes do painel não entram.'}</p>
       <div class="numeros">
-        <div><b>${inteiro(r.respostas)}</b><span>respostas escritas pelo robô</span></div>
+        <div><b>${inteiro(r.respostas)}</b><span>respostas escritas pelo agente</span></div>
         ${canais.length ? canais.map(([c, n]) => `<div><b>${inteiro(n)}</b><span>no ${esc(c === 'whatsapp' ? 'WhatsApp' : c === 'instagram' ? 'Instagram' : c)}</span></div>`).join('') : '<div><b>0</b><span>por canal</span></div>'}
         <div><b>${r.ultima ? dia(r.ultima) : '—'}</b><span>última resposta</span></div>
       </div>

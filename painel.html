@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Painel · Robô Ti Artes</title>
+<title>Painel · Agentes Ti Artes</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="color-scheme" content="dark light">
 <script>
   /* o tema nasce antes de pintar (sem piscar): escuro, a não ser que a pessoa tenha desligado o "Modo noite" */
@@ -66,6 +68,7 @@ body { min-height: 100dvh; font-size: 16.5px; background: transparent; }
 .gs-logo { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; color: var(--menta-texto); font: 700 20px var(--serif);
   background: radial-gradient(circle at 32% 26%, #7DF5DC, #18B09C 58%, #0A6E62); box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 8px 18px -6px rgba(53,224,191,.55); overflow: hidden; }
 .gs-logo img { width: 100%; height: 100%; object-fit: cover; }
+.gs-logo:has(img) { background: #0B1D1C; border: 1px solid rgba(46, 220, 198, .25); padding: 5px; }
 .gs-marca { min-width: 0; display: grid; gap: 3px; white-space: nowrap; overflow: hidden; }
 .gs-marca b { font: 700 18px var(--serif); overflow: hidden; text-overflow: ellipsis; }
 .gs-marca small { font-size: 13px; color: var(--gs-fraco); font-weight: 400; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); letter-spacing: .02em; }
@@ -451,6 +454,20 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .brinde svg { width: 20px; height: 20px; flex: none; margin-top: 2px; fill: none; stroke: var(--teal); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 @media (max-width: 860px) { .brinde { right: 16px; left: 16px; bottom: 96px; max-width: none; } }
 @media (prefers-reduced-motion: reduce) { .brinde { transition: none; } }
+/* 15/11: o modo da conta */
+.modos-opcoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.modo { text-align: left; display: grid; gap: 6px; padding: 14px; border-radius: 14px; border: 1.5px solid var(--linha); background: transparent; color: inherit; font: inherit; cursor: pointer; min-height: 44px; }
+.modo b { font-size: 16px; }
+.modo span { font-size: 14px; opacity: .8; line-height: 1.4; }
+.modo.on { border-color: var(--teal, #19A693); background: rgba(53, 224, 191, .08); }
+.modo.on b::before { content: '● '; color: var(--teal, #19A693); }
+.modo:disabled { opacity: .6; cursor: progress; }
+@media (max-width: 720px) { .modos-opcoes { grid-template-columns: 1fr; } }
+/* 15/11: o código do agente assistente e o cupom */
+.codigo-dono { font: 700 40px var(--mono, ui-monospace); letter-spacing: .14em; margin: 6px 0; color: var(--tinta); }
+.passinhos { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 4px; }
+.cupom .linha-cupom { display: flex; gap: 8px; }
+.cupom .linha-cupom input { flex: 1; min-width: 0; text-transform: uppercase; }
 </style>
 </head>
 <body>

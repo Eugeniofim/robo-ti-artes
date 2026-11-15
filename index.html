@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Robô Ti Artes</title>
+<title>Agentes de IA Ti Artes</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="O Sol responde os clientes no seu Instagram e no WhatsApp, de dia e de madrugada. Quando quem escreve é você, o Otto anota. Por assinatura, a partir de R$ 147 por mês, com 7 dias grátis.">
+<meta name="description" content="Agente de atendimento com IA que responde os clientes no seu Instagram e WhatsApp na hora, 24 horas, com os seus preços e o seu jeito. E um agente assistente que marca e anota quando quem escreve é você. A partir de R$ 147 por mês, teste grátis sem cartão.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -56,7 +58,8 @@ main, .nav, footer { position: relative; z-index: 1; }
   background: var(--vidro); border: 1px solid var(--vidro-borda); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 20px 50px -24px rgba(0, 0, 0, .8);
   -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
 .marca { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; margin-right: auto; }
-.marca i { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg, var(--sinal), var(--teal)); display: grid; place-items: center; font: 700 13px var(--serif); color: #062421; font-style: normal; }
+.marca img { width: 32px; height: 32px; display: block; }
+.marca small { font: italic 400 14px var(--serif); color: #8FEBDC; margin-right: 4px; }
 .marca b { font: 700 16px var(--serif); }
 .nav .links { display: flex; gap: 2px; }
 .nav .links a, .nav .entrar { color: var(--apoio); text-decoration: none; font-weight: 700; font-size: 15px; padding: 10px 12px; border-radius: 999px; min-height: 44px; display: inline-flex; align-items: center; }
@@ -268,6 +271,41 @@ footer a { color: var(--apoio); }
   .preco { font-size: 50px; }
   .calc, .plano, .cobre > div { padding: 22px; }
 }
+/* 15/11: os três jeitos de usar */
+.jeitos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+.jeito { padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.jeito h3 { font-size: 26px; }
+.jeito .tipo { align-self: flex-start; padding: 4px 11px; border-radius: 999px; font: 600 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.jeito .tipo.sol { background: rgba(53, 224, 191, .14); color: var(--sinal); }
+.jeito .tipo.otto { background: rgba(242, 184, 75, .16); color: var(--ambar); }
+.jeito .tipo.ambos { background: linear-gradient(90deg, rgba(53, 224, 191, .18), rgba(242, 184, 75, .2)); color: #fff; }
+.jeito.dois { border-color: rgba(242, 184, 75, .35); }
+.jeito .antes { color: var(--apoio); font-size: 15px; }
+.jeito .antes b { color: #F3A79B; font-weight: 700; }
+.jeito ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 15px; }
+.jeito li { padding-left: 18px; position: relative; }
+.jeito li::before { content: ''; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 2px; background: var(--sinal); }
+.mini-fio { margin-top: auto; display: grid; gap: 8px; padding-top: 6px; }
+.mini-fio .b { margin: 0; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.4; max-width: 92%; color: var(--texto); }
+.mini-fio .ela { background: rgba(255, 255, 255, .08); justify-self: start; border-bottom-left-radius: 4px; }
+.mini-fio .robo { background: rgba(25, 166, 147, .32); justify-self: end; border-bottom-right-radius: 4px; }
+.mini-fio .otto { background: rgba(242, 184, 75, .24); color: #FFF4DE; justify-self: end; border-bottom-right-radius: 4px; }
+.tambem { margin-top: 22px !important; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: none !important; }
+.tambem b { color: var(--texto); margin-right: 4px; }
+.tambem span { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--linha); font-size: 14px; color: var(--texto); }
+@media (max-width: 900px) { .jeitos { grid-template-columns: 1fr; } }
+/* 15/11: as dores, o ganho de cada agente e a assinatura do rodapé */
+.dores { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; max-width: 34em; }
+.dores li { position: relative; padding: 12px 14px 12px 40px; border-radius: 14px; background: rgba(14, 30, 33, .55); border: 1px solid var(--linha); color: var(--texto); font-size: 16px; line-height: 1.45;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.dores li::before { content: ''; position: absolute; left: 15px; top: 17px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #F07A6A; }
+.dores b { color: #fff; }
+.rosto .ganho { margin-top: 10px; font: 700 17px var(--serif); color: #fff; }
+.rosto .papel .selo { margin-left: 6px; }
+.selo.pronto { background: rgba(53, 224, 191, .16); color: var(--sinal); }
+footer .assina { display: inline-flex; align-items: center; gap: 8px; }
+footer .assina img { width: 22px; height: 22px; }
+.vend header .logo-vend { width: 36px; height: 36px; flex: none; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -276,8 +314,8 @@ footer a { color: var(--apoio); }
 
 <nav class="nav" aria-label="Principal">
   <div class="pilula-nav">
-    <a class="marca" href="#topo"><i>Ti</i><b>Ti Artes</b></a>
-    <div class="links"><a href="#virada">Como é</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <a class="marca" href="#topo"><img src="logo.svg" alt="" width="32" height="32"><b><small>studio</small>Ti Artes</b></a>
+    <div class="links"><a href="#virada">Como é</a><a href="#exemplos">Exemplos</a><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
     <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
     <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
   </div>
@@ -288,14 +326,14 @@ footer a { color: var(--apoio); }
   <section class="ato heroi" id="topo" data-cena="heroi">
     <div class="miolo">
       <div class="esq">
-        <p class="rotulo">Robô de atendimento · Instagram e WhatsApp</p>
-        <h1 style="margin-top:16px">O seu direct responde sozinho. E quando <em>você</em> escreve, ele anota.</h1>
-        <p class="lede">Uma conta, dois rostos. O <b>Sol</b> atende quem escreve para o seu negócio, com os seus preços e o seu jeito. O <b>Otto</b> é o seu assistente: quando quem escreve é você, ele marca, lembra e anota.</p>
+        <p class="rotulo">Agentes de IA · Instagram e WhatsApp</p>
+        <h1 style="margin-top:16px">Cada mensagem sem resposta é uma venda <em>que foi para outro.</em></h1>
+        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. E quando quem escreve é você, quem responde é o seu <b>agente assistente</b>: marca, anota e organiza o seu dia.</p>
         <div class="acoes">
-          <a class="bt" href="entrar.html?criar=1">Montar o meu robô grátis <span aria-hidden="true">→</span></a>
-          <a class="bt fraco" href="#virada">Ver o robô conversando</a>
+          <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
+          <a class="bt fraco" href="#rostos">Ver o agente conversando</a>
         </div>
-        <p class="garantias"><span>Sem cartão para testar</span><span>Sem taxa de instalação</span><span>Cancela no painel</span></p>
+        <p class="garantias"><span>Sem cartão para testar</span><span>Pronto em uma tarde</span><span>Cancela quando quiser</span></p>
         <p class="desce"><i aria-hidden="true"></i>role para ver</p>
       </div>
     </div>
@@ -307,16 +345,21 @@ footer a { color: var(--apoio); }
       <div class="dir">
         <p class="hora num">23:41<small>sábado · você dormindo</small></p>
         <h2>A Marina perguntou o preço do arranjo. Você estava dormindo. <em>O Sol, não.</em></h2>
-        <p class="lede">Quem escreve à noite e não recebe resposta compra de quem responde. O robô responde na hora, no idioma da pessoa, e deixa o pedido anotado para você ver de manhã.</p>
+        <p class="lede">Quem escreve à noite e não recebe resposta compra de quem responde. O agente de atendimento responde na hora, no idioma da pessoa, e deixa o pedido anotado para você ver de manhã.</p>
+        <ul class="dores">
+          <li><b>"Quanto custa?"</b> o dia inteiro, e você parando o que está fazendo para responder.</li>
+          <li><b>Cliente que escreveu no domingo</b> e, quando você viu, já tinha fechado com outro.</li>
+          <li><b>Pedido de orçamento</b> que ficou para depois e ninguém lembrou de retornar.</li>
+        </ul>
       </div>
     </div>
   </section>
 
   <!-- 3. a virada: a tela para e a rolagem gira o balão de teal (Sol) para âmbar (Otto) -->
-  <section class="virada" id="virada" data-cena="virada" aria-label="Uma conta, dois rostos">
+  <section class="virada" id="virada" data-cena="virada" aria-label="Dois agentes, uma conta só">
     <div class="gruda">
-      <div class="legenda sol"><p class="rotulo">quando o cliente escreve</p><h2 style="margin-top:10px">O <em>Sol</em> atende.</h2><p>Responde, mostra os preços e anota o pedido.</p></div>
-      <div class="legenda otto"><p class="rotulo otto-r">quando você escreve</p><h2 style="margin-top:10px">O <em>Otto</em> anota.</h2><p>Marca, lembra e organiza o seu dia.</p></div>
+      <div class="legenda sol"><p class="rotulo">quando o cliente escreve</p><h2 style="margin-top:10px">O agente de <em>atendimento</em> vende.</h2><p>Responde, mostra os preços e anota o pedido.</p></div>
+      <div class="legenda otto"><p class="rotulo otto-r">quando você escreve</p><h2 style="margin-top:10px">O agente <em>assistente</em> organiza.</h2><p>Marca, anota e confirma os horários.</p></div>
       <p class="dica-virada">uma conta só · role para virar</p>
     </div>
   </section>
@@ -326,13 +369,15 @@ footer a { color: var(--apoio); }
     <div class="miolo">
       <div class="esq">
         <p class="rotulo">Os dois agentes</p>
-        <h2 style="margin-top:12px">A mesma conta sabe quem está do outro lado</h2>
-        <p class="lede">Cliente escreveu, quem responde é o Sol. Você escreveu, quem responde é o Otto. Sem trocar de aplicativo.</p>
+        <h2 style="margin-top:12px">Dois agentes. Uma conta só.</h2>
+        <p class="lede">Quem é cliente fala com o agente de atendimento. Quando é você, do seu perfil pessoal, quem responde é o seu agente assistente. Sem outro número e sem outro aplicativo.</p>
         <div class="cartoes-rosto">
-          <article class="rosto vidro"><h3>Sol</h3><p class="papel">Atendimento</p>
-            <ul><li>Fala dos seus serviços e preços</li><li>Anota pedidos, visitas e orçamentos</li><li>Passa para você reclamação e desconto</li><li>Entende áudio e foto</li><li>Nunca inventa preço nem prazo</li></ul></article>
-          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Assistente · <span class="selo">chega em dezembro</span></p>
-            <ul><li>Marca reunião e visita</li><li>Anota tarefa e lembra na hora</li><li>Cadastra cliente</li><li>Diz quem está esperando</li><li>Apaga só depois que você confirma</li></ul></article>
+          <article class="rosto vidro"><h3>Sol</h3><p class="papel">Agente de atendimento · para os seus clientes</p>
+            <p class="ganho">Você para de perder venda por demora.</p>
+            <ul><li>Responde na hora, de madrugada e no fim de semana</li><li>Fala dos seus serviços e preços, do seu jeito</li><li>Anota pedidos, visitas e orçamentos para você</li><li>Entende áudio e foto</li><li>Nunca inventa preço nem prazo: o que não sabe, passa para você</li></ul></article>
+          <article class="rosto otto vidro"><h3>Otto</h3><p class="papel">Agente assistente · para você <span class="selo" id="selo-otto">chega em breve</span></p>
+            <p class="ganho">Você para de esquecer quem pediu horário.</p>
+            <ul><li>Marca atendimento, visita e entrega na agenda</li><li>Anota o que você pedir, por texto, áudio ou foto</li><li>Confirma os horários que os clientes pediram</li><li>Diz o que você tem hoje e quem está esperando</li><li>Leva a agenda para o seu Google Agenda</li></ul></article>
         </div>
       </div>
       <div class="dir" style="align-self:center">
@@ -351,12 +396,47 @@ footer a { color: var(--apoio); }
           </div>
           <div class="fio" id="fio-otto" hidden>
             <p class="nota">a dona escreve no mesmo direct</p>
-            <div class="b ela">Otto, marca a visita da Marina quinta às 15h e me lembra de pedir eucalipto amanhã<small>Rosa · 08:02</small></div>
-            <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". Amanhã às 9h eu te lembro do eucalipto.<small>Otto · 08:02</small></div>
+            <div class="b ela">Otto, marca a visita da Marina quinta às 15h e anota pra eu pedir eucalipto<small>Rosa · 08:02</small></div>
+            <div class="b otto">Feito. Visita da Marina na quinta, 19/11, às 15h, com a nota "12 mesas, verde e branco". E anotei: pedir eucalipto.<small>Otto · 08:02</small></div>
             <div class="b ela">Quem me escreveu ontem que eu não respondi?<small>Rosa · 08:03</small></div>
             <div class="b otto">Dois pedidos esperando: a Marina (casamento, já com visita) e o Caio, que quer um vaso grande até sexta.<small>Otto · 08:03</small></div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4b. exemplos: os três jeitos de usar (15/11, pedido dele: "a veterinária, a pousada, a ceramista") -->
+  <section class="ato" id="exemplos" data-cena="exemplos">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Exemplos · três jeitos de usar</p>
+        <h2 style="margin-top:12px">Atendimento, assistente ou os dois. <em>Você escolhe.</em></h2>
+        <p>Mesmo plano, mesmo preço, e você troca no painel quando quiser. Veja como fica o dia de quem usa:</p>
+        <div class="jeitos">
+          <article class="jeito vidro">
+            <p class="tipo sol">Só atendimento</p>
+            <h3>Uma pousada</h3>
+            <p class="antes"><b>O problema:</b> pergunta de preço e de data livre chegando de madrugada, e reserva que vai para outro lugar porque ninguém respondeu a tempo.</p>
+            <ul><li>Responde preço, datas e o que está incluso, no idioma do hóspede</li><li>Anota o pedido de reserva com datas e número de pessoas</li><li>Passa para você o que pede decisão: desconto, grupo grande, pet</li></ul>
+            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Tem quarto para casal de 12 a 14 de dezembro?</p><p class="b robo">Tem, sim! A suíte com vista sai R$ 380 a diária, com café. Anotei 12 a 14/12 para dois, e a recepção confirma cedo. Qual é o seu nome?</p></div>
+          </article>
+          <article class="jeito vidro">
+            <p class="tipo otto">Só assistente</p>
+            <h3>Uma ceramista</h3>
+            <p class="antes"><b>O problema:</b> encomenda anotada em papel, queima do forno guardada de cabeça e feira esquecida.</p>
+            <ul><li>Marca queima, entrega e feira na agenda, que vai para o Google Agenda</li><li>Anota encomenda por áudio, com a mão no barro</li><li>Diz o que tem para hoje e quem está esperando</li></ul>
+            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">(áudio) anota 6 canecas azuis da Júlia pra sexta, e marca a queima quinta às 8h</p><p class="b otto">Anotei as 6 canecas azuis da Júlia para sex 21/11 e marquei a queima na qui 20/11 às 8h.</p></div>
+          </article>
+          <article class="jeito vidro dois">
+            <p class="tipo ambos">Os dois</p>
+            <h3>Uma clínica veterinária</h3>
+            <p class="antes"><b>O problema:</b> a recepção parando para responder "tem horário pro banho?" no Instagram e no WhatsApp, no meio da consulta.</p>
+            <ul><li>O atendimento responde banho e tosa, vacinas e endereço, e anota os pedidos de horário</li><li>A veterinária confirma pelo assistente, numa mensagem</li><li>Retornos e lembretes ficam na agenda dela</li></ul>
+            <div class="mini-fio" aria-label="Exemplo de conversa"><p class="b ela">Otto, confirma o banho do Thor amanhã às 10h</p><p class="b otto">Confirmado: banho do Thor na sex 21/11 às 10h, na sua agenda.</p></div>
+          </article>
+        </div>
+        <p class="tambem"><b>Também serve para</b> <span>salão de beleza</span><span>confeitaria</span><span>estúdio de tatuagem</span><span>personal trainer</span><span>imobiliária</span><span>guia de turismo</span><span>fotógrafo</span><span>loja de roupa</span></p>
       </div>
     </div>
   </section>
@@ -367,13 +447,13 @@ footer a { color: var(--apoio); }
       <div class="largo secao-titulo">
         <p class="rotulo">Como funciona</p>
         <h2 style="margin-top:12px">Em uma tarde, sem técnico e sem formulário</h2>
-        <p>Você ensina o robô conversando, do seu jeito. Ele organiza o que você contou e já sai respondendo como alguém da casa.</p>
+        <p>Você manda o que já tem (tabela de preços, fotos, o seu Instagram) e conta o resto conversando. O agente organiza tudo e já sai respondendo como alguém da casa.</p>
         <ol class="passos">
-          <li class="vidro"><b>Crie a conta</b><p>E-mail e senha. Sem cartão.</p></li>
-          <li class="vidro"><b>Conte do negócio</b><p>Escreva ou cole a tabela de preços. Ele aprende na hora.</p></li>
+          <li class="vidro"><b>Crie a conta</b><p>Com o Google ou com e-mail. Sem cartão.</p></li>
+          <li class="vidro"><b>Mande o que já tem</b><p>PDF, fotos, prints, o site ou o seu Instagram. Ele lê e aprende.</p></li>
           <li class="vidro"><b>Conecte o Instagram</b><p>Pelo login oficial. Ninguém vê a sua senha.</p></li>
           <li class="vidro"><b>Teste como cliente</b><p>Pergunte o que os clientes perguntam e ajuste.</p></li>
-          <li class="vidro"><b>Teste no ar</b><p>4 horas grátis para montar, testar e ver ele respondendo. Gostou, escolhe o plano.</p></li>
+          <li class="vidro"><b>Veja respondendo</b><p>4 horas grátis para testar no seu Instagram de verdade. Gostou, escolhe o plano.</p></li>
         </ol>
       </div>
     </div>
@@ -384,7 +464,7 @@ footer a { color: var(--apoio); }
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">Planos</p>
-        <h2 style="margin-top:12px">Quanto tempo o Sol devolve para você?</h2>
+        <h2 style="margin-top:12px">Quanto tempo o agente devolve para você?</h2>
         <p>Mexa no número e veja o plano que cabe no seu movimento.</p>
         <div class="calc vidro" style="margin-top:32px">
           <div>
@@ -394,7 +474,7 @@ footer a { color: var(--apoio); }
             <label class="trava"><input id="com-whats" type="checkbox"> Também no WhatsApp</label>
           </div>
           <div class="resultado" aria-live="polite">
-            <div><span>Respostas do robô no mês</span><b class="num" id="r-mes">1.200</b></div>
+            <div><span>Respostas do agente no mês</span><b class="num" id="r-mes">1.200</b></div>
             <div><span>Tempo seu que ele assume no mês</span><b class="num" id="r-horas">30 h</b></div>
             <div id="linha-meta"><span>WhatsApp, na sua conta Meta</span><b class="num" id="r-meta">R$ 0</b></div>
             <p class="recomenda" id="r-plano">O plano <b>Instagram</b> cabe com folga.</p>
@@ -404,19 +484,19 @@ footer a { color: var(--apoio); }
           <article class="plano vidro">
             <h3>Instagram</h3>
             <p class="preco num">R$ 147<small> por mês</small></p>
-            <ul><li>O Sol no direct do Instagram</li><li>Até 2.000 mensagens do robô por mês</li><li>Agenda e notas no mesmo painel</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no direct do Instagram</li><li>Agente assistente para você</li><li>Até 2.000 mensagens por mês</li><li>Agenda e notas no mesmo painel</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt fraco" href="entrar.html?criar=1&amp;plano=instagram">Começar com o Instagram</a>
           </article>
           <article class="plano destaque vidro">
             <span class="tag">o mais completo</span>
             <h3>Instagram + WhatsApp</h3>
             <p class="preco num">R$ 197<small> por mês</small></p>
-            <ul><li>O Sol no Instagram e no WhatsApp</li><li>Até 4.000 mensagens do robô por mês</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
+            <ul><li>Agente de atendimento no Instagram e no WhatsApp</li><li>Agente assistente para você</li><li>Até 4.000 mensagens por mês</li><li>Junto com o WhatsApp Business do seu celular</li><li>Suporte da Ti Artes</li></ul>
             <a class="bt" href="entrar.html?criar=1&amp;plano=completo">Começar com os dois <span aria-hidden="true">→</span></a>
             <p class="dica">O WhatsApp entra assim que a Meta liberar a conexão para todos, com previsão para o começo de dezembro.</p>
           </article>
         </div>
-        <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o Sol com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação.</p>
+        <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o agente com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação.</p>
       </div>
     </div>
   </section>
@@ -431,21 +511,21 @@ footer a { color: var(--apoio); }
           <div class="vidro">
             <h3>Está na mensalidade</h3>
             <div class="item"><i>IA</i><div><b>A inteligência artificial</b><p>Cada resposta gasta IA. Esse custo é nosso, até o limite do seu plano.</p></div></div>
-            <div class="item"><i>24h</i><div><b>Hospedagem</b><p>O robô fica ligado o dia inteiro, nos nossos servidores. Você não instala nada.</p></div></div>
-            <div class="item"><i>◎</i><div><b>A guarda do seu robô</b><p>O que você ensinou fica guardado e é só seu. Nenhum outro cliente enxerga.</p></div></div>
+            <div class="item"><i>24h</i><div><b>Hospedagem</b><p>O agente fica ligado o dia inteiro, nos nossos servidores. Você não instala nada.</p></div></div>
+            <div class="item"><i>◎</i><div><b>A guarda do seu agente</b><p>O que você ensinou fica guardado e é só seu. Nenhum outro cliente enxerga.</p></div></div>
             <div class="item"><i>?</i><div><b>Suporte</b><p>Gente da Ti Artes para ajudar quando você precisar.</p></div></div>
           </div>
           <div class="vidro meta">
             <h3>Fica com a Meta, na conta da sua empresa</h3>
             <p>No WhatsApp, quem cobra as mensagens é a Meta, direto da conta Meta da sua empresa, no seu cartão. A Ti Artes não fica no meio dessa conta.</p>
             <div class="tabela">
-              <div><span>Respostas do robô, por número, por mês</span><span>1.000 grátis</span></div>
+              <div><span>Respostas do agente, por número, por mês</span><span>1.000 grátis</span></div>
               <div><span>Da 1.001ª em diante</span><span>~R$ 0,035 cada</span></div>
               <div><span>Lembrete que você manda (modelo aprovado)</span><span>~R$ 0,035 cada</span></div>
               <div><span>Promoção que você manda (modelo aprovado)</span><span>~R$ 0,32 cada</span></div>
               <div><span>Instagram</span><span>sem custo da Meta</span></div>
             </div>
-            <p class="rodape">Quer avisar os seus clientes de uma promoção ou lembrar de um horário? Dá: 100 lembretes saem por cerca de R$ 3,50 e 100 promoções por cerca de R$ 32, pagos à Meta, fora da mensalidade. Tabela da Meta para o Brasil desde 01/10/2026; cada foto que o robô manda conta como uma mensagem.</p>
+            <p class="rodape">Quer avisar os seus clientes de uma promoção ou lembrar de um horário? Dá: 100 lembretes saem por cerca de R$ 3,50 e 100 promoções por cerca de R$ 32, pagos à Meta, fora da mensalidade. Tabela da Meta para o Brasil desde 01/10/2026; cada foto que o agente manda conta como uma mensagem.</p>
           </div>
         </div>
       </div>
@@ -457,7 +537,7 @@ footer a { color: var(--apoio); }
     <div class="miolo">
       <div class="largo secao-titulo">
         <p class="rotulo">As regras do jogo</p>
-        <h2 style="margin-top:12px">O que o robô faz, e o que ele não faz</h2>
+        <h2 style="margin-top:12px">O que o agente faz, e o que ele não faz</h2>
         <div class="regras">
           <div class="vidro"><b>Só responde quem escreveu</b><p>No Instagram, ele responde quem mandou mensagem, em até 24 horas. Não manda direct para quem nunca falou com você.</p></div>
           <div class="vidro"><b>Você assume quando quiser</b><p>Respondeu na mão, ele se cala naquela conversa. Pausou no painel, ele para em todas.</p></div>
@@ -465,12 +545,13 @@ footer a { color: var(--apoio); }
         </div>
         <div class="perguntas">
           <details class="vidro"><summary>Preciso de conta profissional no Instagram?</summary><p>Sim, de Empresa ou de Criador. A troca é gratuita e leva dois minutos, nas configurações do próprio Instagram.</p></details>
-          <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o Sol com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
-          <details class="vidro"><summary>O robô pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
-          <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O robô entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
-          <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O robô segue ligado até o fim do mês que você já pagou, e depois para.</p></details>
-          <details class="vidro"><summary>Quem guarda as conversas?</summary><p>Ficam guardadas por 72 horas, para o robô lembrar do que foi dito. Se a pessoa escrever "apagar", tudo some na hora.</p></details>
-          <details class="vidro"><summary>Quem é a Ti Artes?</summary><p>Um estúdio de Curitiba que faz robôs de atendimento e apps para pequenos negócios: guias de turismo, imobiliárias, confeitarias e pousadas. A Ti Artes é empresa verificada na Meta, e a conexão é sempre pelo login oficial da Meta.</p></details>
+          <details class="vidro"><summary>Como é o teste grátis?</summary><p>Você cria a conta e alimenta o agente com o que já tem: o cardápio ou a tabela de preços em PDF, fotos, prints de conversas com clientes, o link do seu site ou o seu próprio Instagram. Ele lê tudo sozinho e aprende os seus preços, as regras e o seu jeito de falar. O que faltar, você conta no chat. Depois são 4 horas para testar e, com o Instagram conectado, ver ele respondendo os seus clientes de verdade. Sem cartão. Acabou o tempo, ele pausa e tudo fica guardado por 7 dias para você assinar.</p></details>
+          <details class="vidro"><summary>Como o agente sabe que sou eu, e não um cliente?</summary><p>Você liga o agente assistente no painel: aparece um código, e você manda esse código do seu perfil pessoal no direct do seu negócio. Pronto. Daí em diante, quando você escreve desse perfil, quem responde é o assistente. Qualquer outra pessoa fala com o atendimento. Para ver o atendimento como um cliente vê, escreva "modo cliente".</p></details>
+          <details class="vidro"><summary>O agente pode inventar um preço?</summary><p>Não. Ele só fala o que você ensinou. Quando não sabe, anota o pedido e passa para você.</p></details>
+          <details class="vidro"><summary>E o WhatsApp que eu já uso no celular?</summary><p>Continua funcionando. O agente entra junto com o WhatsApp Business do seu celular: o que você digitar ali, ele vê e se cala naquela conversa.</p></details>
+          <details class="vidro"><summary>Como eu cancelo?</summary><p>No painel, em Plano. O agente segue ligado até o fim do mês que você já pagou, e depois para.</p></details>
+          <details class="vidro"><summary>Quem guarda as conversas?</summary><p>Ficam guardadas por 72 horas, para o agente lembrar do que foi dito. Se a pessoa escrever "apagar", tudo some na hora.</p></details>
+          <details class="vidro"><summary>Quem é a Ti Artes?</summary><p>Um estúdio de Curitiba que faz agentes de atendimento com IA e apps para pequenos negócios: guias de turismo, imobiliárias, confeitarias e pousadas. A Ti Artes é empresa verificada na Meta, e a conexão é sempre pelo login oficial da Meta.</p></details>
         </div>
       </div>
     </div>
@@ -479,10 +560,10 @@ footer a { color: var(--apoio); }
   <!-- 8. o convite final: o balão no centro -->
   <section class="ato final" data-cena="final">
     <div class="miolo">
-      <h2>Monte o seu robô em <em>2 minutos.</em></h2>
-      <p>Sem cartão. Mande o que você já tem (PDF, fotos, prints, o site), escolha o jeito dele falar e veja o Sol respondendo os seus clientes. São 4 horas grátis para experimentar, e você ainda ganha agenda e notas no mesmo painel.</p>
+      <h2>A próxima mensagem pode ser <em>uma venda.</em></h2>
+      <p>Monte o seu agente em 2 minutos, sem cartão. Mande o que você já tem (PDF, fotos, prints, o site), escolha o jeito dele falar e veja ele respondendo os seus clientes. São 4 horas grátis para experimentar, com agenda e notas no mesmo painel.</p>
       <div class="acoes" style="justify-content:center">
-        <a class="bt" href="entrar.html?criar=1">Criar a minha conta <span aria-hidden="true">→</span></a>
+        <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
         <a class="bt fraco" href="entrar.html?entrar=1">Já tenho conta</a>
       </div>
     </div>
@@ -491,7 +572,7 @@ footer a { color: var(--apoio); }
 <!-- o vendedor: aparece só onde a função existe (no ar e na prévia local) -->
 <button type="button" class="vend-bt" id="vend-abre" hidden aria-controls="vend"><span class="bolha" aria-hidden="true"><i></i><i></i><i></i></span>Tirar dúvida com o Sol</button>
 <section class="vend vidro" id="vend" hidden aria-label="Conversa com o Sol, da Ti Artes" data-lenis-prevent>
-  <header><span class="bolha" aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:linear-gradient(160deg,#43E6C7,#19A693)"></span>
+  <header><img class="logo-vend" src="logo.svg" alt="" width="36" height="36">
     <div><b>Sol · Ti Artes</b><span>responde na hora</span></div>
     <button type="button" id="vend-fecha" aria-label="Fechar a conversa">×</button></header>
   <div class="msgs" id="vend-msgs" aria-live="polite"></div>
@@ -512,7 +593,8 @@ footer a { color: var(--apoio); }
   try { vis = localStorage.getItem('robo-visitante') || ''; } catch (_) {}
   if (!/^[a-z0-9]{16}$/.test(vis)) { vis = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join(''); try { localStorage.setItem('robo-visitante', vis); } catch (_) {} }
   const msgs = $('vend-msgs');
-  const linka = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1">$1</a>');
+  const linka = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1">$1</a>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/^[-*] /gm, '• ');
   const poe = (quem, texto) => { const d = document.createElement('div'); d.className = 'm ' + quem; d.innerHTML = linka(texto); msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d; };
   let carregou = false;
   async function abre() {
@@ -531,13 +613,18 @@ footer a { color: var(--apoio); }
   }
   $('vend-abre').hidden = false;
   $('vend-abre').onclick = abre;
+  /* o agente assistente: "chega em breve" até a nuvem dizer que está ligado */
+  fetch(ROBO.funcao + '/planos').then((x) => x.json()).then((j) => {
+    const selo = $('selo-otto');
+    if (j && j.assistente && selo) { selo.textContent = 'já incluso'; selo.classList.add('pronto'); }
+  }).catch(() => {});
   $('vend-fecha').onclick = () => { $('vend').hidden = true; $('vend-abre').hidden = false; };
   $('vend-form').onsubmit = (e) => { e.preventDefault(); manda($('vend-txt').value); };
   $('vend-txt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); manda($('vend-txt').value); } });
   $('vend-sug').querySelectorAll('button').forEach((b) => b.onclick = () => manda(b.textContent));
 })();
 </script>
-<footer><div class="miolo"><span>Ti Artes · Curitiba, PR</span><span><a href="https://guia.eugeniofim.com/privacidade.html">Privacidade</a></span></div></footer>
+<footer><div class="miolo"><span class="assina"><img src="logo.svg" alt="" width="22" height="22">studio Ti Artes · Curitiba, PR</span><span><a href="https://guia.eugeniofim.com/privacidade.html">Privacidade</a></span></div></footer>
 
 <!-- a conversa e a calculadora funcionam sem 3D -->
 <script>
@@ -572,7 +659,7 @@ footer a { color: var(--apoio); }
     const plano = whats ? { nome: 'Instagram + WhatsApp', lim: 4000 } : { nome: 'Instagram', lim: 2000 };
     $('r-plano').innerHTML = mes <= plano.lim
       ? `O plano <b>${plano.nome}</b> cabe ${mes <= plano.lim * 0.6 ? 'com folga' : 'certinho'}.`
-      : `Passa das ${fmt(plano.lim)} do plano <b>${plano.nome}</b>. O robô continua respondendo, e a gente conversa sobre um pacote maior.`;
+      : `Passa das ${fmt(plano.lim)} do plano <b>${plano.nome}</b>. O agente continua respondendo, e a gente conversa sobre um pacote maior.`;
   }
   $('por-dia').addEventListener('input', calcula); $('com-whats').addEventListener('change', calcula); calcula();
 })();
@@ -674,6 +761,7 @@ const ROTEIRO = {
   noite:     { x: -0.56, y: 0.0, ym: 2.15, z: -0.4, s: 0.84, giro: 0.42, cam: 7.4, enxame: 1.0 },
   virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
   rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
+  exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
   como:      { x: 0.62, y: 1.9, ym: 2.3, z: -1.6, s: 0.55, giro: -0.6, cam: 8.8, enxame: 0.4 },
   planos:    { x: -0.7, y: -1.9, ym: -3.4, z: -2.2, s: 0.5, giro: 0.7, cam: 9.0, enxame: 0.3 },
   conta:     { x: 0.7, y: 1.8, ym: 2.4, z: -2.4, s: 0.45, giro: -0.4, cam: 9.0, enxame: 0.3 },
