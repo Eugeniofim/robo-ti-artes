@@ -573,7 +573,7 @@
       x.send(file);
     });
   }
-  const textoEstado = (it) => ({ 'na fila': 'na fila', enviando: `enviando ${it.pct || 0}%`, lendo: it.tipo === 'site' ? 'lendo o site…' : it.tipo === 'instagram' ? 'lendo a bio, as legendas e o seu jeito no direct…' : 'lendo e aprendendo…' }[it.estado] || '');
+  const textoEstado = (it) => ({ 'na fila': 'na fila', enviando: `enviando ${it.pct || 0}%`, lendo: it.tipo === 'site' ? 'lendo o site e as páginas do menu…' : it.tipo === 'instagram' ? 'lendo a bio, as legendas e o seu jeito no direct…' : 'lendo e aprendendo…' }[it.estado] || '');
   function itemFila(it) {
     return `<li class="item-f ${it.estado === 'erro' ? 'erro' : ''}" data-fila="${it.id}">${tipoIc(it.tipo, it.mime)}
       <div class="meio"><b>${esc(it.nome)}</b>
@@ -628,7 +628,7 @@
 
   /* uma fonte já lida */
   function itemFonte(f) {
-    const meta = [f.tipo === 'site' ? 'site' : f.tipo === 'texto' ? 'texto colado' : f.tipo === 'instagram' ? 'Instagram' : (f.tamanho ? tamanho(f.tamanho) : ''), f.criado ? dia(f.criado) : '', f.drive ? 'no Drive' : ''].filter(Boolean).join(' · ');
+    const meta = [f.tipo === 'site' ? (f.paginas > 1 ? `site · ${f.paginas} páginas` : 'site') : f.tipo === 'texto' ? 'texto colado' : f.tipo === 'instagram' ? 'Instagram' : (f.tamanho ? tamanho(f.tamanho) : ''), f.criado ? dia(f.criado) : '', f.drive ? 'no Drive' : ''].filter(Boolean).join(' · ');
     const est = f.estado === 'lido' ? '<span class="selo ok">lido</span>' : f.estado === 'erro' ? '<span class="selo atencao">não deu</span>' : '<span class="selo desligado">esperando</span>';
     return `<li class="item-f ${f._novo ? 'novo' : ''}" data-fonte="${esc(f.id)}">${tipoIc(f.tipo, f.mime)}
       <div class="meio"><b title="${esc(f.nome)}">${esc(f.nome || 'sem nome')}</b><span class="dica">${est} ${esc(meta)}</span>
@@ -726,7 +726,7 @@
           <div class="grade">
             <form class="cartao leve" id="cb-site"><h2>${ic('globo')} Tem site?</h2>
               <label class="campo">Cole o link do seu site ou cardápio online<span class="linha-campo"><input class="entrada" id="cb-url" inputmode="url" autocomplete="url" placeholder="www.seunegocio.com.br"><button class="bt" type="submit">Ler</button></span></label>
-              <p class="dica">Ele lê a página e guarda o que serve: serviços, preços, horário. O Instagram ele lê sozinho quando você conecta a conta.</p></form>
+              <p class="dica">Ele lê a página e as páginas do menu (até 16) e guarda o que serve: serviços, preços, horário. O Instagram ele lê sozinho quando você conecta a conta.</p></form>
             <form class="cartao leve" id="cb-texto"><h2>${ic('texto')} Colar texto ou conversa</h2>
               <label class="campo">Cole uma conversa boa com cliente, um texto seu, as regras da casa<textarea class="entrada" id="cb-txt" rows="3" placeholder="Cliente: Oi, faz entrega?&#10;Eu: Faço sim! No Batel e Água Verde a entrega é grátis…"></textarea></label>
               <div><button class="bt fraco" type="submit">Mandar para ele ler</button></div></form>
