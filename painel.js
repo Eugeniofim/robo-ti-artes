@@ -338,7 +338,7 @@
           <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
           <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></article>` : ''}
         <article class="cartao tile da-dora ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} A ${esc(ASSIST())}, a sua secretária</h2>
-          <p>${(EU.assistente || {}).otto_wa ? `Fale com a ${esc(ASSIST())} no WhatsApp dela: ela marca na agenda, anota, confirma os horários e, de manhã, manda o seu dia.` : `Quando quem escreve no direct é você, do seu perfil pessoal, a ${esc(ASSIST())} marca na agenda, anota e confirma os horários no seu lugar.`}
+          <p>${(EU.assistente || {}).otto_wa ? `Fale com a ${esc(ASSIST())} no WhatsApp dela: ela marca na agenda, anota, confirma os horários e, de manhã, manda o seu dia.` : `A ${esc(ASSIST())} vai morar num WhatsApp da Ti Artes e chega em breve: ela marca, anota, avisa e cuida do seu CRM.`}
           ${!(EU.assistente || {}).disponivel ? '<span class="selo breve">chega em breve</span>' : EU.assistente.ligado ? '<span class="selo ok">ligado</span>' : ''}</p>
           ${(EU.assistente || {}).disponivel && !EU.assistente.ligado ? '<a class="lnk" href="#conectar">Ligar em 1 minuto</a>' : ''}</article>
       </div></section>`;
@@ -825,29 +825,33 @@
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">Contas</p><h1>Conectar as suas contas</h1>
       <p class="lede">A conexão é pelo login oficial do Instagram, da Meta e do Google. A Ti Artes nunca vê a sua senha.</p></div></div>
-      ${cartaoModo()}
+      <p class="rotulo sec-conectar">Atendimento · onde o ${esc(NOME())} responde os seus clientes</p>
       <div class="grade">
         <article class="cartao"><div class="canal-topo"><span class="canal-ic ig" aria-hidden="true">${svg('camera')}</span><h2>Instagram</h2></div>
           ${ig.conectado ? `<div class="perfil">${ig.foto ? `<img src="${esc(ig.foto)}" alt="">` : `<span class="ini">${esc((ig.usuario || '?')[0].toUpperCase())}</span>`}
             <div><b>@${esc(ig.usuario)}</b><br><span class="selo ok">conectado</span></div></div>
-            ${ig.atende === false ? '<p class="dica">No seu plano, o Instagram não responde clientes: o atendimento é no WhatsApp. Para os dois, escolha o plano Completo.</p>' : ''}
+            ${ig.atende === false ? '<p class="dica">No seu plano, o Instagram não responde clientes: o atendimento é no WhatsApp. Para os dois, escolha o plano Completo.</p>' : `<p class="dica">Aqui é só atendimento: quem escreve no direct, inclusive você, é atendido pelo ${esc(NOME())}. Com você, quem fala é a ${esc(ASSIST())}, no WhatsApp dela.</p>`}
             ${vence != null && vence < 15 ? aviso('atencao', `A autorização vence em ${vence} dia(s). Conecte de novo para renovar.`) : ''}
             <div class="botoes"><button class="bt pequeno fraco" id="ig-renovar" type="button">Conectar de novo</button>
             <button class="bt pequeno fraco" id="ig-desligar" type="button">Desconectar</button></div>`
           : ig.atende === false ? `<p>O atendimento no Instagram entra nos planos <b>Instagram</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`
-          : `<p>O ${esc(NOME())} passa a responder o direct da sua conta profissional (Empresa ou Criador).</p>
+          : `<p>O ${esc(NOME())} passa a responder o direct da sua conta profissional (Empresa ou Criador). Aqui é só atendimento: quem escreve, inclusive você, é atendido pelo ${esc(NOME())}.</p>
             <div><button class="bt" id="ig-conectar" type="button">Conectar meu Instagram</button></div>
             <p class="dica">Abre o login do Instagram. Ele vai pedir para você permitir que a "Ti Artes Atendimento" leia o seu perfil e responda as suas mensagens.</p>`}
         </article>
         <article class="cartao"><div class="canal-topo"><span class="canal-ic wa" aria-hidden="true">${svg('balao')}</span><h2>WhatsApp</h2></div>
-          ${wa.conectado ? '<p><span class="selo ok">conectado</span></p><p>O agente responde no seu número. O que você digitar no celular, ele vê e se cala naquela conversa.</p>'
+          ${wa.conectado ? `<p><span class="selo ok">conectado</span></p><p>O ${esc(NOME())} responde no seu número. O que você digitar no celular, ele vê e se cala naquela conversa.</p>`
           : wa.liberado ? `<p>Conecte o número que você já usa no WhatsApp Business, ou um número novo.</p>
             <div><button class="bt" id="wa-conectar" type="button">Conectar meu WhatsApp</button></div>
-            <p class="dica">A Meta está liberando esta conexão para todos, com previsão para o começo de dezembro. As mensagens do WhatsApp são cobradas pela Meta, na conta Meta da sua empresa.</p>`
+            <p class="dica">A Meta está liberando esta conexão para todos, com previsão para o começo de dezembro. As mensagens do WhatsApp são cobradas pela Meta, na conta Meta da sua empresa.</p>
+            <p class="dica"><b>Prefere uma linha nova, só para o atendimento?</b> A Ti Artes liga para você, com as mensagens da Meta dentro da mensalidade. <a class="lnk" href="mailto:contato@eugeniofim.com?subject=${encodeURIComponent('Linha nova para o atendimento · ' + (EU.negocio || ''))}">Pedir a linha nova</a></p>`
           : `<p>O atendimento no WhatsApp entra nos planos <b>WhatsApp</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`}
         </article>
       </div>
+      <p class="rotulo sec-conectar">Secretária · onde a ${esc(ASSIST())} fala com você</p>
       ${cartaoAssistente()}
+      ${cartaoModo()}
+      <p class="rotulo sec-conectar">Arquivos e cópia de segurança</p>
       ${cartaoDrive(true)}</section>`;
     ligaAssistente(alvo);
     ligaModo(alvo);
@@ -877,7 +881,7 @@
     if (EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length)
       return `<article class="cartao modos"><h2>Plano Secretária</h2><p>Só a ${esc(ASSIST())} trabalha, e só com você: os clientes não recebem resposta automática. Para ligar o atendimento, escolha um plano com Instagram ou WhatsApp.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div></article>`;
     const atual = EU.modo || 'ambos';
-    return `<article class="cartao modos"><h2>Como os agentes trabalham nesta conta</h2>
+    return `<article class="cartao modos"><h2>Quem trabalha nesta conta</h2>
       <div class="modos-opcoes" role="radiogroup" aria-label="Como os agentes trabalham">${MODOS.map((x) => `<button type="button" role="radio" class="modo ${atual === x.id ? 'on' : ''}" aria-checked="${atual === x.id}" data-modo="${x.id}"><b>${esc(x.nome)}</b><span>${esc(x.txt)}</span></button>`).join('')}</div>
       <p class="dica">Troque quando quiser, sem mudar o preço.</p></article>`;
   }
@@ -898,7 +902,7 @@
   function cartaoAssistente() {
     const a = EU.assistente || {}, ig = EU.instagram || {};
     const topo = `<div class="canal-topo"><span class="canal-ic" aria-hidden="true">${svg('relogio')}</span><h2>Secretária <small style="font-weight:400;color:var(--grafite)">· ${esc(ASSIST())}</small></h2></div>`;
-    if (!a.disponivel) return `<article class="cartao da-dora" id="assist">${topo}<p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários. <span class="selo breve">chega em breve</span></p></article>`;
+    if (!a.disponivel) return `<article class="cartao da-dora" id="assist">${topo}<p>A ${esc(ASSIST())} vai morar num WhatsApp da Ti Artes, que fala só com você: marca, anota, avisa e cuida do seu CRM. <span class="selo breve">chega em breve</span></p></article>`;
     if (EU.modo === 'atendimento') return `<article class="cartao da-dora" id="assist">${topo}<p>Desligado: você escolheu <b>só atendimento</b>. Para usar a ${esc(ASSIST())}, escolha "Os dois" ou "Só secretária" aqui em cima.</p></article>`;
     /* o Otto central: um WhatsApp da Ti Artes, o mesmo para todos; o dono liga mandando o código de um toque */
     if (a.otto_wa) {
@@ -908,22 +912,15 @@
         ${avisosDora(a.avisos)}
         <div class="botoes"><a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir o WhatsApp da ${esc(ASSIST())}</a><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
       return `<article class="cartao da-dora" id="assist">${topo}
-        <p>A ${esc(ASSIST())} é a sua secretária: um número de WhatsApp da Ti Artes que fala só com você. Salve o número nos contatos; você manda texto, áudio, foto ou PDF, e ela marca na agenda, anota, confirma os horários que os clientes pediram e guarda o que você pedir no seu Drive.</p>
+        <p>A ${esc(ASSIST())} é a sua secretária: um número de WhatsApp da Ti Artes que fala só com você. Salve o número nos contatos; você manda texto, áudio, foto ou PDF, e ela marca na agenda, anota, confirma os horários que os clientes pediram, cuida dos seus clientes no CRM, avisa você de manhã e antes dos compromissos e guarda o que você pedir no seu Drive.</p>
         <ol class="passinhos"><li>Toque em <b>Falar com a ${esc(ASSIST())}</b>: o WhatsApp abre com o seu código já escrito.</li><li>Envie. Pronto: ela reconhece você pelo seu número.</li></ol>
         <div class="botoes"><button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Falar com a ${esc(ASSIST())} no WhatsApp</button></div>
         <div id="assist-mostra" hidden></div></article>`;
     }
-    if (a.ligado) return `<article class="cartao da-dora" id="assist">${topo}<p><span class="selo ok">ligado</span></p>
-      <p>Quando você escreve no direct${ig.usuario ? ' do <b>@' + esc(ig.usuario) + '</b>' : ''} pelo seu perfil pessoal, quem responde é a ${esc(ASSIST())}. Peça por texto, áudio ou foto: "marca a Ana sexta às 15h", "o que eu tenho amanhã?".</p>
-      <p class="dica">Para ver como os clientes são atendidos, escreva "modo cliente" (volta com "modo dono").</p>
-      <div class="botoes"><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar</button></div></article>`;
-    if (!ig.conectado) return `<article class="cartao da-dora" id="assist">${topo}<p>Primeiro conecte o Instagram do seu negócio aqui em cima. Depois você liga a ${esc(ASSIST())} em 1 minuto.</p></article>`;
-    return `<article class="cartao da-dora" id="assist">${topo}
-      <p>Quando quem escreve no direct é você, quem responde é a ${esc(ASSIST())}: marca na agenda, anota e confirma os horários que os clientes pediram. Para ela saber que é você:</p>
-      <ol class="passinhos"><li>Toque em <b>Mostrar o meu código</b>.</li><li>Abra o Instagram no <b>seu perfil pessoal</b> (não no do negócio).</li><li>Mande o código numa mensagem para <b>@${esc(ig.usuario || 'o seu negócio')}</b>.</li></ol>
-      <p class="dica">Não tem um perfil pessoal além do negócio? Crie um em dois minutos no Instagram: é dele que você vai falar com a ${esc(ASSIST())}.</p>
-      <div class="botoes"><button class="bt pequeno" id="assist-codigo" type="button">Mostrar o meu código</button></div>
-      <div id="assist-mostra" hidden></div></article>`;
+    /* 16/11, decisão dele: a Dora mora SÓ no WhatsApp da Ti Artes; no Instagram é só o atendimento. Sem o número no ar: em breve */
+    return `<article class="cartao da-dora" id="assist">${topo}<p><span class="selo breve">chega em breve</span></p>
+      <p>A ${esc(ASSIST())} vai morar num número de WhatsApp da Ti Artes, que fala só com você: marca, anota, avisa, cuida dos seus clientes no CRM e guarda os seus papéis. Assim que o número estiver no ar, aparece aqui o botão <b>Falar com a ${esc(ASSIST())}</b>.</p>
+      <p class="dica">No Instagram, quem atende os seus clientes é só o ${esc(NOME())}.</p></article>`;
   }
   /* os avisos que a Dora manda sozinha (robo/avisos-dora.ts): resumo da manhã, aviso antes do compromisso, contas.
      Salva a cada mudança; ela também muda conversando ("me manda o resumo às 6h30") */
