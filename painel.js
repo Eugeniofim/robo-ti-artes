@@ -1396,8 +1396,10 @@
   let FICHA_ABRIR = '';          /* 'id' ou 'rid:<recado>': a ficha que abre quando a aba Clientes carrega */
   let CRM_VISTA = (() => { try { return localStorage.getItem('robo-crm-vista') || 'lista'; } catch (_) { return 'lista'; } })();
   const abreFicha = (chave) => { FICHA_ABRIR = chave; if (abaAtual() === 'clientes') mostra(); else location.hash = '#clientes'; };
-  const nomeDe = (f) => f.nome || (f.whatsapp ? foneBonito(f.whatsapp) : '') || f.instagram || f.email || 'Sem nome';
-  const iniciais = (f) => (f.nome ? f.nome.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('') : '?').toUpperCase();
+  /* o cliente de teste (16/11) mostra o nome que a pessoa disse no Testar; sem nome, quando foi o teste */
+  const quandoTeste = (f) => new Date(f.criado || f.primeiro || Date.now()).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const nomeDe = (f) => f.nome || (f.whatsapp ? foneBonito(f.whatsapp) : '') || f.instagram || f.email || (f.teste ? 'Teste de ' + quandoTeste(f) : 'Sem nome');
+  const iniciais = (f) => (f.nome ? f.nome.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('') : f.teste ? 'T' : '?').toUpperCase();
   const quandoCurto = (iso) => { if (!iso) return ''; const d = new Date(iso), h = new Date(); const dias = Math.round((h - d) / 86400000);
     return dias <= 0 ? 'hoje' : dias === 1 ? 'ontem' : dias < 7 ? `há ${dias} dias` : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
   const precisa = (f) => (f.situacao === 'novo' ? 'novo' : f.situacao === 'conversando' && !f.proximo && Date.now() - Date.parse(f.ultimo || f.criado) > 3 * 86400000 ? 'parado' : '');
@@ -1431,7 +1433,8 @@
           <span class="dica">${esc(ult ? (ult.assunto || ult.resumo || 'pedido') : f.nota ? f.nota.slice(0, 60) : 'cadastrado por você')}</span>
           ${f.proximo ? `<span class="cl-prox">${ic('agenda')} ${esc(proxTxt(f.proximo))}</span>` : ''}</div>
         <div class="cl-lado">${compacto ? '' : `<span class="sit sit-${esc(f.situacao)}">${esc(SIT[f.situacao] || f.situacao)}</span>`}
-          ${p ? `<span class="selo-precisa">${p === 'novo' ? 'responder' : 'parado'}</span>` : ''}<span class="dica num">${esc(quandoCurto(f.ultimo))}</span></div></li>`;
+          ${p ? `<span class="selo-precisa">${p === 'novo' ? 'responder' : 'parado'}</span>` : ''}<span class="dica num">${esc(quandoCurto(f.ultimo))}</span>
+          ${f.teste ? `<button type="button" class="cl-apaga" data-apaga="${esc(f.id)}" draggable="false" title="Apagar este cliente de teste" aria-label="Apagar o cliente de teste ${esc(nomeDe(f))}">${svg('lixo')}<span>Apagar</span></button>` : ''}</div></li>`;
     };
     const desenha = () => {
       const c = conta(), V = L.filter(casa);
@@ -1465,6 +1468,16 @@
         col.ondragleave = () => col.classList.remove('alvo');
         col.ondrop = (e) => { e.preventDefault(); col.classList.remove('alvo'); const id = e.dataTransfer.getData('text/plain'); if (id) muda(id, { situacao: col.dataset.coluna }); };
       });
+      box.querySelectorAll('[data-apaga]').forEach((b) => {
+        b.onclick = (e) => { e.stopPropagation(); apagaTeste(b); };
+        b.onkeydown = (e) => e.stopPropagation();          /* Enter no botão apaga, não abre a ficha */
+        b.ondragstart = (e) => { e.preventDefault(); e.stopPropagation(); };
+      });
+      const nT = L.filter((f) => f.teste).length, ft = $('cl-testes');
+      ft.hidden = !nT;
+      ft.innerHTML = nT ? `<div class="faixa-teste">${ic('info')}<span class="ft-txt">${nT === 1 ? 'Você tem <b>1 cliente de teste</b>' : `Você tem <b>${nT} clientes de teste</b>`}, das suas conversas no Testar. ${nT === 1 ? 'Ele fica' : 'Eles ficam'} aqui até você apagar.</span>
+        <button type="button" class="bt pequeno fraco" id="cl-apaga-testes">${svg('lixo')} ${nT === 1 ? 'Apagar o teste' : `Apagar os ${nT} testes`}</button></div>` : '';
+      const bt = $('cl-apaga-testes'); if (bt) bt.onclick = () => apagaTestes(bt);
       const bn = box.querySelector('[data-novo]'); if (bn) bn.onclick = () => abre('');
       alvo.querySelectorAll('[data-filtro]').forEach((b) => b.onclick = () => { filtro = b.dataset.filtro; desenha(); });
       alvo.querySelectorAll('[data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === CRM_VISTA)); });
@@ -1478,6 +1491,30 @@
       if (i >= 0) L[i] = nova; else L.unshift(nova);
       desenha();
       return nova;
+    };
+    const certeza = (b, rotulo, volta) => {
+      if (b.dataset.certeza === '1') return true;
+      b.dataset.certeza = '1'; b.classList.add('certeza'); const t = b.querySelector('span') || b; const antes = t === b ? b.innerHTML : t.textContent;
+      if (t === b) b.innerHTML = `${svg('lixo')} ${rotulo}`; else t.textContent = rotulo;
+      if (b.hasAttribute('aria-label')) b.setAttribute('aria-label', rotulo);
+      clearTimeout(b._t); b._t = setTimeout(() => { b.dataset.certeza = ''; b.classList.remove('certeza'); if (t === b) b.innerHTML = antes; else t.textContent = antes; if (volta) b.setAttribute('aria-label', volta); }, 4000);
+      return false;
+    };
+    const apagaTeste = async (b) => {
+      if (!certeza(b, 'Apagar mesmo?', b.getAttribute('aria-label'))) return;
+      clearTimeout(b._t); b.disabled = true;
+      const x = await api('/cliente-apagar', { id: b.dataset.apaga });
+      if (x.erro) { b.disabled = false; return toast(x.erro); }
+      L = L.filter((y) => y.id !== b.dataset.apaga); desenha(); toast('Cliente de teste apagado.');
+    };
+    const apagaTestes = async (b) => {
+      const ids = L.filter((f) => f.teste).map((f) => f.id);
+      if (!certeza(b, ids.length === 1 ? 'Apagar mesmo?' : `Apagar os ${ids.length} mesmo?`)) return;
+      clearTimeout(b._t); b.disabled = true;
+      const foram = [];
+      for (const id of ids) { const x = await api('/cliente-apagar', { id }); if (!x.erro) foram.push(id); }
+      L = L.filter((y) => !foram.includes(y.id)); desenha();
+      toast(foram.length === ids.length ? (ids.length === 1 ? 'Cliente de teste apagado.' : 'Clientes de teste apagados.') : 'Não deu para apagar todos. Tente de novo.');
     };
     const toast = (t) => { const m = $('cl-toast'); m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 2600); };
 
@@ -1505,7 +1542,8 @@
         g.innerHTML = `<div class="ficha-topo"><span class="avatar-cl grande" aria-hidden="true">${esc(iniciais(f))}</span>
             <input class="ficha-nome" id="fi-nome" value="${esc(f.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente">
             <button type="button" class="bt-ic" data-fecha aria-label="Fechar">${svg('x')}</button></div>
-          ${f.teste ? `<p class="aviso-teste">${ic('info')} Este cliente veio de uma conversa sua no Testar. Ele fica aqui para você ver o caminho completo; apague quando quiser (no fim da ficha).</p>` : ''}
+          ${f.teste ? `<div class="aviso-teste">${ic('info')}<div><p>Este cliente veio de uma conversa sua no Testar, para você ver o caminho completo. Quando não precisar mais, apague.</p>
+            <button type="button" class="bt pequeno perigo" id="fi-apaga-teste">${svg('lixo')} Apagar este teste</button></div></div>` : ''}
           <div class="segmento" role="group" aria-label="Situação">${sitBt}</div>
           ${f.situacao === 'perdido' ? `<label class="campo">Por que perdeu?<input id="fi-motivo" value="${esc(f.motivo || '')}" placeholder="achou caro, fechou com outro…"></label>` : ''}
           <div class="ficha-bloco contatos">
@@ -1549,6 +1587,7 @@
         g.querySelectorAll('[data-atalho]').forEach((b) => b.onclick = () => { px.hidden = false; $('fi-px-t').value = b.dataset.atalho + (f.nome ? ' ' + (b.dataset.atalho === 'Ligar' ? 'para ' : 'para ') + f.nome.split(' ')[0] : ''); if (!$('fi-px-d').value) $('fi-px-d').value = hojeIso(); $('fi-px-t').focus(); });
         const feito = $('fi-feito'); if (feito) feito.onclick = async () => { const x = await api('/cliente-proximo', { id: f.id, feito: true }); if (x.erro) return toast(x.erro); recarrega(f.id); };
         const troca = $('fi-troca'); if (troca) troca.onclick = () => { px.hidden = false; $('fi-px-t').value = f.proximo.texto; $('fi-px-t').focus(); };
+        const bat = $('fi-apaga-teste'); if (bat) bat.onclick = (e) => $('fi-apaga').onclick(e);
         $('fi-apaga').onclick = async (e) => {
           const b = e.currentTarget;
           if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.innerHTML = `${svg('lixo')} Apagar mesmo? Não tem volta`; return; }
@@ -1574,6 +1613,7 @@
       <div class="crm-barra"><div class="chips-f" id="cl-chips"></div>
         <div class="crm-busca"><input type="search" id="cl-busca" placeholder="Buscar nome, telefone, @ ou pedido" aria-label="Buscar cliente">
         <div class="vista" role="group" aria-label="Ver como"><button type="button" data-vista="lista">Lista</button><button type="button" data-vista="funil">Funil</button></div></div></div>
+      <div id="cl-testes" hidden></div>
       <div id="cl-lista"></div>
       <div class="ficha-fundo" id="cl-fundo" hidden></div><aside class="ficha cartao" id="cl-ficha" hidden aria-label="Ficha do cliente"></aside>
       <p class="toast" id="cl-toast" role="status" hidden></p>
