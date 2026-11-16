@@ -372,6 +372,42 @@ details.dobra[open] > summary::after { content: '–'; }
 .ev-hora.dia-todo { background: color-mix(in srgb, var(--tinta) 10%, transparent); color: var(--grafite); }
 .ev-txt { display: grid; min-width: 0; }
 .ev-txt span { color: var(--grafite); font-size: 14.5px; }
+/* os horários de atendimento (16/11) */
+.horarios .hz-topo { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.horarios .hz-topo h2 { margin-bottom: 4px; }
+.hz-editor { display: grid; gap: 14px; margin-top: 14px; }
+.hz-atalhos, .hz-dur { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hz-atalhos .dica, .hz-dur > span { margin-right: 4px; }
+.hz-dur > span { color: var(--grafite); font-size: 15px; }
+.hz-dur .chip-f.ativo { border-color: var(--sinal); background: color-mix(in srgb, var(--teal) 16%, transparent); }
+.hz-dias { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.hz-dia { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid color-mix(in srgb, var(--linha) 55%, transparent); }
+.hz-dia:first-child { border-top: 0; }
+.hz-chave { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--grafite); font: 600 15px var(--sans); cursor: pointer; text-align: left; }
+.hz-chave .gs-chave { background: color-mix(in srgb, var(--tinta) 22%, transparent); }
+.hz-dia.on .hz-chave { color: var(--tinta); }
+.hz-dia.on .hz-chave .gs-chave { background: var(--teal); }
+.hz-dia.on .hz-chave .gs-chave i { transform: translateX(20px); }
+.hz-chave:focus-visible { outline: 2px solid var(--sinal); outline-offset: 3px; border-radius: 8px; }
+.hz-faixas { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.hz-faixa { display: inline-flex; align-items: center; gap: 6px; }
+.hz-faixa input { min-height: 42px; padding: 6px 8px; border: 1.5px solid var(--card-borda); border-radius: 10px; font: 500 15px var(--mono); background: transparent; color: inherit; }
+.hz-faixa .bt-ic { min-width: 36px; min-height: 36px; }
+.hz-faixa .bt-ic svg { width: 16px; height: 16px; }
+.hz-mais, .hz-copia { min-height: 36px; font-size: 14px; justify-self: start; }
+.hz-fechado { font-size: 14px; }
+.ev.ped { grid-template-columns: 92px minmax(0, 1fr) auto; }
+.ped-bts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.ped-bts .bt.certeza { background: var(--erro-fundo); color: var(--erro); }
+.selo-fora { display: inline-block; justify-self: start; margin-top: 2px; padding: 1px 8px; border-radius: 999px; font: 600 11.5px var(--mono); color: var(--tinta); background: var(--ambar-fundo); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ambar) 40%, transparent); }
+.selo-fora.folga { background: color-mix(in srgb, var(--grafite) 14%, transparent); box-shadow: none; }
+.ag-folga { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 14.5px; color: var(--grafite); cursor: pointer; }
+.ag-folga input { width: 20px; height: 20px; accent-color: var(--teal); }
+@media (max-width: 760px) {
+  .hz-dia { grid-template-columns: 1fr; gap: 4px; }
+  .ev.ped { grid-template-columns: 78px minmax(0, 1fr); }
+  .ped-bts { grid-column: 1 / -1; justify-content: stretch; } .ped-bts .bt { flex: 1; }
+}
 .pedido-h { border-color: color-mix(in srgb, var(--ambar) 40%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--ambar) 14%, transparent), transparent 60%), var(--card); }
 .copia { display: flex; gap: 8px; }
 .copia input { flex: 1; min-width: 0; min-height: 48px; padding: 0 12px; border: 1.5px solid var(--card-borda); border-radius: 14px; font: 400 14px var(--mono); background: color-mix(in srgb, var(--folha) 70%, transparent); color: var(--tinta); }

@@ -1306,28 +1306,108 @@
 
   /* ---------- o mini app: Agenda ---------- */
   const diaLongo = (iso) => { const t = new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+  /* ---------- os horários de atendimento e a resposta aos pedidos (16/11) ---------- */
+  let AG_RESULTADO = null;
+  const DIAS_H = [['seg', 'Segunda'], ['ter', 'Terça'], ['qua', 'Quarta'], ['qui', 'Quinta'], ['sex', 'Sexta'], ['sab', 'Sábado'], ['dom', 'Domingo']];
+  const DURS_H = [[15, '15 min'], [30, '30 min'], [45, '45 min'], [60, '1 h'], [90, '1h30'], [120, '2 h']];
+  const durTxt = (m) => (DURS_H.find((x) => x[0] === m) || [0, m + ' min'])[1];
+  const ATALHOS_H = [
+    ['Seg a sex, 9h às 18h', ['seg', 'ter', 'qua', 'qui', 'sex'], [['09:00', '18:00']]],
+    ['Seg a sex, com almoço', ['seg', 'ter', 'qua', 'qui', 'sex'], [['09:00', '12:00'], ['14:00', '18:00']]],
+    ['Seg a sáb, 9h às 18h', ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'], [['09:00', '18:00']]],
+  ];
+  const canalTxt = (c) => ({ whatsapp: 'no WhatsApp', instagram: 'no Instagram', teste: 'no Testar' }[c] || '');
+  function resultadoPedido(x, acao, com) {
+    const c = x.cliente || {}, quem = com || 'a pessoa';
+    const fez = acao === 'recusar' ? 'O pedido saiu da lista.' : 'Marcado na agenda.';
+    if (c.enviado) return { tipo: 'info', html: `<b>${fez}</b> O ${esc(NOME())} avisou ${esc(quem)} ${esc(canalTxt(c.canal))}: “${esc(c.texto)}”${c.canal === 'teste' ? ' <a href="#testar">Ver no Testar</a>' : ''}` };
+    const porque = c.motivo === 'janela' ? `O WhatsApp e o Instagram só deixam o ${esc(NOME())} escrever até 24 horas depois da última mensagem da pessoa, e já passou.` : c.motivo === 'conversa_acabou' ? 'A conversa de teste já foi apagada.' : `O ${esc(NOME())} não tem como escrever para ${esc(quem)} por aqui.`;
+    return { tipo: 'atencao', html: `<b>${fez}</b> ${porque} Avise você, com o texto pronto: “${esc(c.texto || '')}”${c.link ? ` <a href="${esc(c.link)}" target="_blank" rel="noopener noreferrer">Mandar do meu celular</a>` : ''}` };
+  }
+  function cartaoHorarios(h, resumo) {
+    const tem = !!resumo;
+    return `<div class="cartao horarios" id="ag-horarios"><div class="hz-topo"><div><h2>${ic('relogio')} Seus horários de atendimento</h2>
+        <p class="dica" id="hz-resumo">${tem ? `${esc(resumo)} · cada atendimento ${esc(durTxt(h.duracao))}. O ${esc(NOME())} só oferece horário livre dentro disso, e você confirma antes.` : `Quando você atende? Preencha uma vez: o ${esc(NOME())} passa a oferecer ao cliente só horário livre dentro disso, e você confirma antes de valer.`}</p></div>
+        ${tem ? `<button class="bt pequeno fraco" type="button" id="hz-abre" aria-expanded="false" aria-controls="hz-editor">Mudar</button>` : ''}</div>
+      <div class="hz-editor" id="hz-editor"${tem ? ' hidden' : ''}>
+        <div class="hz-atalhos"><span class="dica">Começar com:</span>${ATALHOS_H.map((a, k) => `<button type="button" class="chip-f" data-atalho-h="${k}">${esc(a[0])}</button>`).join('')}</div>
+        <ul class="hz-dias" id="hz-dias"></ul>
+        <button type="button" class="lnk hz-copia" id="hz-copia">Repetir o horário do primeiro dia em todos os dias ligados</button>
+        <div class="hz-dur" role="radiogroup" aria-label="Quanto dura cada atendimento"><span>Cada atendimento dura</span>${DURS_H.map(([m, t]) => `<button type="button" class="chip-f" role="radio" data-dur="${m}">${t}</button>`).join('')}</div>
+        <div class="botoes"><button class="bt" type="button" id="hz-salva">Salvar horários</button>${tem ? '<button class="bt fraco" type="button" id="hz-cancela">Cancelar</button>' : ''}</div>
+        <p class="aviso erro" id="hz-erro" hidden></p></div></div>`;
+  }
+  function ligaHorarios(h0, aoSalvar) {
+    const H = { dias: JSON.parse(JSON.stringify((h0 && h0.dias) || {})), duracao: (h0 && h0.duracao) || 60 };
+    const box = $('hz-dias'); if (!box) return;
+    const desenha = () => {
+      box.innerHTML = DIAS_H.map(([d, nome]) => { const f = H.dias[d] || [], on = f.length > 0;
+        return `<li class="hz-dia ${on ? 'on' : ''}" data-dia="${d}"><button type="button" class="hz-chave" role="switch" aria-checked="${on}" aria-label="Atende na ${nome.toLowerCase()}"><span class="gs-chave"><i></i></span><b>${nome}</b></button>
+          ${on ? `<div class="hz-faixas">${f.map((p, k) => `<span class="hz-faixa"><input type="time" step="900" value="${esc(p.de)}" data-k="${k}" data-ponta="de" aria-label="${nome}: começa"><span class="dica">às</span><input type="time" step="900" value="${esc(p.ate)}" data-k="${k}" data-ponta="ate" aria-label="${nome}: termina">${f.length > 1 ? `<button type="button" class="bt-ic hz-tira" data-tira="${k}" aria-label="Tirar este intervalo">${svg('x')}</button>` : ''}</span>`).join('')}
+            ${f.length < 3 ? `<button type="button" class="lnk hz-mais" data-mais="1">+ outro horário no dia</button>` : ''}</div>` : '<span class="dica hz-fechado">Não atende</span>'}</li>`; }).join('');
+      document.querySelectorAll('[data-dur]').forEach((b) => { const on = +b.dataset.dur === H.duracao; b.classList.toggle('ativo', on); b.setAttribute('aria-checked', String(on)); });
+    };
+    box.onclick = (e) => {
+      const li = e.target.closest('.hz-dia'); if (!li) return; const d = li.dataset.dia;
+      if (e.target.closest('.hz-chave')) {
+        if ((H.dias[d] || []).length) delete H.dias[d];
+        else { const modelo = DIAS_H.map((x) => H.dias[x[0]]).find((f) => f && f.length); H.dias[d] = modelo ? JSON.parse(JSON.stringify(modelo)) : [{ de: '09:00', ate: '18:00' }]; }
+        desenha(); const ch = box.querySelector(`[data-dia="${d}"] .hz-chave`); if (ch) ch.focus();
+      } else if (e.target.closest('[data-mais]')) {
+        const f = H.dias[d], u = f[f.length - 1]; const h = Math.min(+u.ate.slice(0, 2) + 1, 22);
+        f.push({ de: String(h).padStart(2, '0') + ':00', ate: String(Math.min(h + 3, 23)).padStart(2, '0') + ':00' }); desenha();
+      } else if (e.target.closest('[data-tira]')) { H.dias[d].splice(+e.target.closest('[data-tira]').dataset.tira, 1); desenha(); }
+    };
+    box.oninput = (e) => { const i = e.target; if (!i.dataset.ponta) return; const d = i.closest('.hz-dia').dataset.dia; H.dias[d][+i.dataset.k][i.dataset.ponta] = i.value; };
+    document.querySelectorAll('[data-atalho-h]').forEach((b) => b.onclick = () => {
+      const [, dias, faixas] = ATALHOS_H[+b.dataset.atalhoH]; H.dias = {};
+      dias.forEach((d) => (H.dias[d] = faixas.map(([de, ate]) => ({ de, ate })))); desenha();
+    });
+    document.querySelectorAll('[data-dur]').forEach((b) => b.onclick = () => { H.duracao = +b.dataset.dur; desenha(); });
+    $('hz-copia').onclick = () => { const p = DIAS_H.map((x) => H.dias[x[0]]).find((f) => f && f.length); if (!p) return;
+      Object.keys(H.dias).forEach((d) => (H.dias[d] = JSON.parse(JSON.stringify(p)))); desenha(); };
+    const abre = $('hz-abre'), ed = $('hz-editor');
+    if (abre) abre.onclick = () => { ed.hidden = !ed.hidden; abre.setAttribute('aria-expanded', String(!ed.hidden)); abre.hidden = !ed.hidden; };
+    const cancela = $('hz-cancela'); if (cancela) cancela.onclick = () => { ed.hidden = true; abre.hidden = false; abre.setAttribute('aria-expanded', 'false'); };
+    $('hz-salva').onclick = async () => {
+      const ruim = Object.entries(H.dias).find(([, f]) => f.some((p) => !p.de || !p.ate || p.de >= p.ate));
+      if (ruim) { $('hz-erro').textContent = `${(DIAS_H.find((x) => x[0] === ruim[0]) || [])[1]}: o horário de terminar precisa ser depois do de começar.`; $('hz-erro').hidden = false; return; }
+      $('hz-salva').disabled = true;
+      const x = await api('/horarios', { dias: H.dias, duracao: H.duracao });
+      $('hz-salva').disabled = false;
+      if (x.erro) { $('hz-erro').textContent = x.erro; $('hz-erro').hidden = false; return; }
+      aoSalvar(x);
+    };
+    desenha();
+  }
+
   async function telaAgenda(alvo, topo) {
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('agenda')}<h1>Agenda</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/agenda');
     if (abaAtual() !== 'agenda') return;
+    const resultado = AG_RESULTADO; AG_RESULTADO = null;   /* aparece uma vez, logo depois da resposta */
     const hoje = hojeIso();
     const vem = (r.agenda || []).filter((e) => e.dia >= hoje), foi = (r.agenda || []).filter((e) => e.dia < hoje);
     const porDia = {}; vem.forEach((e) => (porDia[e.dia] = porDia[e.dia] || []).push(e));
     const fichaDo = (e) => { const n = String(e.nota || ''); const c = n.match(/cliente:([a-z0-9]+)/); if (c) return c[1]; const p = n.match(/pedido:([a-z0-9]+)/); return p ? 'rid:' + p[1] : ''; };
     const notaLimpa = (n) => String(n || '').replace(/(cliente|pedido):[a-z0-9]+/g, '').trim();
-    const item = (e) => `<li class="ev"><span class="ev-hora num ${e.hora ? '' : 'dia-todo'}">${esc(e.hora || 'dia todo')}</span><div class="ev-txt"><b>${esc(e.titulo)}</b>${e.com ? `<span>com ${fichaDo(e) ? `<button type="button" class="lnk-ficha" data-abre-ficha="${esc(fichaDo(e))}">${esc(e.com)}</button>` : esc(e.com)}</span>` : ''}${notaLimpa(e.nota) ? `<span class="dica">${esc(notaLimpa(e.nota))}</span>` : ''}${e.tipo === 'conta' ? `<span class="selo conta">conta${e.valor ? ' · ' + esc(e.valor) : ''}</span>` : ''}</div>
+    const item = (e) => `<li class="ev"><span class="ev-hora num ${e.hora ? '' : 'dia-todo'}">${esc(e.hora || 'dia todo')}</span><div class="ev-txt"><b>${esc(e.titulo)}</b>${e.com ? `<span>com ${fichaDo(e) ? `<button type="button" class="lnk-ficha" data-abre-ficha="${esc(fichaDo(e))}">${esc(e.com)}</button>` : esc(e.com)}</span>` : ''}${notaLimpa(e.nota) ? `<span class="dica">${esc(notaLimpa(e.nota))}</span>` : ''}${e.tipo === 'conta' ? `<span class="selo conta">conta${e.valor ? ' · ' + esc(e.valor) : ''}</span>` : ''}${e.tipo === 'folga' ? '<span class="selo-fora folga">folga</span>' : ''}</div>
       ${e.origem === 'robo' ? `<span class="selo ok">do ${esc(NOME())}</span>` : '<span></span>'}<button type="button" class="bt-ic" data-apaga="${esc(e.id)}" aria-label="Apagar ${esc(e.titulo)}">${svg('x')}</button></li>`;
     alvo.innerHTML = `<section class="aba">${topo}
       <div class="cabeca-aba"><div>${seloQuem('agenda')}<h1>Agenda</h1><p class="lede">${({ ambos: `Os seus compromissos, que a ${esc(ASSIST())} marca para você, e os horários que o ${esc(NOME())} combinou com os clientes.`, dora: `Os seus compromissos, que a ${esc(ASSIST())} marca para você.` })[(quemFaz().agenda || {}).quem] || `Os seus compromissos e os horários que o ${esc(NOME())} combinou com os clientes.`}</p></div>
         <button class="bt fraco" id="ag-google" type="button">${svg('agenda')} Ver no Google Agenda</button></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
       <div id="ag-link"></div>
-      ${(r.pedidos || []).length ? `<div class="cartao pedido-h"><h2>${ic('relogio')} Pedidos de horário para confirmar</h2><ul class="linha-tempo">${r.pedidos.map((p) => `<li class="ev"><span class="ev-hora num duas">${esc(dia(p.dia + 'T12:00:00').slice(0, 5))}${p.hora ? `<small>${esc(p.hora)}</small>` : ''}</span>
-        <div class="ev-txt"><b>${esc(p.titulo)}</b><span>${esc(p.com || '')}</span></div><span></span><button class="bt pequeno" type="button" data-confirma="${esc(p.id)}">Confirmar</button></li>`).join('')}</ul></div>` : ''}
+      ${resultado ? `<div role="status" id="ag-resultado">${aviso(resultado.tipo, resultado.html, true)}</div>` : ''}
+      ${(r.pedidos || []).length ? `<div class="cartao pedido-h"><h2>${ic('relogio')} Pedidos de horário para confirmar</h2><p class="dica">Quando você responde, o ${esc(NOME())} avisa a pessoa na conversa dela.</p><ul class="linha-tempo">${r.pedidos.map((p) => `<li class="ev ped"><span class="ev-hora num duas">${esc(dia(p.dia + 'T12:00:00').slice(0, 5))}${p.hora ? `<small>${esc(p.hora)}</small>` : ''}</span>
+        <div class="ev-txt"><b>${esc(p.titulo)}</b><span>${esc([p.com, canalTxt(p.canal)].filter(Boolean).join(' · '))}</span>${p.fora ? '<span class="selo-fora">fora do seu horário</span>' : ''}</div>
+        <div class="ped-bts"><button class="bt pequeno" type="button" data-responde="confirmar" data-id="${esc(p.id)}">Confirmar</button><button class="bt pequeno fraco" type="button" data-responde="recusar" data-id="${esc(p.id)}">Não posso nesse</button></div></li>`).join('')}</ul></div>` : ''}
+      ${cartaoHorarios(r.horarios, r.horarios_resumo)}
       <form class="cartao marcar" id="ag-form"><h2>${ic('mais')} Marcar</h2><div class="linha-form">
         <label>Dia<input type="date" id="ag-dia" value="${hoje}" required></label><label>Hora<input type="time" id="ag-hora"></label>
         <label class="largo">O quê<input id="ag-tit" placeholder="Visita da Marina ao ateliê" required></label><label class="largo">Com quem<input id="ag-com" placeholder="Marina (opcional)" list="ag-clientes" autocomplete="off"><datalist id="ag-clientes"></datalist></label>
-        <button class="bt" type="submit">Marcar</button></div><p class="aviso erro" id="ag-erro" hidden></p></form>
+        <button class="bt" type="submit">Marcar</button></div>
+        <label class="ag-folga"><input type="checkbox" id="ag-folga"> Folga: não atendo neste dia (o ${esc(NOME())} não oferece horário)</label><p class="aviso erro" id="ag-erro" hidden></p></form>
       ${Object.keys(porDia).length ? Object.entries(porDia).map(([d, l]) => `<div class="cartao"><h2 class="dia-tit">${esc(diaLongo(d))}${d === hoje ? ' <span class="selo ok">hoje</span>' : ''}</h2><ul class="linha-tempo">${l.map(item).join('')}</ul></div>`).join('')
         : `<div class="cartao"><p class="vazio">Nada marcado daqui para a frente. Marque o primeiro compromisso aqui em cima, ou confirme um pedido que o ${esc(NOME())} anotou.</p></div>`}
       ${foi.length ? `<details class="cartao dobra"><summary>Já passou (${foi.length})</summary><ul class="linha-tempo">${foi.slice(-30).reverse().map(item).join('')}</ul></details>` : ''}
@@ -1336,15 +1416,25 @@
     /* o "Com quem" conhece os clientes do CRM: escolher um liga o compromisso à ficha dele */
     let FICHAS_AG = [];
     api('/clientes').then((x) => { FICHAS_AG = x.fichas || []; const dl = $('ag-clientes'); if (dl) dl.innerHTML = FICHAS_AG.filter((f) => f.nome).slice(0, 400).map((f) => `<option value="${esc(f.nome)}"></option>`).join(''); });
+    $('ag-folga').onchange = () => { const on = $('ag-folga').checked; $('ag-hora').disabled = on; if (on) $('ag-hora').value = ''; $('ag-tit').required = !on; $('ag-tit').placeholder = on ? 'Folga' : 'Visita da Marina ao ateliê'; };
     $('ag-form').onsubmit = (e) => {
       e.preventDefault();
+      AG_RESULTADO = null;
+      if ($('ag-folga').checked) return salva({ acao: 'criar', item: { dia: $('ag-dia').value, hora: '', titulo: $('ag-tit').value.trim() || 'Folga', tipo: 'folga' } });
       const com = $('ag-com').value.trim(), f = com && FICHAS_AG.find((x) => String(x.nome || '').trim().toLowerCase() === com.toLowerCase());
       salva({ acao: 'criar', item: { dia: $('ag-dia').value, hora: $('ag-hora').value, titulo: $('ag-tit').value, com, ...(f ? { nota: 'cliente:' + f.id } : {}) } });
     };
+    ligaHorarios(r.horarios, (x) => { AG_RESULTADO = { tipo: 'info', html: `<b>Horários salvos.</b> O ${esc(NOME())} já oferece só horário livre dentro deles: ${esc(x.resumo || '')}.` }; telaAgenda(alvo, topo); });
     alvo.querySelectorAll('[data-abre-ficha]').forEach((b) => b.onclick = () => abreFicha(b.dataset.abreFicha));
-    alvo.querySelectorAll('[data-confirma]').forEach((b) => b.onclick = () => {
-      const p = r.pedidos.find((x) => x.id === b.dataset.confirma);
-      salva({ acao: 'criar', item: { dia: p.dia, hora: p.hora, titulo: p.titulo, com: p.com, nota: 'pedido:' + p.id, origem: 'robo' } });
+    /* responder um pedido: vira compromisso (ou sai) e o Sol avisa a pessoa. "Não posso" pede certeza: manda mensagem a ela */
+    alvo.querySelectorAll('[data-responde]').forEach((b) => b.onclick = async () => {
+      const acao = b.dataset.responde, p = r.pedidos.find((x) => x.id === b.dataset.id);
+      if (acao === 'recusar' && b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.classList.add('certeza'); b.textContent = 'Avisar que não dá?'; return; }
+      b.closest('.ped-bts').querySelectorAll('button').forEach((x) => (x.disabled = true));
+      const x = await api('/pedido-horario', { id: p.id, acao });
+      if (x.erro) { AG_RESULTADO = { tipo: 'erro', html: esc(x.erro) }; return telaAgenda(alvo, topo); }
+      AG_RESULTADO = resultadoPedido(x, acao, p.com);
+      telaAgenda(alvo, topo);
     });
     alvo.querySelectorAll('[data-apaga]').forEach((b) => b.onclick = () => {
       if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'apagar?'; b.classList.add('certeza'); return; }
