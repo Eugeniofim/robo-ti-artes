@@ -409,7 +409,8 @@
     const msgs = $(o.id + '-msgs'), txt = $(o.id + '-txt'), env = $(o.id + '-env');
     const poe = (quem, texto, extra) => {
       const d = document.createElement('div');
-      d.className = 'm ' + quem; d.textContent = texto;
+      d.className = 'm ' + quem; comLinks(d, texto);
+      if (extra && extra.nota) { const n = document.createElement('span'); n.className = 'feito'; n.textContent = extra.nota; d.appendChild(n); }
       if (extra && extra.feito && extra.feito.length) { const f = document.createElement('span'); f.className = 'feito'; f.textContent = 'Gravado: ' + extra.feito.join(', '); d.appendChild(f); }
       if (extra && extra.convite) { const a = document.createElement('a'); a.className = 'bt pequeno convite'; a.href = '#plano'; a.textContent = 'Ver os planos'; d.appendChild(document.createElement('br')); d.appendChild(a); }
       msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d;
@@ -429,7 +430,7 @@
       const r = await o.envia(texto);
       p.remove(); env.disabled = false; txt.focus();
       if (r.erro) return poe('ele', r.erro, { convite: bloqueio(r) });
-      poe('ele', r.resposta, { feito: r.feito });
+      poe('ele', r.resposta, { feito: r.feito, nota: o.notaDe ? o.notaDe(r) : '' });
       if (o.depois) o.depois(r);
     };
     $(o.id + '-f').onsubmit = (e) => { e.preventDefault(); manda(txt.value); };
@@ -440,7 +441,21 @@
       const s = o.sugestoes[+b.dataset.i];
       if (s.manda) manda(s.texto); else { txt.value = s.texto; cresce(); txt.focus(); txt.setSelectionRange(txt.value.length, txt.value.length); }
     });
-    return { poe, manda, escreve: (t) => { txt.value = t; cresce(); txt.focus(); txt.setSelectionRange(t.length, t.length); } };
+    return { poe, manda, msgs, escreve: (t) => { txt.value = t; cresce(); txt.focus(); txt.setSelectionRange(t.length, t.length); } };
+  }
+  /* o texto com os links clicáveis (16/11: o Sol manda link e na conversa de teste ele vinha como texto morto).
+     Monta com nós de texto, sem innerHTML: o que vem da IA nunca vira código na página. */
+  function comLinks(el, texto) {
+    const t = String(texto || ''), re = /https?:\/\/[^\s<>"']+/g;
+    let i = 0, m;
+    while ((m = re.exec(t))) {
+      let url = m[0]; const sobra = (url.match(/[.,;:!?)\]]+$/) || [''])[0];
+      if (sobra) url = url.slice(0, -sobra.length);
+      el.appendChild(document.createTextNode(t.slice(i, m.index)));
+      const a = document.createElement('a'); a.href = url; a.textContent = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.className = 'lnk-msg';
+      el.appendChild(a); i = m.index + url.length;
+    }
+    el.appendChild(document.createTextNode(t.slice(i)));
   }
 
   function quadroSabe(s) {
@@ -815,10 +830,11 @@
         <div style="display:flex;align-items:center;gap:14px">${anel(c.nivel, 84)}<p class="dica">Quanto mais cheio o cérebro, menos ele passa para você.</p></div>
         <div><button class="bt fraco pequeno" id="limpar" type="button">Começar a conversa de novo</button></div></aside></div></section>`;
     enche(alvo);
-    montaChat($('chat-testar'), {
+    const chat = montaChat($('chat-testar'), {
       id: 'teste', titulo: EU.instagram && EU.instagram.usuario ? '@' + EU.instagram.usuario : (EU.negocio || 'Seu negócio'), sub: `${NOME()} · conversa de teste`,
       placeholder: 'Escreva como um cliente escreveria…', pensando: 'digitando',
       envia: (texto) => { try { localStorage.setItem('robo-testou', '1'); } catch (_) {} return api('/testar', { texto }); },
+      notaDe: (r) => (r.anotou ? 'Anotado em Pedidos e em Clientes (como cliente de teste)' : ''),
       sugestoes: [
         { rotulo: 'Oi, quanto custa?', texto: 'Oi! Quanto custa?', manda: true },
         { rotulo: 'Vocês entregam?', texto: 'Vocês entregam? Eu moro longe.', manda: true },
@@ -829,6 +845,14 @@
       ],
     });
     $('limpar').onclick = async () => { await api('/testar', { limpar: true }); telaTestar(alvo, ''); };
+    /* a conversa que já aconteceu volta para a tela (o servidor guarda 72 h); o que foi escrito enquanto carregava fica no fim */
+    api('/testar', { historico: true }).then((r) => {
+      if (!r || !Array.isArray(r.msgs) || !r.msgs.length || !$('chat-testar')) return;
+      const ja = [...chat.msgs.children];
+      r.msgs.forEach((m) => chat.poe(m.quem === 'robo' ? 'ele' : 'eu', m.texto));
+      ja.forEach((n) => chat.msgs.appendChild(n));
+      chat.msgs.scrollTop = chat.msgs.scrollHeight;
+    }).catch(() => null);
   }
 
   /* ---------- Conectar ---------- */
@@ -1403,7 +1427,7 @@
       const p = precisa(f), ult = (f.pedidos || [])[0];
       return `<li class="cliente ${compacto ? 'compacto' : ''}" data-ficha="${esc(f.id)}" draggable="${compacto ? 'true' : 'false'}" tabindex="0" role="button" aria-label="Abrir a ficha de ${esc(nomeDe(f))}">
         <span class="avatar-cl" aria-hidden="true">${esc(iniciais(f))}</span>
-        <div class="cl-txt"><b>${esc(nomeDe(f))}</b>
+        <div class="cl-txt"><b>${esc(nomeDe(f))}${f.teste ? ' <span class="selo-teste">teste</span>' : ''}</b>
           <span class="dica">${esc(ult ? (ult.assunto || ult.resumo || 'pedido') : f.nota ? f.nota.slice(0, 60) : 'cadastrado por você')}</span>
           ${f.proximo ? `<span class="cl-prox">${ic('agenda')} ${esc(proxTxt(f.proximo))}</span>` : ''}</div>
         <div class="cl-lado">${compacto ? '' : `<span class="sit sit-${esc(f.situacao)}">${esc(SIT[f.situacao] || f.situacao)}</span>`}
@@ -1481,6 +1505,7 @@
         g.innerHTML = `<div class="ficha-topo"><span class="avatar-cl grande" aria-hidden="true">${esc(iniciais(f))}</span>
             <input class="ficha-nome" id="fi-nome" value="${esc(f.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente">
             <button type="button" class="bt-ic" data-fecha aria-label="Fechar">${svg('x')}</button></div>
+          ${f.teste ? `<p class="aviso-teste">${ic('info')} Este cliente veio de uma conversa sua no Testar. Ele fica aqui para você ver o caminho completo; apague quando quiser (no fim da ficha).</p>` : ''}
           <div class="segmento" role="group" aria-label="Situação">${sitBt}</div>
           ${f.situacao === 'perdido' ? `<label class="campo">Por que perdeu?<input id="fi-motivo" value="${esc(f.motivo || '')}" placeholder="achou caro, fechou com outro…"></label>` : ''}
           <div class="ficha-bloco contatos">
@@ -1503,7 +1528,7 @@
           <div class="ficha-bloco"><label class="campo">Valor do negócio<input id="fi-valor" value="${esc(f.valor || '')}" placeholder="R$ 380"></label>
             <label class="campo">Anotações<textarea id="fi-nota" rows="3" placeholder="Prefere falar à tarde. Já comprou o arranjo de mesa.">${esc(f.nota || '')}</textarea></label></div>
           <div class="ficha-bloco"><h3>${ic('relogio')} Histórico</h3>${hist.length ? `<ul class="historico">${hist.map((h) => `<li>${h.html}</li>`).join('')}</ul>` : '<p class="dica">Ainda nada. Os pedidos do atendimento e os compromissos com essa pessoa aparecem aqui.</p>'}
-            <p class="dica">Primeiro contato ${esc(dia(f.primeiro))} · pelo ${esc(f.origem === 'whatsapp' ? 'WhatsApp' : f.origem === 'instagram' ? 'Instagram' : 'cadastro')}</p></div>
+            <p class="dica">Primeiro contato ${esc(dia(f.primeiro))} · pelo ${esc(f.origem === 'whatsapp' ? 'WhatsApp' : f.origem === 'instagram' ? 'Instagram' : f.origem === 'teste' ? 'Testar (conversa de teste)' : 'cadastro')}</p></div>
           <div class="ficha-pe"><button type="button" class="bt pequeno perigo" id="fi-apaga">${svg('lixo')} Apagar ficha</button></div>`;
         const salva = (campos) => muda(f.id, campos).then((n) => n && abre(n.id));
         g.querySelectorAll('[data-sit]').forEach((b) => b.onclick = () => salva({ situacao: b.dataset.sit }));
@@ -1588,7 +1613,7 @@
       ${l.length ? `<ul class="pedidos">${l.map((x) => `<li class="pedido"><div class="topo"><b>${esc(x.nome || 'Alguém')}</b><span class="selo ${x.canal === 'teste' ? 'desligado' : 'ok'}">${esc(canal(x.canal))}</span></div>
           <p>${esc(x.assunto || x.resumo || '')}</p>${x.quando_quer ? `<p class="dica">${ic('relogio')} ${esc(x.quando_quer)}</p>` : ''}
           <p class="contato">${esc([x.contato || (x.canal === 'whatsapp' && x.de ? foneBonito(x.de) : ''), x.instagram ? (String(x.instagram).startsWith('@') ? x.instagram : '@' + x.instagram) : '', x.email].filter(Boolean).join(' · ') || 'sem contato')}</p>
-          <div class="pedido-pe"><span class="dica num">${esc(dia(x.quando))}</span>${x.canal !== 'teste' && x.canal !== 'sistema' ? `<button class="bt pequeno fraco" type="button" data-ficha-rid="${esc(x.id)}">${svg('pessoas')} Ver ficha</button>` : ''}</div></li>`).join('')}</ul>`
+          <div class="pedido-pe"><span class="dica num">${esc(dia(x.quando))}</span>${x.canal !== 'sistema' ? `<button class="bt pequeno fraco" type="button" data-ficha-rid="${esc(x.id)}">${svg('pessoas')} Ver ficha</button>` : ''}</div></li>`).join('')}</ul>`
         : `<div class="cartao"><p class="vazio">Ainda nenhum pedido. Quando o ${esc(NOME())} anotar o primeiro, ele aparece aqui.</p><div><a class="bt fraco pequeno" href="#testar">Fazer um pedido de teste</a></div></div>`}</section>`;
     alvo.querySelectorAll('[data-ficha-rid]').forEach((b) => b.onclick = () => abreFicha('rid:' + b.dataset.fichaRid));
   }

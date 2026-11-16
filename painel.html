@@ -336,6 +336,9 @@ details.dobra[open] > summary::after { content: '–'; }
 .m.ele { align-self: flex-start; background: color-mix(in srgb, var(--folha) 80%, transparent); border: 1px solid var(--card-borda); border-bottom-left-radius: 6px; }
 .m .feito { display: flex; align-items: center; gap: 6px; margin-top: 8px; font: 600 12px var(--mono); color: var(--teal); }
 .m .feito::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--sinal); box-shadow: 0 0 8px var(--sinal); }
+/* link dentro da mensagem (16/11): clicável, quebra se for comprido */
+.m .lnk-msg { color: inherit; text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.m.ele .lnk-msg { color: var(--teal-forte, var(--teal)); }
 .m .convite { display: inline-flex; margin-top: 10px; }
 .m.pensando { display: inline-flex; align-items: center; gap: 10px; color: var(--cinza); }
 .pontos { display: inline-flex; gap: 4px; }
@@ -670,6 +673,12 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 .cl-prox .ic svg { width: 15px; height: 15px; }
 .cl-lado { display: grid; justify-items: end; gap: 4px; }
 .selo-precisa { padding: 2px 9px; border-radius: 999px; font: 600 11px var(--mono); background: var(--laranja); color: #fff; }
+/* o cliente que veio da conversa do Testar (16/11) */
+.selo-teste { display: inline-block; vertical-align: 2px; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font: 600 11px var(--mono); letter-spacing: .02em;
+  color: var(--grafite); background: color-mix(in srgb, var(--grafite) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grafite) 28%, transparent); }
+.aviso-teste { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; font-size: 14px; color: var(--grafite);
+  background: color-mix(in srgb, var(--grafite) 9%, transparent); }
+.aviso-teste svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
 .vazio-crm { gap: 12px; }
 /* o funil: 4 colunas; no celular rolam de lado */
 .funil { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
