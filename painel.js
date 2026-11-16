@@ -63,7 +63,7 @@
   if (q.get('ig') === 'cancelou') avisoVolta = { tipo: 'atencao', texto: 'Você cancelou a conexão do Instagram.' };
   /* conectou o Instagram agora: se ele ainda não leu esta conta, já começa a ler sozinho (a pessoa não precisa voltar e apertar) */
   let lerIgAoVoltar = q.get('ig') === 'ok';
-  if (q.get('drive') === 'ok') avisoVolta = { tipo: 'info', texto: 'Google Drive conectado. Tudo o que você mandar vai sozinho para a pasta do agente no seu Drive.' };
+  if (q.get('drive') === 'ok') avisoVolta = { tipo: 'info', texto: 'Google Drive conectado. Os arquivos que você manda e os papéis guardados vão sozinhos para uma pasta no seu Drive.' };
   if (q.get('drive') === 'erro') avisoVolta = { tipo: 'erro', texto: 'Não deu para conectar o Google Drive. ' + (q.get('motivo') || 'Tente de novo.') };
   if (q.get('pago') === '1') avisoVolta = { tipo: 'info', texto: 'Pagamento recebido. Pode levar alguns segundos para o plano aparecer aqui.' };
   if (q.get('cancelou') === '1') avisoVolta = { tipo: 'atencao', texto: 'Você saiu do pagamento sem concluir. Nada foi cobrado.' };
@@ -77,6 +77,33 @@
   let EU = null, MENU = null;
   const NOME = () => (EU && EU.nomes && EU.nomes.atendimento) || 'Sol';
   const ASSIST = () => (EU && EU.nomes && EU.nomes.assistente) || 'Dora';
+  /* QUEM PREENCHE CADA ABA (16/11, pedido dele: "Notas é a Dora que anota; Pedidos vem do atendimento, do Sol; que a
+     pessoa já entenda de cara. Simples e sofisticado"). O nome vem na cor do agente (Sol verde-água, Dora laranja) e
+     segue o modo da conta e o plano: sem o Sol (só secretária) ou sem a Dora (só atendimento), some quem não trabalha. */
+  function quemFaz() {
+    const soSecretaria = !!(EU && EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length);
+    const sol = !(EU && EU.modo === 'assistente') && !soSecretaria, dora = !(EU && EU.modo === 'atendimento');
+    const S = [`<b class="sol">${esc(NOME())}</b>`, NOME()], D = [`<b class="dora">${esc(ASSIST())}</b>`, ASSIST()];
+    const f = (quem, verbo, ...p) => ({ quem, verbo, html: p.map((x) => (Array.isArray(x) ? x[0] : esc(x))).join(''), txt: p.map((x) => (Array.isArray(x) ? x[1] : x)).join('') });
+    return {
+      cerebro: sol ? f('sol', 'aprende', S, ' aprende') : null,
+      testar: sol ? f('sol', 'responde', S, ' responde') : null,
+      agenda: sol && dora ? f('ambos', 'marca', D, ' e ', S, ' marcam') : dora ? f('dora', 'marca', D, ' marca') : sol ? f('sol', 'marca', S, ' marca') : null,
+      clientes: sol ? f('sol', 'cadastra', S, ' cadastra') : dora ? f('dora', 'cuida', D, ' cuida') : null,
+      notas: dora ? f('dora', 'anota', D, ' anota') : null,
+      pedidos: sol ? f('sol', 'recebe', S, ' recebe') : null,
+      arquivos: sol && dora ? f('ambos', '', S, ' lê · ', D, ' guarda') : sol ? f('sol', '', S, ' lê') : dora ? f('dora', '', D, ' guarda') : null,
+    };
+  }
+  /* o selo do topo das abas do dia a dia: "Quem anota: Dora, a sua secretária" */
+  function seloQuem(aba) {
+    const q = quemFaz()[aba];
+    if (!q) return '<p class="rotulo">O seu dia</p>';
+    const S = `<b class="sol">${esc(NOME())}</b>`, D = `<b class="dora">${esc(ASSIST())}</b>`;
+    const quem = q.quem === 'ambos' ? `${D} e ${S}` : q.quem === 'dora' ? `${D}, a sua secretária` : `${S}, o seu atendimento`;
+    const av = (k) => `<span class="mini-av ${k}" aria-hidden="true">${esc((k === 'sol' ? NOME() : ASSIST()).charAt(0))}</span>`;
+    return `<p class="quem-faz"><span class="mini-avs">${q.quem === 'ambos' ? av('dora') + av('sol') : av(q.quem)}</span><span>Quem ${esc(q.verbo)}: ${quem}</span></p>`;
+  }
   const ABAS = {
     inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
@@ -123,7 +150,7 @@
       marca: EU.negocio || 'Seu negócio', subtitulo: 'Agentes Ti Artes', logo: 'logo.svg', chave: 'robo-painel-menu', ativo: abaAtual(), noite: true,
       usuario: { nome: EU.nome || primeiro((EU.email || '').split('@')[0]) || 'Você', email: EU.email || '' },
       menu: [
-        { secao: 'O agente', itens: [
+        { secao: 'Os agentes', itens: [
           { id: 'inicio', rotulo: 'Início', icone: 'casa', href: '#inicio' },
           { id: 'cerebro', rotulo: 'Cérebro', icone: 'cerebro', href: '#cerebro', ponto: !c.pronto },
           { id: 'testar', rotulo: 'Testar', icone: 'balao', href: '#testar' },
@@ -243,6 +270,7 @@
     document.querySelectorAll('body > #cl-ficha, body > #cl-fundo, body > #cl-toast').forEach((e) => (e.hidden = true));
     document.body.classList.remove('ficha-aberta');
     cabecalho();
+    if (MENU && MENU.subtitulos) MENU.subtitulos(quemFaz());
     const aba = abaAtual(), alvo = $('conteudo');
     const topo = avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '';
     avisoVolta = null;
@@ -567,7 +595,7 @@
   function zonaSoltar(compacta) {
     return `<div class="solta ${compacta ? 'compacta' : ''}" data-solta tabindex="0" role="button" aria-label="Mandar arquivos para o ${esc(NOME())} ler">
       <span class="ic-grande" aria-hidden="true">${svg('upload')}</span>
-      <h2>${compacta ? 'Mandar arquivos' : 'Arraste aqui o que você já tem'}</h2>
+      <h2>${compacta ? `Mandar para o ${esc(NOME())} ler` : 'Arraste aqui o que você já tem'}</h2>
       ${compacta ? '' : `<p>Cardápio ou tabela de preços em PDF, fotos do portfólio, prints de conversas com clientes. O ${esc(NOME())} lê e aprende sozinho.</p>`}
       <span class="bt" aria-hidden="true">${svg('mais')} Escolher arquivos</span>
       <div class="tipos" aria-hidden="true"><span>PDF</span><span>JPG</span><span>PNG</span><span>WEBP</span><span>TXT</span><span>CSV</span><span>até ${MAX_MB} MB</span></div>
@@ -804,10 +832,10 @@
       <h2>Google Drive <span class="selo breve">em breve</span></h2><p>Tudo o que você mandar aqui vai sozinho para uma pasta no seu Drive. Estamos ligando essa conexão.</p>
       <div class="acoes"><button class="bt fraco" type="button" disabled>Conectar Google Drive</button></div></div></article>`;
     if (!d.ligado) return `<article class="cartao drive"><span class="canal-ic dr" aria-hidden="true">${svg('nuvem')}</span><div style="display:grid;gap:10px">
-      <h2>Google Drive</h2><p>Tudo o que você mandar aqui vai sozinho para uma pasta no seu Drive.${curto ? '' : ' A Ti Artes só mexe na pasta que o agente criar: o resto do seu Drive fica fechado.'}</p>
+      <h2>Google Drive</h2><p>O que o ${esc(NOME())} lê e o que a ${esc(ASSIST())} guarda vão sozinhos para uma pasta no seu Drive.${curto ? '' : ' A Ti Artes só mexe na pasta que o agente criar: o resto do seu Drive fica fechado.'}</p>
       <div class="acoes"><button class="bt" type="button" id="drive-ligar">${svg('nuvem')} Conectar Google Drive</button></div></div></article>`;
     return `<article class="cartao drive"><span class="canal-ic dr" aria-hidden="true">${svg('nuvem')}</span><div style="display:grid;gap:10px">
-      <h2>Google Drive <span class="selo ok">conectado</span></h2><p>${d.email ? `Conta <b>${esc(d.email)}</b>. ` : ''}Tudo o que você mandar vai sozinho para a pasta do agente.</p>
+      <h2>Google Drive <span class="selo ok">conectado</span></h2><p>${d.email ? `Conta <b>${esc(d.email)}</b>. ` : ''}O que o ${esc(NOME())} lê e o que a ${esc(ASSIST())} guarda vão sozinhos para uma pasta no seu Drive.</p>
       <div class="acoes">${d.pasta_link ? `<a class="bt" href="${esc(d.pasta_link)}" target="_blank" rel="noopener">${svg('pasta')} Abrir a pasta</a>` : ''}<button class="bt fraco" type="button" id="drive-desligar">Desconectar</button></div></div></article>`;
   }
   function ligaDrive(alvo) {
@@ -1004,18 +1032,22 @@
   }
 
   /* ---------- os arquivos que o dono mandou ao assistente (foto, comprovante, nota fiscal) ---------- */
-  function cartaoGuardados() {
-    if (!(EU.assistente || {}).disponivel || EU.modo === 'atendimento') return '';
-    const G = EU.guardados || { itens: [] }, d = drive();
+  /* ---------- Arquivos em dois blocos (16/11, ele perguntou "o que seria mandar arquivos?": a tela misturava o que se
+     manda para o Sol aprender com os papéis que a Dora guarda). Cada um no bloco do seu agente, como no Conectar. ---------- */
+  function blocoDoraArquivos() {
+    const G = EU.guardados || { itens: [] }, d = drive(), a = EU.assistente || {};
     const pastas = {};
     for (const g of G.itens || []) (pastas[g.pasta || 'Guardados'] = pastas[g.pasta || 'Guardados'] || []).push(g);
+    const n = (G.itens || []).length;
     const onde = (g) => g.drive === 'ok' ? `<span class="selo ok">no Drive</span>` : (g.drive === 'sem' || !d.ligado) ? '<span class="selo">só aqui</span>' : g.drive === 'erro' ? '<span class="selo atencao">tenta de novo</span>' : '<span class="selo">indo pro Drive</span>';
-    return `<div class="cartao guardados"><h2>${ic('pasta')} Guardados pela ${esc(ASSIST())}</h2>
-      <p class="dica">Mande para a ${esc(ASSIST())}, no WhatsApp dela: foto, comprovante, nota fiscal ou PDF, e diga "guarda". Ela lê, dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : '. <b>Ligue o Google Drive</b> aqui em cima para irem para lá'}.</p>
+    return `<article class="cartao agente-con dora da-dora guardados">
+      <header class="ag-topo"><span class="ag-av dora" aria-hidden="true">${esc(ASSIST().charAt(0))}</span><div><h2>O que a ${esc(ASSIST())} guardou</h2><p>Os seus papéis, organizados</p></div>
+        ${n ? `<span class="pill ok">${svg('check')}${n} guardado${n === 1 ? '' : 's'}</span>` : !a.otto_wa ? '<span class="pill breve">Em breve</span>' : ''}</header>
+      <p class="ag-papel">Comprovante, nota fiscal, contrato, foto: mande para ela no WhatsApp e diga “guarda”. Ela dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : ''}.${a.otto_wa ? '' : ` O WhatsApp da ${esc(ASSIST())} chega em breve.`}</p>
       ${Object.keys(pastas).length ? Object.entries(pastas).map(([p, l]) => `<h3 class="pasta-nome">${ic('pasta')} ${esc(p)}</h3><ul class="fontes">${l.map((g) => `<li class="fonte"><div><b>${esc(g.nome)}</b><span class="dica">${esc(dia(g.guardado || g.quando))} ${onde(g)}</span></div>
         <div class="botoes"><button class="bt pequeno fraco" type="button" data-abrir-g="${esc(g.id)}">Abrir</button><button class="bt pequeno fraco" type="button" data-apagar-g="${esc(g.id)}">Apagar</button></div></li>`).join('')}</ul>`).join('')
         : `<p class="vazio">Nada guardado ainda.</p>`}
-      <p class="dica num">${(+G.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(G.limite_mb || 0)} MB no app${G.recebidos ? ` · ${G.recebidos} arquivo${G.recebidos === 1 ? '' : 's'} esperando você dizer onde guardar (some${G.recebidos === 1 ? '' : 'm'} em 3 dias)` : ''}. O que já está no Drive sai do app em ${G.dias_no_app || 30} dias e fica no Drive.</p></div>`;
+      <p class="dica num">${(+G.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(G.limite_mb || 0)} MB no app${G.recebidos ? ` · ${G.recebidos} arquivo${G.recebidos === 1 ? '' : 's'} esperando você dizer onde guardar (some${G.recebidos === 1 ? '' : 'm'} em 3 dias)` : ''}. O que já está no Drive sai do app em ${G.dias_no_app || 30} dias e fica no Drive.</p></article>`;
   }
   function ligaGuardados(alvo, pinta) {
     alvo.querySelectorAll('[data-abrir-g]').forEach((b) => b.onclick = async () => {
@@ -1035,18 +1067,24 @@
     const pinta = () => {
       const l = fontes().filter((f) => f.tipo === 'arquivo'), u = EU.arquivos;
       const pct = u && u.limite_mb ? Math.round((u.usados_mb / u.limite_mb) * 100) : 0;
+      const q = (quemFaz().arquivos || { quem: 'sol' }).quem;
+      const sol = q !== 'dora', dora = q !== 'sol' && (!!(EU.assistente || {}).disponivel || !sol);
+      const blocoSol = `<article class="cartao agente-con sol">
+          <header class="ag-topo"><span class="ag-av sol" aria-hidden="true">${esc(NOME().charAt(0))}</span><div><h2>O que o ${esc(NOME())} leu</h2><p>Para ele aprender sobre o seu negócio</p></div>
+            <span class="pill ${l.length ? 'ok' : 'nao'}">${l.length ? svg('check') : ''}${l.length} arquivo${l.length === 1 ? '' : 's'}</span></header>
+          <p class="ag-papel">O cardápio, a tabela de preços, fotos do seu trabalho. Ele lê, guarda no Cérebro o que serve e responde os seus clientes com isso.</p>
+          ${l.length ? `<ul class="fontes" id="arq-lista">${l.map(itemFonte).join('')}</ul>` : ''}
+          ${zonaSoltar(true)}
+          ${u ? `<div class="espaco"><div class="medidor ${pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="Espaço usado" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, pct)}%"></i></div>
+            <p class="dica num">${(+u.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(u.limite_mb)} MB usados</p></div>` : ''}
+        </article>`;
       alvo.innerHTML = `<section class="aba">${topo}
         <div class="cabeca-aba"><div><p class="rotulo">Arquivos</p><h1>Os seus arquivos</h1>
-        <p class="lede">O que você mandou para o ${esc(NOME())} ler fica guardado aqui. Ele aprende com cada um.</p></div></div>
-        ${cartaoDrive(false)}
-        ${cartaoGuardados()}
-        <div class="arq-grade">
-          <div class="cartao"><h2>${ic('pasta')} ${l.length} arquivo${l.length === 1 ? '' : 's'}</h2>
-            ${l.length ? `<ul class="fontes" id="arq-lista">${l.map(itemFonte).join('')}</ul>` : `<p class="vazio">Nenhum arquivo ainda. Mande o primeiro aqui ao lado: o cardápio, a tabela de preços ou fotos do seu trabalho.</p>`}</div>
-          <div style="display:grid;gap:16px;align-content:start">${zonaSoltar(true)}
-            ${u ? `<div class="cartao leve"><h2 style="font-size:17px">Espaço usado</h2><div class="medidor ${pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="Espaço usado" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, pct)}%"></i></div>
-              <p class="dica num">${(+u.usados_mb || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB de ${inteiro(u.limite_mb)} MB</p></div>` : ''}</div>
-        </div></section>`;
+        <p class="lede">${sol && dora ? `O que você manda para o ${esc(NOME())} aprender e os papéis que a ${esc(ASSIST())} guarda para você.`
+          : sol ? `O que você mandou para o ${esc(NOME())} ler fica aqui. Ele aprende com cada um.` : `Os papéis que a ${esc(ASSIST())} guarda para você.`}</p></div></div>
+        <div class="agentes-con${sol && dora ? '' : ' um'}">${sol ? blocoSol : ''}${dora ? blocoDoraArquivos() : ''}</div>
+        <p class="rotulo sec-conectar">Onde fica tudo</p>
+        ${cartaoDrive(false)}</section>`;
       const lista = $('arq-lista'); if (lista) ligaFontes(lista, pinta);
       ligaSoltar(alvo); ligaDrive(alvo); ligaGuardados(alvo, pinta);
     };
@@ -1135,7 +1173,7 @@
   /* ---------- o mini app: Agenda ---------- */
   const diaLongo = (iso) => { const t = new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   async function telaAgenda(alvo, topo) {
-    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Agenda</h1></div></div><p class="dica">Carregando…</p></section>`;
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('agenda')}<h1>Agenda</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/agenda');
     if (abaAtual() !== 'agenda') return;
     const hoje = hojeIso();
@@ -1146,7 +1184,7 @@
     const item = (e) => `<li class="ev"><span class="ev-hora num ${e.hora ? '' : 'dia-todo'}">${esc(e.hora || 'dia todo')}</span><div class="ev-txt"><b>${esc(e.titulo)}</b>${e.com ? `<span>com ${fichaDo(e) ? `<button type="button" class="lnk-ficha" data-abre-ficha="${esc(fichaDo(e))}">${esc(e.com)}</button>` : esc(e.com)}</span>` : ''}${notaLimpa(e.nota) ? `<span class="dica">${esc(notaLimpa(e.nota))}</span>` : ''}${e.tipo === 'conta' ? `<span class="selo conta">conta${e.valor ? ' · ' + esc(e.valor) : ''}</span>` : ''}</div>
       ${e.origem === 'robo' ? `<span class="selo ok">do ${esc(NOME())}</span>` : '<span></span>'}<button type="button" class="bt-ic" data-apaga="${esc(e.id)}" aria-label="Apagar ${esc(e.titulo)}">${svg('x')}</button></li>`;
     alvo.innerHTML = `<section class="aba">${topo}
-      <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Agenda</h1><p class="lede">Os seus compromissos e os horários que o ${esc(NOME())} combinou com os clientes.</p></div>
+      <div class="cabeca-aba"><div>${seloQuem('agenda')}<h1>Agenda</h1><p class="lede">${({ ambos: `Os seus compromissos, que a ${esc(ASSIST())} marca para você, e os horários que o ${esc(NOME())} combinou com os clientes.`, dora: `Os seus compromissos, que a ${esc(ASSIST())} marca para você.` })[(quemFaz().agenda || {}).quem] || `Os seus compromissos e os horários que o ${esc(NOME())} combinou com os clientes.`}</p></div>
         <button class="bt fraco" id="ag-google" type="button">${svg('agenda')} Ver no Google Agenda</button></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
       <div id="ag-link"></div>
@@ -1195,7 +1233,10 @@
     if (abaAtual() !== 'notas') return;
     const l = r.notas || [];
     alvo.innerHTML = `<section class="aba">${topo}
-      <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Notas</h1></div></div>
+      <div class="cabeca-aba"><div>${seloQuem('notas')}<h1>Notas</h1>
+        <p class="lede">${!quemFaz().notas ? 'O que você não pode esquecer.'
+          : (EU.assistente || {}).otto_wa ? `O que você não pode esquecer. Mande para a ${esc(ASSIST())} no WhatsApp dela, como “${esc(ASSIST())}, anota: ligar para o fornecedor”, ou escreva aqui.`
+          : `O que você não pode esquecer. Escreva aqui. Quando o WhatsApp da ${esc(ASSIST())} chegar, é só mandar para ela: “${esc(ASSIST())}, anota: ligar para o fornecedor”.`}</p></div></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
       <form class="cartao compor" id="nt-form"><label class="campo">Nova nota<textarea id="nt-txt" rows="3" placeholder="Anote o que não pode esquecer: ligar para o fornecedor, ideia de promoção…"></textarea></label>
         <div class="linha"><span class="dica">⌘ + Enter também anota</span><button class="bt" type="submit">${svg('mais')} Anotar</button></div><p class="aviso erro" id="nt-erro" hidden></p></form>
@@ -1230,7 +1271,7 @@
   const waLink = (f, texto) => `https://wa.me/${esc(f.whatsapp || f.telefone)}${texto ? '?text=' + encodeURIComponent(texto) : ''}`;
 
   async function telaClientes(alvo, topo) {
-    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/clientes');
     if (abaAtual() !== 'clientes') return;
     let L = r.fichas || [];
@@ -1390,7 +1431,7 @@
     const recarrega = async (id) => { const x = await api('/clientes'); if (x.fichas) L = x.fichas; desenha(); abre(id); };
 
     alvo.innerHTML = `<section class="aba crm">${topo}
-      <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Clientes</h1>
+      <div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1>
         <p class="lede">Cada pessoa que fala com o ${esc(NOME())} vira uma ficha aqui, sozinha. Você move no funil e marca o próximo passo, que vai para a agenda${(EU.assistente || {}).disponivel ? ` e a ${esc(ASSIST())} lembra você` : ''}.</p></div>
         <div class="botoes"><button class="bt pequeno" type="button" id="cl-novo">${svg('mais')} Novo cliente</button><button class="bt pequeno fraco" type="button" id="cl-planilha">${svg('baixar')} Planilha</button></div></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
@@ -1425,13 +1466,13 @@
   }
 
   async function telaPedidos(alvo, topo) {
-    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Pedidos anotados</h1></div></div><p class="dica">Carregando…</p></section>`;
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('pedidos')}<h1>Pedidos dos clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/recados');
     if (abaAtual() !== 'pedidos') return;
     const l = r.recados || [];
     const canal = (c) => ({ instagram: 'Instagram', whatsapp: 'WhatsApp', teste: 'teste do painel', sistema: 'aviso do sistema' }[c] || c);
     alvo.innerHTML = `<section class="aba">${topo}
-      <div class="cabeca-aba"><div><p class="rotulo">O seu dia</p><h1>Pedidos anotados</h1>
+      <div class="cabeca-aba"><div>${seloQuem('pedidos')}<h1>Pedidos dos clientes</h1>
       <p class="lede">Quando um cliente pede orçamento, visita ou fala com uma pessoa, o ${esc(NOME())} anota aqui e avisa você.</p></div></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
       ${l.length ? `<ul class="pedidos">${l.map((x) => `<li class="pedido"><div class="topo"><b>${esc(x.nome || 'Alguém')}</b><span class="selo ${x.canal === 'teste' ? 'desligado' : 'ok'}">${esc(canal(x.canal))}</span></div>
@@ -1499,7 +1540,8 @@ function criaMenuVidro(raiz, o) {
 
   let ativo = o.ativo || (o.menu[0] && o.menu[0].itens[0] && o.menu[0].itens[0].id) || '';
   const selo = it => it.selo != null ? `<span class="gs-selo${it.alerta ? ' alerta' : ''}">${esc(it.selo)}</span>` : (it.ponto ? '<span class="gs-selo ponto" aria-label="falta alimentar"></span>' : '');
-  const item = it => `<div class="gs-grupo" data-busca="${esc(it.rotulo)}"><a class="gs-item" href="${esc(it.href || '#')}" data-id="${esc(it.id)}" data-rotulo="${esc(it.rotulo)}">${svg(it.icone)}<span class="gs-rot">${esc(it.rotulo)}</span>${selo(it)}</a></div>`;
+  /* sub (HTML de quem chama) = a linha pequena embaixo do nome; subTexto = a mesma coisa sem marcação, para a dica e a busca */
+  const item = it => `<div class="gs-grupo" data-busca="${esc(it.rotulo + ' ' + (it.subTexto || ''))}"><a class="gs-item${it.sub ? ' duas' : ''}" href="${esc(it.href || '#')}" data-id="${esc(it.id)}" data-nome="${esc(it.rotulo)}" data-rotulo="${esc(it.rotulo + (it.subTexto ? ' · ' + it.subTexto : ''))}">${svg(it.icone)}<span class="gs-rot">${esc(it.rotulo)}${it.sub ? `<small>${it.sub}</small>` : ''}</span>${selo(it)}</a></div>`;
   const u = o.usuario || {};
   raiz.innerHTML = `
     <div class="gs-topo"><span class="gs-logo">${o.logo ? `<img src="${esc(o.logo)}" alt="">` : esc(iniciais(o.marca).slice(0, 1))}</span>
@@ -1588,5 +1630,18 @@ function criaMenuVidro(raiz, o) {
   marca();
   pilula.style.transition = rastro.style.transition = 'none'; repoe(); void pilula.offsetWidth; pilula.style.transition = rastro.style.transition = '';
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(repoe);
-  return { recolher: recolhe, ativar(id) { ativo = id; marca(); repoe(); } };
+  return { recolher: recolhe, ativar(id) { ativo = id; marca(); repoe(); },
+    /* troca a linha pequena de cada item: { id: { html, txt } | null } (null tira a linha) */
+    subtitulos(mapa) {
+      $$('.gs-item').forEach(x => {
+        if (!Object.hasOwn(mapa, x.dataset.id)) return;
+        const m = mapa[x.dataset.id], rot = x.querySelector('.gs-rot'), nome = x.dataset.nome || '';
+        let s = rot.querySelector('small');
+        if (m) { if (!s) { s = document.createElement('small'); rot.appendChild(s); } s.innerHTML = m.html; } else if (s) s.remove();
+        x.classList.toggle('duas', !!m);
+        x.dataset.rotulo = nome + (m ? ' · ' + m.txt : '');
+        x.parentElement.dataset.busca = nome + ' ' + (m ? m.txt : '');
+      });
+      repoe();
+    } };
 }

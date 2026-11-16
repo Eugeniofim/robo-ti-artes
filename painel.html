@@ -91,6 +91,19 @@ body { min-height: 100dvh; font-size: 16.5px; background: transparent; }
 .gs-item { position: relative; z-index: 2; display: flex; align-items: center; gap: 14px; width: 100%; height: 48px; padding: 0 14px; border-radius: 999px; white-space: nowrap; }
 .gs-item[aria-current="page"] svg { color: #7DF5DC; }
 .gs-rot { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; transition: opacity .18s; }
+/* quem preenche cada aba (16/11): uma linha pequena embaixo do nome, com o agente na cor dele */
+.gs-item.duas { height: 52px; }
+/* tela baixa (notebook pequeno, celular): aperta um pouco para o Conectar não sumir lá embaixo; nada abaixo de 44 px de toque */
+@media (max-height: 900px) {
+  .gs-item, .gs-noite { height: 44px; }
+  .gs-item.duas { height: 48px; }
+  .gs-secao { height: 30px; padding-top: 12px; }
+}
+.gs-rot small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; line-height: 1.25; color: var(--gs-fraco); overflow: hidden; text-overflow: ellipsis; }
+.gs-rot small b { font-weight: 650; }
+.gs-rot small b.sol { color: #7DF5DC; }
+.gs-rot small b.dora { color: #FFB06B; }
+.gs[data-recolhido="1"] .gs-item.duas { height: 48px; }
 .gs-selo { flex: none; min-width: 24px; height: 24px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: rgba(255,255,255,.2); }
 .gs-selo.alerta { background: #F0B95A; color: #241700; }
 .gs-selo.ponto { min-width: 9px; width: 9px; height: 9px; padding: 0; background: #F0B95A; margin-right: 8px; box-shadow: 0 0 10px #F0B95A; }
@@ -486,7 +499,21 @@ tfoot td { font-weight: 700; border-bottom: 0; }
    Cada conexão é uma linha: ícone, nome, a situação ESCRITA numa pílula (não só cor) e uma ação principal. */
 .sec-conectar { margin: 10px 2px -8px; }
 .agentes-con { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.agentes-con.um { grid-template-columns: minmax(0, 1fr); }
 .agente-con { gap: 16px; }
+.agente-con .espaco { display: grid; gap: 6px; }
+.agente-con .solta.compacta { margin: 0; }
+/* o selo do topo das abas do dia a dia: quem preenche aquela aba */
+.quem-faz { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 6px; justify-self: start; width: max-content; max-width: 100%; padding: 4px 14px 4px 4px; border-radius: 999px; font-size: 14px; color: var(--grafite);
+  background: color-mix(in srgb, var(--folha) 70%, transparent); border: 1px solid var(--card-borda); }
+.quem-faz b { font-weight: 700; }
+.quem-faz b.sol, .ag-txt-sol { color: var(--teal-forte, var(--teal)); }
+.quem-faz b.dora { color: color-mix(in srgb, var(--laranja) 82%, var(--tinta)); }   /* no claro, o laranja puro fica abaixo de 4,5:1 */
+.mini-avs { display: inline-flex; }
+.mini-av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--serif); flex: none; }
+.mini-av + .mini-av { margin-left: -7px; box-shadow: 0 0 0 2px var(--papel); }
+.mini-av.sol { background: linear-gradient(135deg, #3FE0C5, #138C7B); color: #04211D; }
+.mini-av.dora { background: linear-gradient(135deg, #FFB06B, #E8692A); color: #fff; }
 .agente-con.sol::before { background: linear-gradient(135deg, color-mix(in srgb, var(--sinal) 75%, transparent), transparent 42%, transparent 62%, color-mix(in srgb, var(--sinal) 35%, transparent)); }
 .ag-topo { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
 .ag-topo h2 { margin: 0; font-size: 24px; }
