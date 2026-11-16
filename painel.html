@@ -91,19 +91,16 @@ body { min-height: 100dvh; font-size: 16.5px; background: transparent; }
 .gs-item { position: relative; z-index: 2; display: flex; align-items: center; gap: 14px; width: 100%; height: 48px; padding: 0 14px; border-radius: 999px; white-space: nowrap; }
 .gs-item[aria-current="page"] svg { color: #7DF5DC; }
 .gs-rot { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; transition: opacity .18s; }
-/* quem preenche cada aba (16/11): uma linha pequena embaixo do nome, com o agente na cor dele */
-.gs-item.duas { height: 52px; }
+/* o mouse em cima só clareia o item; a pílula fica na aba aberta (16/11: ela seguir o mouse parecia defeito) */
+@media (hover: hover) {
+  .gs-item { transition: background-color .16s; }
+  .gs-item:not([aria-current]):hover { background: rgba(255,255,255,.07); }
+}
 /* tela baixa (notebook pequeno, celular): aperta um pouco para o Conectar não sumir lá embaixo; nada abaixo de 44 px de toque */
 @media (max-height: 900px) {
   .gs-item, .gs-noite { height: 44px; }
-  .gs-item.duas { height: 48px; }
   .gs-secao { height: 30px; padding-top: 12px; }
 }
-.gs-rot small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; line-height: 1.25; color: var(--gs-fraco); overflow: hidden; text-overflow: ellipsis; }
-.gs-rot small b { font-weight: 650; }
-.gs-rot small b.sol { color: #7DF5DC; }
-.gs-rot small b.dora { color: #FFB06B; }
-.gs[data-recolhido="1"] .gs-item.duas { height: 48px; }
 .gs-selo { flex: none; min-width: 24px; height: 24px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: rgba(255,255,255,.2); }
 .gs-selo.alerta { background: #F0B95A; color: #241700; }
 .gs-selo.ponto { min-width: 9px; width: 9px; height: 9px; padding: 0; background: #F0B95A; margin-right: 8px; box-shadow: 0 0 10px #F0B95A; }
@@ -131,8 +128,19 @@ body { min-height: 100dvh; font-size: 16.5px; background: transparent; }
 .gs[data-recolhido="1"] .gs-item, .gs[data-recolhido="1"] .gs-noite { justify-content: center; padding: 0; width: 48px; margin-inline: auto; }
 .gs[data-recolhido="1"] .gs-selo { position: absolute; top: 8px; right: 7px; min-width: 11px; width: 11px; height: 11px; padding: 0; font-size: 0; margin: 0; background: #F0B95A; box-shadow: 0 0 0 2px rgba(255,255,255,.3); }
 .gs[data-recolhido="1"] .gs-usuario { justify-content: center; padding: 10px 0 2px; }
-.gs-dica { position: fixed; z-index: 60; padding: 8px 13px; border-radius: 12px; font: 600 14px var(--sans); color: #0B1416; background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 8px 22px rgba(0,0,0,.26); pointer-events: none; opacity: 0; transform: translateX(-6px); transition: opacity .14s, transform .18s; white-space: nowrap; }
+/* o balão: vidro escuro como o menu, com a setinha apontando o item; quem cuida da aba vem na cor do agente */
+.gs-dica { position: fixed; z-index: 60; display: grid; gap: 5px; padding: 8px 12px 8px 9px; border-radius: 12px; font: 500 13.5px/1.3 var(--sans); color: #E8F3F1;
+  background: rgba(8, 20, 22, .92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 26px rgba(0,0,0,.34);
+  pointer-events: none; opacity: 0; transform: translateX(-6px); transition: opacity .14s, transform .18s; white-space: nowrap; }
+.gs-dica::before { content: ""; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; transform: rotate(45deg); background: rgba(8, 20, 22, .92); box-shadow: -1px 1px 0 rgba(255,255,255,.12); }
 .gs-dica.on { opacity: 1; transform: none; }
+.gs-dica-rot { padding-left: 3px; font-weight: 650; font-size: 14px; color: #fff; }
+.gs-dica-quem { display: flex; align-items: center; gap: 8px; }
+.gs-dica-quem b { font-weight: 650; }
+.gs-dica-quem b.sol { color: #7DF5DC; }
+.gs-dica-quem b.dora { color: #FFB06B; }
+.gs-dica .mini-av { width: 21px; height: 21px; font-size: 11.5px; }
+.gs-dica .mini-av + .mini-av { margin-left: -6px; box-shadow: 0 0 0 2px rgb(8, 20, 22); }
 @media (prefers-reduced-motion: reduce) { .gs, .gs *, .gs-dica { transition-duration: .01ms !important; } }
 /* ==== FIM DO MENU ==== */
 

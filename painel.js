@@ -101,9 +101,15 @@
     if (!q) return '<p class="rotulo">O seu dia</p>';
     const S = `<b class="sol">${esc(NOME())}</b>`, D = `<b class="dora">${esc(ASSIST())}</b>`;
     const quem = q.quem === 'ambos' ? `${D} e ${S}` : q.quem === 'dora' ? `${D}, a sua secretária` : `${S}, o seu atendimento`;
-    const av = (k) => `<span class="mini-av ${k}" aria-hidden="true">${esc((k === 'sol' ? NOME() : ASSIST()).charAt(0))}</span>`;
-    return `<p class="quem-faz"><span class="mini-avs">${q.quem === 'ambos' ? av('dora') + av('sol') : av(q.quem)}</span><span>Quem ${esc(q.verbo)}: ${quem}</span></p>`;
+    return `<p class="quem-faz">${avatares(q.quem)}<span>Quem ${esc(q.verbo)}: ${quem}</span></p>`;
   }
+  /* as bolinhas com a inicial de cada agente, na cor dele (o topo das abas e o balão do menu) */
+  function avatares(quem) {
+    const av = (k) => `<span class="mini-av ${k}" aria-hidden="true">${esc((k === 'sol' ? NOME() : ASSIST()).charAt(0))}</span>`;
+    return `<span class="mini-avs">${quem === 'ambos' ? av('dora') + av('sol') : av(quem)}</span>`;
+  }
+  /* o balão de cada item do menu: "(D) Dora anota" */
+  const dicasDoMenu = () => Object.fromEntries(Object.entries(quemFaz()).map(([k, q]) => [k, q && { html: avatares(q.quem) + `<span>${q.html}</span>`, txt: q.txt }]));
   const ABAS = {
     inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
@@ -270,7 +276,7 @@
     document.querySelectorAll('body > #cl-ficha, body > #cl-fundo, body > #cl-toast').forEach((e) => (e.hidden = true));
     document.body.classList.remove('ficha-aberta');
     cabecalho();
-    if (MENU && MENU.subtitulos) MENU.subtitulos(quemFaz());
+    if (MENU && MENU.dicas) MENU.dicas(dicasDoMenu());
     const aba = abaAtual(), alvo = $('conteudo');
     const topo = avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '';
     avisoVolta = null;
@@ -1644,8 +1650,11 @@ function criaMenuVidro(raiz, o) {
 
   let ativo = o.ativo || (o.menu[0] && o.menu[0].itens[0] && o.menu[0].itens[0].id) || '';
   const selo = it => it.selo != null ? `<span class="gs-selo${it.alerta ? ' alerta' : ''}">${esc(it.selo)}</span>` : (it.ponto ? '<span class="gs-selo ponto" aria-label="falta alimentar"></span>' : '');
-  /* sub (HTML de quem chama) = a linha pequena embaixo do nome; subTexto = a mesma coisa sem marcação, para a dica e a busca */
-  const item = it => `<div class="gs-grupo" data-busca="${esc(it.rotulo + ' ' + (it.subTexto || ''))}"><a class="gs-item${it.sub ? ' duas' : ''}" href="${esc(it.href || '#')}" data-id="${esc(it.id)}" data-nome="${esc(it.rotulo)}" data-rotulo="${esc(it.rotulo + (it.subTexto ? ' · ' + it.subTexto : ''))}">${svg(it.icone)}<span class="gs-rot">${esc(it.rotulo)}${it.sub ? `<small>${it.sub}</small>` : ''}</span>${selo(it)}</a></div>`;
+  /* dica (HTML de quem chama, 16/11) = o balão que aparece com o mouse em cima, sem poluir o menu; dicaTexto = a mesma
+     coisa sem marcação, para a busca ("dora" acha Notas) */
+  const DICAS = new Map();
+  const item = it => { if (it.dica) DICAS.set(it.id, it.dica);
+    return `<div class="gs-grupo" data-busca="${esc(it.rotulo + ' ' + (it.dicaTexto || ''))}"><a class="gs-item" href="${esc(it.href || '#')}" data-id="${esc(it.id)}" data-rotulo="${esc(it.rotulo)}">${svg(it.icone)}<span class="gs-rot">${esc(it.rotulo)}</span>${selo(it)}</a></div>`; };
   const u = o.usuario || {};
   raiz.innerHTML = `
     <div class="gs-topo"><span class="gs-logo">${o.logo ? `<img src="${esc(o.logo)}" alt="">` : esc(iniciais(o.marca).slice(0, 1))}</span>
@@ -1680,25 +1689,39 @@ function criaMenuVidro(raiz, o) {
     tiraDica();
   }
   const fechado = () => raiz.dataset.recolhido === '1';
-  function mostraDica(el) {
-    if (!fechado() || !el.dataset.rotulo) return;
+  /* O BALÃO (16/11, pedido dele: "ao passar o mouse mostra um pequeno balão dizendo que é a Sol ou a Dora"): aberto, só
+     a dica de quem cuida daquela aba; recolhido, o nome da aba e a dica. Espera um instante antes de abrir (o mouse que
+     só passa não acende nada); de um item para o outro, troca na hora. Toque no celular não abre balão: lá a aba diz
+     no topo quem cuida dela. */
+  let espera = 0, dicaDe = null, pendente = null;
+  function mostraDica(el, jaAberto) {
+    clearTimeout(espera); pendente = null;
+    const quem = el.dataset.id ? DICAS.get(el.dataset.id) : '';
+    const rot = fechado() ? el.dataset.rotulo : '';
+    if (!quem && !rot) { tiraDica(); return; }
+    if (!jaAberto && !dica.classList.contains('on')) { pendente = el; espera = setTimeout(() => mostraDica(el, true), 280); return; }
+    dicaDe = el;
+    dica.innerHTML = (rot ? `<b class="gs-dica-rot">${esc(rot)}</b>` : '') + (quem ? `<span class="gs-dica-quem">${quem}</span>` : '');
     const r = el.getBoundingClientRect(), p = raiz.getBoundingClientRect();
-    dica.textContent = el.dataset.rotulo; dica.classList.add('on');
-    dica.style.left = (p.right + 14) + 'px'; dica.style.top = (r.top + r.height / 2 - dica.offsetHeight / 2) + 'px';
+    dica.style.left = (p.right + 12) + 'px'; dica.style.top = (r.top + r.height / 2 - dica.offsetHeight / 2) + 'px';
+    dica.classList.add('on');
   }
-  function tiraDica() { dica.classList.remove('on'); }
+  function tiraDica() { clearTimeout(espera); dicaDe = pendente = null; dica.classList.remove('on'); }
+  const doMouse = e => e.pointerType !== 'touch';
 
-  nav.addEventListener('pointerover', e => { const el = e.target.closest('.gs-item'); if (el) { mover(el); mostraDica(el); } });
-  nav.addEventListener('focusin', e => { const el = e.target.closest('.gs-item'); if (el) { mover(el); mostraDica(el); } });
-  nav.addEventListener('pointerleave', () => { repoe(); tiraDica(); });
-  nav.addEventListener('focusout', e => { if (!nav.contains(e.relatedTarget)) { repoe(); tiraDica(); } });
+  /* a pílula fica na aba aberta e só desliza quando a aba muda; o mouse em cima só clareia o item (CSS) */
+  nav.addEventListener('pointerover', e => { const el = e.target.closest('.gs-item'); if (el && doMouse(e) && el !== dicaDe && el !== pendente) mostraDica(el); });
+  nav.addEventListener('focusin', e => { const el = e.target.closest('.gs-item'); if (el && el.matches(':focus-visible')) mostraDica(el, true); });
+  nav.addEventListener('pointerleave', tiraDica);
+  nav.addEventListener('focusout', e => { if (!nav.contains(e.relatedTarget)) tiraDica(); });
   nav.addEventListener('scroll', () => { tiraDica(); repoe(); }, { passive: true });
-  [noite, $('.gs-usuario')].filter(Boolean).forEach(el => { el.addEventListener('pointerenter', () => mostraDica(el)); el.addEventListener('pointerleave', tiraDica); el.addEventListener('focus', () => mostraDica(el)); el.addEventListener('blur', tiraDica); });
+  [noite, $('.gs-usuario')].filter(Boolean).forEach(el => { el.addEventListener('pointerenter', e => { if (doMouse(e)) mostraDica(el); }); el.addEventListener('pointerleave', tiraDica); el.addEventListener('focus', () => mostraDica(el, true)); el.addEventListener('blur', tiraDica); });
 
   nav.addEventListener('click', e => {
     const el = e.target.closest('.gs-item'); if (!el) return;
     if (el.getAttribute('href') === '#') e.preventDefault();
     if (el.dataset.id !== 'sair') { ativo = el.dataset.id; marca(); mover(el); }
+    tiraDica();
     if (o.aoEscolher) o.aoEscolher(el.dataset.id);
   });
   recolher.addEventListener('click', () => recolhe(!fechado()));
@@ -1735,17 +1758,14 @@ function criaMenuVidro(raiz, o) {
   pilula.style.transition = rastro.style.transition = 'none'; repoe(); void pilula.offsetWidth; pilula.style.transition = rastro.style.transition = '';
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(repoe);
   return { recolher: recolhe, ativar(id) { ativo = id; marca(); repoe(); },
-    /* troca a linha pequena de cada item: { id: { html, txt } | null } (null tira a linha) */
-    subtitulos(mapa) {
+    /* troca o balão de cada item: { id: { html, txt } | null } (null tira o balão) */
+    dicas(mapa) {
       $$('.gs-item').forEach(x => {
         if (!Object.hasOwn(mapa, x.dataset.id)) return;
-        const m = mapa[x.dataset.id], rot = x.querySelector('.gs-rot'), nome = x.dataset.nome || '';
-        let s = rot.querySelector('small');
-        if (m) { if (!s) { s = document.createElement('small'); rot.appendChild(s); } s.innerHTML = m.html; } else if (s) s.remove();
-        x.classList.toggle('duas', !!m);
-        x.dataset.rotulo = nome + (m ? ' · ' + m.txt : '');
-        x.parentElement.dataset.busca = nome + ' ' + (m ? m.txt : '');
+        const m = mapa[x.dataset.id];
+        if (m) DICAS.set(x.dataset.id, m.html); else DICAS.delete(x.dataset.id);
+        x.parentElement.dataset.busca = (x.dataset.rotulo || '') + ' ' + (m ? m.txt : '');
       });
-      repoe();
+      if (dicaDe) mostraDica(dicaDe, true);
     } };
 }
