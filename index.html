@@ -7,7 +7,7 @@
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Agentes de IA humanizada, não chatbot de menu: o agente de atendimento responde os seus clientes no Instagram e no WhatsApp na hora, 24 horas, com os seus preços e o seu jeito. E a Dora, a sua secretária no WhatsApp, marca, anota, avisa e organiza o seu dia. A partir de R$ 99 por mês, teste grátis sem cartão.">
+<meta name="description" content="Agentes de IA humanizada, não chatbot de menu: o Sol responde os seus clientes no Instagram e no WhatsApp na hora, 24 horas, com os seus preços e o seu jeito; a Dora, a sua secretária no WhatsApp, organiza o seu dia; e o CRM com agenda se preenche sozinho. Para pousada, clínica, dentista, salão, imobiliária, loja e o seu negócio. A partir de R$ 99 por mês, teste grátis sem cartão.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -349,6 +349,44 @@ footer .assina img { width: 22px; height: 22px; }
 .jeitos.todos .jeito h3 { font-size: 22px; }
 .jeitos.todos .antes { font-size: 15px; }
 .acoes-todos { margin-top: 26px; }
+/* 16/11 (skill de conversão): para quem é logo no topo, o guia de plano e os selos de confiança (só fatos) */
+.para-quem { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 15px; color: var(--apoio); max-width: 36em; }
+.para-quem a { padding: 4px 11px; border-radius: 999px; border: 1px solid var(--vidro-borda); color: var(--texto); text-decoration: none; background: rgba(255, 255, 255, .04); }
+.para-quem a:hover { border-color: var(--sinal); color: #fff; }
+.qual-plano { margin-top: 26px !important; max-width: 52em !important; padding: 12px 16px; border-radius: 16px; border: 1px solid var(--vidro-borda); background: rgba(255, 255, 255, .04); color: var(--apoio); font-size: 15.5px; }
+.qual-plano b { color: var(--texto); }
+.confianca { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 1080px; }
+.confianca li { display: grid; gap: 4px; padding: 14px 16px 14px 42px; position: relative; border-radius: 16px; border: 1px solid var(--vidro-borda); background: rgba(255, 255, 255, .04); }
+.confianca li::before { content: '✓'; position: absolute; left: 15px; top: 13px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #04211D; background: var(--sinal); }
+.confianca b { color: #fff; font-size: 15.5px; }
+.confianca span { color: var(--apoio); font-size: 14px; line-height: 1.4; }
+@media (max-width: 960px) { .confianca { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .confianca { grid-template-columns: minmax(0, 1fr); } }
+
+/* 16/11: o Sol para cada ramo (as abas trocam a conversa, o que ele faz e a ficha no CRM) */
+.ramos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.ramos button { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--vidro-borda); background: rgba(255, 255, 255, .05); color: var(--texto); font: 600 15px var(--sans); cursor: pointer; transition: background .2s, border-color .2s; }
+.ramos button:hover { background: rgba(255, 255, 255, .09); }
+.ramos button[aria-selected="true"] { background: linear-gradient(180deg, #2BC7B2, var(--teal)); color: #04211D; border-color: transparent; }
+.ramo-palco { margin-top: 18px; max-width: 1040px; }
+.ramo-painel { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 26px; padding: 26px; animation: entra .4s cubic-bezier(.22, 1, .36, 1) both; }
+.ramo-fio { display: flex; flex-direction: column; gap: 10px; }
+.ramo-fio .nota-ex { margin: 0 0 2px; font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--apoio); }
+.ramo-fio .b { max-width: 92%; }
+.ramo-lado { display: grid; gap: 14px; align-content: start; }
+.ramo-lado h3 { font-size: 22px; }
+.ramo-lado ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+.ramo-lado li { position: relative; padding-left: 26px; color: var(--texto); font-size: 16px; line-height: 1.45; }
+.ramo-lado li::before { content: '✓'; position: absolute; left: 2px; color: var(--sinal); font-weight: 700; }
+.ramo-ficha .rotulo { color: var(--ambar); }
+.ficha-mini { margin-top: 8px; display: grid; gap: 3px; padding: 12px 14px; border-radius: 16px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 138, 61, .35); position: relative; }
+.ficha-mini b { color: #fff; font-size: 16px; }
+.ficha-mini span { color: var(--apoio); font-size: 14.5px; }
+.ficha-mini .prox { color: #FFD9BF; }
+.ficha-mini .etiq { position: absolute; top: 10px; right: 12px; padding: 2px 9px; border-radius: 999px; background: rgba(255, 138, 61, .2); color: var(--ambar); font: 600 11px var(--mono); }
+.ramo-lado .bt { justify-self: start; }
+@media (max-width: 860px) { .ramo-painel { grid-template-columns: minmax(0, 1fr); padding: 20px; } .ramos { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; } .ramos button { flex: none; } }
+
 /* 15/11 noite: a Dora é um número no WhatsApp, e tudo o que ela faz */
 .passos.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 980px; }
 .sub-dora { font: 700 24px/1.2 var(--serif); color: #fff; margin: 40px 0 0; }
@@ -399,7 +437,7 @@ html[data-v] { --d3-g2: 255, 138, 61; }
 <nav class="nav" aria-label="Principal">
   <div class="pilula-nav">
     <a class="marca" href="#topo"><img src="logo.svg" alt="" width="32" height="32"><b><small>studio</small>Ti Artes</b></a>
-    <div class="links"><a href="#virada">Como é</a><a href="#humano">Não é chatbot</a><a href="#exemplos">Exemplos</a><a href="#dora">A Dora</a><a href="#app">O app</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
+    <div class="links"><a href="#virada">Como é</a><a href="#humano">Não é chatbot</a><a href="#negocios">Para quem</a><a href="#dora">A Dora</a><a href="#app">O app</a><a href="#planos">Planos</a><a href="#perguntas">Perguntas</a></div>
     <a class="entrar" href="entrar.html?entrar=1">Entrar</a>
     <a class="bt mini" href="entrar.html?criar=1">Testar grátis</a>
   </div>
@@ -412,12 +450,13 @@ html[data-v] { --d3-g2: 255, 138, 61; }
       <div class="esq">
         <p class="rotulo">Agentes de IA humanizada · Instagram e WhatsApp</p>
         <h1 style="margin-top:16px">Cada mensagem sem resposta é uma venda <em>que foi para outro.</em></h1>
-        <p class="lede">O <b>agente de atendimento</b> responde os seus clientes na hora, 24 horas, com os seus preços e o seu jeito de falar. Não é chatbot de menu: ele entende texto, áudio e foto e conversa como gente. E a <b>Dora</b>, a sua secretária no WhatsApp, marca, anota e organiza o seu dia.</p>
+        <p class="lede">O <b>Sol</b> responde os seus clientes no Instagram e no WhatsApp na hora, 24 horas, com os seus preços e o seu jeito. Não é chatbot de menu: conversa como gente. A <b>Dora</b>, a sua secretária no WhatsApp, organiza o seu dia. E cada cliente cai num <b>CRM</b> que se preenche sozinho.</p>
+        <p class="para-quem"><span>Para</span> <a href="#negocios" data-ir-ramo="pousada">pousadas</a> <a href="#negocios" data-ir-ramo="clinica">clínicas</a> <a href="#negocios" data-ir-ramo="dentista">dentistas</a> <a href="#negocios" data-ir-ramo="salao">salões</a> <a href="#negocios" data-ir-ramo="imobiliaria">imobiliárias</a> <a href="#negocios" data-ir-ramo="confeitaria">confeitarias</a> <a href="#negocios" data-ir-ramo="loja">lojas</a> <span>e o seu negócio.</span></p>
         <div class="acoes">
           <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
-          <a class="bt fraco" href="#rostos">Ver o agente conversando</a>
+          <a class="bt fraco" href="#negocios">Ver no meu tipo de negócio</a>
         </div>
-        <p class="garantias"><span>Sem cartão para testar</span><span>Pronto em uma tarde</span><span>Cancela quando quiser</span></p>
+        <p class="garantias"><span>4 horas grátis, sem cartão</span><span>Pronto em uma tarde</span><span>A partir de R$ 99 por mês</span><span>Cancela quando quiser</span></p>
         <p class="desce"><i aria-hidden="true"></i>role para ver</p>
       </div>
     </div>
@@ -515,6 +554,86 @@ html[data-v] { --d3-g2: 255, 138, 61; }
   </section>
 
   <!-- 4b. exemplos: os três jeitos de usar (15/11, pedido dele: "a veterinária, a pousada, a ceramista") -->
+  <!-- 3c. o Sol serve para qualquer negócio (16/11, pedido dele: "mostrar que o Sol é um atendimento que serve pra hotel,
+       clínicas, dentistas... onde for"). ?para=<ramo> no endereço abre direto o ramo (para anúncio por segmento). -->
+  <section class="ato" id="negocios" data-cena="negocios">
+    <div class="miolo">
+      <div class="largo secao-titulo">
+        <p class="rotulo">Para o seu negócio</p>
+        <h2 style="margin-top:12px">O Sol atende <em>qualquer negócio.</em></h2>
+        <p>Ele aprende o que você vende, os seus preços e as suas regras, e responde do seu jeito. Escolha o seu ramo e veja uma conversa de exemplo:</p>
+        <div class="ramos" role="tablist" aria-label="Escolha o seu ramo"><button type="button" role="tab" id="ramo-pousada" aria-controls="painel-pousada" aria-selected="true" data-ramo="pousada">Hotel e pousada</button><button type="button" role="tab" id="ramo-clinica" aria-controls="painel-clinica" aria-selected="false" data-ramo="clinica">Clínica e estética</button><button type="button" role="tab" id="ramo-dentista" aria-controls="painel-dentista" aria-selected="false" data-ramo="dentista">Dentista</button><button type="button" role="tab" id="ramo-salao" aria-controls="painel-salao" aria-selected="false" data-ramo="salao">Salão e barbearia</button><button type="button" role="tab" id="ramo-imobiliaria" aria-controls="painel-imobiliaria" aria-selected="false" data-ramo="imobiliaria">Imobiliária e corretor</button><button type="button" role="tab" id="ramo-confeitaria" aria-controls="painel-confeitaria" aria-selected="false" data-ramo="confeitaria">Restaurante e confeitaria</button><button type="button" role="tab" id="ramo-academia" aria-controls="painel-academia" aria-selected="false" data-ramo="academia">Academia e estúdio</button><button type="button" role="tab" id="ramo-loja" aria-controls="painel-loja" aria-selected="false" data-ramo="loja">Loja e moda</button></div>
+        <div class="ramo-palco">
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-pousada" aria-labelledby="ramo-pousada">
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Hotel e pousada"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Tem quarto para casal de 12 a 14 de dezembro? Aceita pet?</p><p class="b robo">A suíte com varanda sai R$ 380 a diária, com café da manhã, e pet de pequeno porte é bem-vindo (taxa de R$ 50). Vou anotar 12 a 14/12 para dois, e a recepção confirma a vaga cedinho. Qual é o seu nome?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Responde preço, datas e o que está incluso, no idioma do hóspede</li><li>Anota o pedido de reserva com datas e número de pessoas</li><li>Passa para você desconto, grupo grande e evento</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Ana Ribeiro</b><span>Reserva 12 a 14/12 · casal + pet</span><span class="prox">Próximo passo: Confirmar a vaga hoje às 9h</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=pousada">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-clinica" aria-labelledby="ramo-clinica" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Clínica e estética"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Vocês fazem limpeza de pele? Tem horário no sábado?</p><p class="b robo">Fazemos, sim: a limpeza de pele profunda leva 1 hora e sai R$ 180. No sábado atendemos das 8h às 13h. Quer que eu anote um horário para a recepção confirmar? Me diz o seu nome e o melhor período.</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Explica procedimentos, preços e preparo, do jeito que você ensinou</li><li>Anota o pedido de horário, que vai para a agenda confirmar com um toque</li><li>Dúvida de saúde vai direto para você: ele não dá diagnóstico</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Carla Mendes</b><span>Limpeza de pele · sábado de manhã</span><span class="prox">Próximo passo: Confirmar o horário de sábado</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=clinica">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-dentista" aria-labelledby="ramo-dentista" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Dentista"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Quanto custa o clareamento? Vocês aceitam convênio?</p><p class="b robo">O clareamento a laser sai R$ 900, em 2 sessões, e pode ser dividido em 3 vezes no cartão. Aceitamos convênio, sim: me diz qual é o seu que eu confirmo. Antes, a Dra. Paula faz uma avaliação (R$ 120, abatida do tratamento). Quer que eu anote a sua avaliação?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Tira dúvidas de preço, convênio e forma de pagamento</li><li>Anota o pedido de avaliação ou de retorno</li><li>O que é clínico, ele passa para a dentista</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Rafael Costa</b><span>Avaliação para clareamento</span><span class="prox">Próximo passo: Ligar para marcar a avaliação</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=dentista">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-salao" aria-labelledby="ramo-salao" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Salão e barbearia"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Tem horário pra corte e escova amanhã à tarde?</p><p class="b robo">Corte e escova sai R$ 120 e leva 1h30. Vou anotar o seu pedido para amanhã à tarde, e a Bia confirma o horário certinho. Prefere mais cedo ou mais no fim da tarde?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Responde serviços, preços e quanto tempo leva</li><li>Anota o pedido de horário com o profissional que a cliente quer</li><li>Avisa você de quem pediu, para confirmar com um toque</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Juliana Prado</b><span>Corte e escova · amanhã à tarde</span><span class="prox">Próximo passo: Confirmar com a Bia até 10h</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=salao">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-imobiliaria" aria-labelledby="ramo-imobiliaria" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Imobiliária e corretor"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Esse apartamento do Batel ainda está disponível? Aceita pet?</p><p class="b robo">Está anunciado, sim: 2 quartos, 68 m², aluguel de R$ 2.900 mais condomínio de R$ 650, e o prédio aceita pet. Quer visitar? Me diz dois horários que o corretor confirma.</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Responde sobre o imóvel com os dados que você cadastrou</li><li>Anota o pedido de visita e o perfil de quem procura</li><li>Negociação e proposta ficam com o corretor</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Marcos Lima</b><span>Visita · apartamento no Batel</span><span class="prox">Próximo passo: Confirmar a visita de quinta</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=imobiliaria">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-confeitaria" aria-labelledby="ramo-confeitaria" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Restaurante e confeitaria"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Vocês fazem bolo para 30 pessoas para sábado?</p><p class="b robo">Fazemos! O bolo de 30 fatias sai R$ 260, nos sabores ninho com morango, chocolate belga ou prestígio. Encomenda para sábado precisa ser feita até quinta. Anoto no seu nome?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Responde o cardápio, os preços e os prazos</li><li>Anota a encomenda com o dia, a quantidade e o sabor</li><li>Pedido especial e reclamação vão para você</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Patrícia Gomes</b><span>Bolo de 30 fatias · sábado</span><span class="prox">Próximo passo: Confirmar o sabor até quinta</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=confeitaria">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-academia" aria-labelledby="ramo-academia" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Academia e estúdio"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Quanto é o pilates? Tem aula experimental?</p><p class="b robo">O plano de 2 vezes por semana sai R$ 320 por mês. A aula experimental é grátis, nas turmas das 7h, 12h ou 19h. Quer que eu anote a sua experimental? Qual horário fica melhor?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Explica planos, turmas e horários</li><li>Anota a aula experimental, que cai na agenda</li><li>A ficha mostra quem fez a experimental e ainda não fechou</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Fernanda Rocha</b><span>Aula experimental de pilates · 19h</span><span class="prox">Próximo passo: Ligar depois da experimental</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=academia">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="ramo-painel vidro" role="tabpanel" id="painel-loja" aria-labelledby="ramo-loja" hidden>
+            <div class="ramo-fio" aria-label="Exemplo de conversa: Loja e moda"><p class="nota-ex">quando o cliente escreve</p>
+              <p class="b ela">Tem esse vestido no M? Entrega em Curitiba?</p><p class="b robo">O vestido midi verde sai R$ 189. O tamanho M eu confirmo com a loja e já te aviso. Entregamos em Curitiba em até 2 dias úteis (R$ 15), ou você retira no ateliê. Quer que eu separe o seu pedido?</p></div>
+            <div class="ramo-lado"><h3>O que o Sol faz aqui</h3>
+              <ul><li>Responde produto, preço, tamanho e entrega</li><li>Anota o pedido e o que precisa confirmar no estoque</li><li>Troca e reclamação vão para você</li></ul>
+              <div class="ramo-ficha"><p class="rotulo">e cai no seu CRM</p><div class="ficha-mini"><b>Larissa Nunes</b><span>Vestido midi verde · tamanho M</span><span class="prox">Próximo passo: Confirmar o estoque e avisar</span><span class="etiq">Novo</span></div></div>
+              <a class="bt" href="entrar.html?criar=1&amp;ramo=loja">Testar no meu negócio <span aria-hidden="true">→</span></a></div>
+          </div>
+        </div>
+        <p class="tambem"><b>E também</b> <span>escola e curso</span><span>contador</span><span>advogado</span><span>pet shop</span><span>oficina</span><span>fotógrafo</span><span>guia de turismo</span><span>psicólogo</span><span>personal trainer</span></p>
+      </div>
+    </div>
+  </section>
+
   <section class="ato" id="exemplos" data-cena="exemplos">
     <div class="miolo">
       <div class="largo secao-titulo">
@@ -695,6 +814,7 @@ html[data-v] { --d3-g2: 255, 138, 61; }
             <p class="recomenda" id="r-plano">O plano <b>Instagram</b> cabe com folga.</p>
           </div>
         </div>
+        <p class="qual-plano"><b>Qual escolher?</b> Vende pelo Instagram: <b>Instagram</b>. Pelo WhatsApp: <b>WhatsApp</b>. Pelos dois: <b>Completo</b>. Só quer se organizar: <b>Secretária</b>. O CRM, a agenda e a Dora vêm em todos.</p>
         <div class="planos">
           <article class="plano otto-plano vidro">
             <p class="para">Para se organizar</p>
@@ -728,6 +848,12 @@ html[data-v] { --d3-g2: 255, 138, 61; }
         </div>
         <p class="dica-planos"><b>No WhatsApp:</b> numa linha nova, que a Ti Artes liga para você, o atendimento já funciona, e as mensagens da Meta estão na mensalidade (vagas limitadas nesta primeira fase). No número que você já usa, entra quando a Meta liberar para todos, com previsão para o começo de dezembro.</p>
         <p style="margin-top:18px;color:var(--apoio);font-size:15.5px">Antes de pagar, 4 horas grátis e sem cartão: você alimenta o agente com o que já tem (cardápio em PDF, fotos, prints de conversas, o seu site), testa e vê ele respondendo de verdade no seu Instagram. Sem taxa de instalação e sem fidelidade. Na primeira assinatura, você tem 7 dias para desistir e receber o dinheiro de volta.</p>
+        <ul class="confianca" aria-label="Por que confiar">
+          <li><b>Empresa verificada na Meta</b><span>Conexão pelo login oficial: ninguém vê a sua senha.</span></li>
+          <li><b>As conversas não treinam IA</b><span>Ficam até 4 dias, para o agente lembrar, e somem.</span></li>
+          <li><b>7 dias para desistir</b><span>Na primeira assinatura, com o dinheiro de volta.</span></li>
+          <li><b>Sem fidelidade</b><span>Cancela no painel quando quiser, sem multa.</span></li>
+        </ul>
       </div>
     </div>
   </section>
@@ -803,12 +929,26 @@ html[data-v] { --d3-g2: 255, 138, 61; }
         <a class="bt" href="entrar.html?criar=1">Testar grátis agora <span aria-hidden="true">→</span></a>
         <a class="bt fraco" href="entrar.html?entrar=1">Já tenho conta</a>
       </div>
+      <p class="garantias" style="justify-content:center"><span>Empresa verificada na Meta</span><span>Sem cartão para testar</span><span>7 dias para desistir</span><span>Sem fidelidade</span></p>
     </div>
   </section>
 </main>
 <script>
 /* as abas das telas do app (Início · Agenda · Arquivos) */
 (function () {
+  /* os ramos do Sol: as abas, as setas do teclado e o ?para=<ramo> (anúncio por segmento abre direto no ramo) */
+  const ramos = [...document.querySelectorAll('.ramos [data-ramo]')];
+  const escolheRamo = (k, foco) => {
+    ramos.forEach((b) => { const sim = b.dataset.ramo === k; b.setAttribute('aria-selected', String(sim)); b.tabIndex = sim ? 0 : -1; if (sim && foco) b.focus(); });
+    document.querySelectorAll('.ramo-painel').forEach((p) => { p.hidden = p.id !== 'painel-' + k; });
+  };
+  ramos.forEach((b, i) => {
+    b.tabIndex = b.getAttribute('aria-selected') === 'true' ? 0 : -1;
+    b.addEventListener('click', () => escolheRamo(b.dataset.ramo));
+    b.addEventListener('keydown', (e) => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); escolheRamo(ramos[(i + d + ramos.length) % ramos.length].dataset.ramo, true); } });
+  });
+  document.querySelectorAll('[data-ir-ramo]').forEach((x) => x.addEventListener('click', () => escolheRamo(x.dataset.irRamo)));
+  try { const para = new URLSearchParams(location.search).get('para'); if (para && ramos.some((b) => b.dataset.ramo === para)) escolheRamo(para); } catch (_) {}
   const abas = document.querySelectorAll('.app-abas [data-tela]');
   abas.forEach((b) => b.addEventListener('click', () => {
     abas.forEach((x) => x.setAttribute('aria-selected', String(x === b)));
@@ -1036,6 +1176,7 @@ const ROTEIRO = {
   virada:    { x: 0.0, y: 0.05, ym: 0.1, z: 0.2, s: 0.9, giro: 0.0, cam: 7.8, enxame: 0.75 },
   rostos:    { x: 0.0, y: -2.6, ym: -3.6, z: -4.0, s: 0.45, giro: 0.3, cam: 9.0, enxame: 0.35 },
   humano:    { x: -0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: 0.5, cam: 9.0, enxame: 0.3 },
+  negocios:  { x: -0.78, y: -2.0, ym: 2.6, z: -2.8, s: 0.4, giro: 0.45, cam: 9.0, enxame: 0.3 },
   exemplos:  { x: 0.75, y: 2.0, ym: 2.6, z: -2.6, s: 0.42, giro: -0.5, cam: 9.0, enxame: 0.3 },
   todos:     { x: 0.78, y: -2.0, ym: 2.6, z: -2.8, s: 0.4, giro: -0.4, cam: 9.0, enxame: 0.25 },
   dora:      { x: -0.78, y: 2.0, ym: 2.6, z: -2.8, s: 0.4, giro: 0.4, cam: 9.0, enxame: 0.25 },
