@@ -819,38 +819,60 @@
       d.disabled = true; const r = await api('/drive-desligar', {}); if (!r.erro) EU = r; mostra();
     };
   }
+  /* ---------- Conectar (16/11, pedido dele: "começa com a Dora e o Sol; dentro do Sol, Instagram e WhatsApp; dentro da
+     Dora, o WhatsApp; deixa bem claro"). Skill ui-ux-pro-max: agrupar por quem faz o quê, cada conexão numa linha com a
+     situação escrita (não só a cor) e UMA ação principal; o resto fica em "Mais opções". ---------- */
+  function linhaCanal(o) {
+    return `<li class="canal-linha"><span class="canal-ic ${o.ic}" aria-hidden="true">${svg(o.icone)}</span>
+      <div class="canal-txt"><b>${o.nome}</b><span>${o.sub}</span>${o.extra || ''}</div>
+      ${o.semPill ? '' : `<span class="pill ${o.estado}">${o.estado === 'ok' ? svg('check') : ''}${esc(o.rotulo)}</span>`}
+      <div class="canal-acao">${o.acao || ''}</div></li>`;
+  }
   function telaConectar(alvo, topo) {
-    const ig = EU.instagram, wa = EU.whatsapp;
+    const ig = EU.instagram, wa = EU.whatsapp, a = EU.assistente || {};
     const vence = ig.vence ? Math.round((Date.parse(ig.vence) - Date.now()) / 86400000) : null;
-    alvo.innerHTML = `<section class="aba">${topo}
-      <div class="cabeca-aba"><div><p class="rotulo">Contas</p><h1>Conectar as suas contas</h1>
-      <p class="lede">A conexão é pelo login oficial do Instagram, da Meta e do Google. A Ti Artes nunca vê a sua senha.</p></div></div>
-      <p class="rotulo sec-conectar">Atendimento · onde o ${esc(NOME())} responde os seus clientes</p>
-      <div class="grade">
-        <article class="cartao"><div class="canal-topo"><span class="canal-ic ig" aria-hidden="true">${svg('camera')}</span><h2>Instagram</h2></div>
-          ${ig.conectado ? `<div class="perfil">${ig.foto ? `<img src="${esc(ig.foto)}" alt="">` : `<span class="ini">${esc((ig.usuario || '?')[0].toUpperCase())}</span>`}
-            <div><b>@${esc(ig.usuario)}</b><br><span class="selo ok">conectado</span></div></div>
-            ${ig.atende === false ? '<p class="dica">No seu plano, o Instagram não responde clientes: o atendimento é no WhatsApp. Para os dois, escolha o plano Completo.</p>' : `<p class="dica">Aqui é só atendimento: quem escreve no direct, inclusive você, é atendido pelo ${esc(NOME())}. Com você, quem fala é a ${esc(ASSIST())}, no WhatsApp dela.</p>`}
-            ${vence != null && vence < 15 ? aviso('atencao', `A autorização vence em ${vence} dia(s). Conecte de novo para renovar.`) : ''}
-            <div class="botoes"><button class="bt pequeno fraco" id="ig-renovar" type="button">Conectar de novo</button>
-            <button class="bt pequeno fraco" id="ig-desligar" type="button">Desconectar</button></div>`
-          : ig.atende === false ? `<p>O atendimento no Instagram entra nos planos <b>Instagram</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`
-          : `<p>O ${esc(NOME())} passa a responder o direct da sua conta profissional (Empresa ou Criador). Aqui é só atendimento: quem escreve, inclusive você, é atendido pelo ${esc(NOME())}.</p>
-            <div><button class="bt" id="ig-conectar" type="button">Conectar meu Instagram</button></div>
-            <p class="dica">Abre o login do Instagram. Ele vai pedir para você permitir que a "Ti Artes Atendimento" leia o seu perfil e responda as suas mensagens.</p>`}
+    const modo = EU.modo || 'ambos', soSecretaria = EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length;
+    /* o Sol: Instagram e WhatsApp do negócio */
+    const linhaIg = ig.atende === false && !ig.conectado ? { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: 'O atendimento no Instagram entra nos planos Instagram e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<a class="bt pequeno fraco" href="#plano">Ver planos</a>' }
+      : ig.conectado ? { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: `@${esc(ig.usuario)}${ig.atende === false ? ' · no seu plano, o Instagram não responde clientes' : ''}`, estado: vence != null && vence < 15 ? 'atencao' : 'ok', rotulo: vence != null && vence < 15 ? `Renovar em ${vence} dia(s)` : 'Conectado',
+          acao: vence != null && vence < 15 ? '<button class="bt pequeno" id="ig-renovar" type="button">Renovar</button>' : `<details class="mais"><summary>Mais opções</summary><div class="botoes"><button class="bt pequeno fraco" id="ig-renovar" type="button">Conectar de novo</button><button class="bt pequeno fraco" id="ig-desligar" type="button">Desconectar</button></div></details>` }
+      : { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: 'O direct da sua conta profissional (Empresa ou Criador).', estado: 'nao', rotulo: 'Não conectado', acao: '<button class="bt pequeno" id="ig-conectar" type="button">Conectar</button>',
+          extra: '<span class="dica">Abre o login oficial do Instagram. Ninguém vê a sua senha.</span>' };
+    const linhaWa = wa.conectado ? { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: `O ${esc(NOME())} responde no seu número. Se você digitar no celular, ele se cala naquela conversa.`, estado: 'ok', rotulo: 'Conectado', acao: '' }
+      : wa.liberado ? { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: 'O número que você já usa no WhatsApp Business, ou uma linha nova.', estado: 'nao', rotulo: 'Não conectado', acao: '<button class="bt pequeno" id="wa-conectar" type="button">Conectar</button>',
+          extra: `<details class="mais"><summary>Prefere uma linha nova?</summary><p class="dica">A Ti Artes liga uma linha só para o atendimento, com as mensagens da Meta dentro da mensalidade. No seu número, a Meta libera para todos com previsão para o começo de dezembro e cobra as mensagens na conta Meta da sua empresa.</p><a class="lnk" href="mailto:contato@eugeniofim.com?subject=${encodeURIComponent('Linha nova para o atendimento · ' + (EU.negocio || ''))}">Pedir a linha nova</a></details>` }
+      : { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: 'O atendimento no WhatsApp entra nos planos WhatsApp e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<a class="bt pequeno fraco" href="#plano">Ver planos</a>' };
+    const solLigado = !!(EU.robo && EU.robo.ativo), solPausado = modo === 'assistente' || soSecretaria;
+    /* a Dora: o WhatsApp dela (da Ti Artes) */
+    let linhaDora;
+    if (!a.disponivel || !a.otto_wa) linhaDora = { ic: 'dora', icone: 'balao', nome: `WhatsApp da ${esc(ASSIST())}`, sub: 'Um número da Ti Artes, só para você falar com ela.', estado: 'breve', rotulo: 'Chega em breve', acao: '' };
+    else if (modo === 'atendimento') linhaDora = { ic: 'dora', icone: 'balao', nome: `WhatsApp da ${esc(ASSIST())}`, sub: 'Desligada: você escolheu "só atendimento" em Quem trabalha nesta conta, aqui embaixo.', estado: 'nao', rotulo: 'Desligada', acao: '' };
+    else if (a.whatsapp) linhaDora = { ic: 'dora', icone: 'balao', nome: `WhatsApp da ${esc(ASSIST())}`, sub: `<span class="num">${esc(foneBonito(a.otto_wa))}</span> · ela já reconhece o seu celular`, estado: 'ok', rotulo: 'Ligada',
+      acao: `<a class="bt pequeno" href="https://wa.me/${esc(a.otto_wa)}" target="_blank" rel="noopener">${svg('balao')} Abrir</a>`,
+      extra: '<details class="mais"><summary>Mais opções</summary><div class="botoes"><button class="bt pequeno fraco" id="assist-desligar" type="button">Desligar o meu celular</button></div></details>' };
+    else linhaDora = { ic: 'dora', icone: 'balao', nome: `WhatsApp da ${esc(ASSIST())}`, sub: `<span class="num">${esc(foneBonito(a.otto_wa))}</span> · toque em Ligar: o WhatsApp abre com um código. É só enviar.`, estado: 'nao', rotulo: 'Falta ligar',
+      acao: `<button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Ligar</button>`, extra: '<div id="assist-mostra" hidden></div>' };
+    const doraEstado = linhaDora.estado === 'ok' ? ['ok', 'Ligada'] : linhaDora.estado === 'breve' ? ['breve', 'Em breve'] : ['nao', linhaDora.rotulo];
+    const modoNome = ({ ambos: 'Os dois', atendimento: 'Só atendimento', assistente: 'Só secretária' })[modo];
+    alvo.innerHTML = `<section class="aba conectar">${topo}
+      <div class="cabeca-aba"><div><p class="rotulo">Contas</p><h1>Conectar</h1>
+      <p class="lede">Os seus dois agentes, cada um no seu lugar: o ${esc(NOME())} atende os seus clientes, e a ${esc(ASSIST())} fala só com você. Tudo pelo login oficial; a Ti Artes nunca vê a sua senha.</p></div></div>
+      <div class="agentes-con">
+        <article class="cartao agente-con sol">
+          <header class="ag-topo"><span class="ag-av sol" aria-hidden="true">${esc(NOME()[0])}</span><div><h2>${esc(NOME())}</h2><p>Atendimento · responde os seus clientes</p></div>
+            <span class="pill ${solPausado ? 'nao' : solLigado ? 'ok' : 'nao'}">${solPausado ? 'Pausado' : solLigado ? svg('check') + 'Atendendo' : 'Desligado'}</span></header>
+          <p class="ag-papel">Responde quem escreve para o seu negócio, 24 horas, com os seus preços e o seu jeito. ${solPausado ? 'Agora ele está pausado: nesta conta só a secretária trabalha.' : 'Aqui é só atendimento, até quando quem escreve é você.'}</p>
+          <ul class="canais-lista">${linhaCanal(linhaIg)}${linhaCanal(linhaWa)}</ul>
         </article>
-        <article class="cartao"><div class="canal-topo"><span class="canal-ic wa" aria-hidden="true">${svg('balao')}</span><h2>WhatsApp</h2></div>
-          ${wa.conectado ? `<p><span class="selo ok">conectado</span></p><p>O ${esc(NOME())} responde no seu número. O que você digitar no celular, ele vê e se cala naquela conversa.</p>`
-          : wa.liberado ? `<p>Conecte o número que você já usa no WhatsApp Business, ou um número novo.</p>
-            <div><button class="bt" id="wa-conectar" type="button">Conectar meu WhatsApp</button></div>
-            <p class="dica">A Meta está liberando esta conexão para todos, com previsão para o começo de dezembro. As mensagens do WhatsApp são cobradas pela Meta, na conta Meta da sua empresa.</p>
-            <p class="dica"><b>Prefere uma linha nova, só para o atendimento?</b> A Ti Artes liga para você, com as mensagens da Meta dentro da mensalidade. <a class="lnk" href="mailto:contato@eugeniofim.com?subject=${encodeURIComponent('Linha nova para o atendimento · ' + (EU.negocio || ''))}">Pedir a linha nova</a></p>`
-          : `<p>O atendimento no WhatsApp entra nos planos <b>WhatsApp</b> e <b>Completo</b>.</p><div><a class="bt fraco pequeno" href="#plano">Ver planos</a></div>`}
+        <article class="cartao agente-con dora da-dora">
+          <header class="ag-topo"><span class="ag-av dora" aria-hidden="true">${esc(ASSIST()[0])}</span><div><h2>${esc(ASSIST())}</h2><p>Secretária · fala só com você</p></div>
+            <span class="pill ${doraEstado[0]}">${doraEstado[0] === 'ok' ? svg('check') : ''}${esc(doraEstado[1])}</span></header>
+          <p class="ag-papel">Mora num WhatsApp da Ti Artes. Marca, anota, avisa você de manhã e antes dos compromissos, cuida dos seus clientes no CRM e guarda os seus papéis no Drive.</p>
+          <ul class="canais-lista">${linhaCanal({ ...linhaDora, semPill: true })}</ul>
+          ${linhaDora.estado === 'ok' ? avisosDora(a.avisos) : ''}
         </article>
       </div>
-      <p class="rotulo sec-conectar">Secretária · onde a ${esc(ASSIST())} fala com você</p>
-      ${cartaoAssistente()}
-      ${cartaoModo()}
+      ${(a.disponivel && !soSecretaria) ? `<details class="cartao modos-dobra"><summary><span>Quem trabalha nesta conta</span><b>${esc(modoNome)}</b></summary>${cartaoModo().replace(/^<article class="cartao modos"><h2>[^<]*<\/h2>/, '').replace(/<\/article>$/, '')}</details>` : cartaoModo()}
       <p class="rotulo sec-conectar">Arquivos e cópia de segurança</p>
       ${cartaoDrive(true)}</section>`;
     ligaAssistente(alvo);
@@ -989,7 +1011,7 @@
     for (const g of G.itens || []) (pastas[g.pasta || 'Guardados'] = pastas[g.pasta || 'Guardados'] || []).push(g);
     const onde = (g) => g.drive === 'ok' ? `<span class="selo ok">no Drive</span>` : (g.drive === 'sem' || !d.ligado) ? '<span class="selo">só aqui</span>' : g.drive === 'erro' ? '<span class="selo atencao">tenta de novo</span>' : '<span class="selo">indo pro Drive</span>';
     return `<div class="cartao guardados"><h2>${ic('pasta')} Guardados pela ${esc(ASSIST())}</h2>
-      <p class="dica">Mande no direct, do seu perfil: foto, comprovante, nota fiscal ou PDF, e diga "guarda". Ele lê, dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : '. <b>Ligue o Google Drive</b> aqui em cima para irem para lá'}.</p>
+      <p class="dica">Mande para a ${esc(ASSIST())}, no WhatsApp dela: foto, comprovante, nota fiscal ou PDF, e diga "guarda". Ela lê, dá um nome que diz o que é e põe na pasta certa${d.ligado ? ' do seu Google Drive' : '. <b>Ligue o Google Drive</b> aqui em cima para irem para lá'}.</p>
       ${Object.keys(pastas).length ? Object.entries(pastas).map(([p, l]) => `<h3 class="pasta-nome">${ic('pasta')} ${esc(p)}</h3><ul class="fontes">${l.map((g) => `<li class="fonte"><div><b>${esc(g.nome)}</b><span class="dica">${esc(dia(g.guardado || g.quando))} ${onde(g)}</span></div>
         <div class="botoes"><button class="bt pequeno fraco" type="button" data-abrir-g="${esc(g.id)}">Abrir</button><button class="bt pequeno fraco" type="button" data-apagar-g="${esc(g.id)}">Apagar</button></div></li>`).join('')}</ul>`).join('')
         : `<p class="vazio">Nada guardado ainda.</p>`}

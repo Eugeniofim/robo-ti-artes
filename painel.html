@@ -482,8 +482,59 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .codigo-dono { font: 700 40px var(--mono, ui-monospace); letter-spacing: .14em; margin: 6px 0; color: var(--tinta); }
 .passinhos { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 4px; }
 .cupom .linha-cupom { display: flex; gap: 8px; }
-/* 16/11: a aba Conectar em três partes (atendimento, secretária, arquivos) */
+/* 16/11: a aba Conectar — dois blocos (o Sol com Instagram e WhatsApp do negócio; a Dora com o WhatsApp dela).
+   Cada conexão é uma linha: ícone, nome, a situação ESCRITA numa pílula (não só cor) e uma ação principal. */
 .sec-conectar { margin: 10px 2px -8px; }
+.agentes-con { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.agente-con { gap: 16px; }
+.agente-con.sol::before { background: linear-gradient(135deg, color-mix(in srgb, var(--sinal) 75%, transparent), transparent 42%, transparent 62%, color-mix(in srgb, var(--sinal) 35%, transparent)); }
+.ag-topo { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.ag-topo h2 { margin: 0; font-size: 24px; }
+.ag-topo p { margin: 2px 0 0; color: var(--grafite); font-size: 14.5px; }
+.ag-av { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; font: 700 24px var(--serif); color: #fff; }
+.ag-av.sol { background: linear-gradient(135deg, #3FE0C5, #138C7B); color: #04211D; }
+.ag-av.dora { background: linear-gradient(135deg, #FFB06B, #E8692A); }
+.ag-papel { margin: 0; color: var(--grafite); font-size: 15.5px; line-height: 1.5; }
+.canais-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.canal-linha { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "ic txt pill" "ic txt acao"; gap: 4px 14px; align-items: center; padding: 14px; border-radius: 18px; border: 1px solid var(--card-borda); background: color-mix(in srgb, var(--folha) 45%, transparent); }
+.canal-linha .canal-ic { grid-area: ic; width: 44px; height: 44px; border-radius: 14px; align-self: start; }
+.canal-linha .canal-ic svg { width: 22px; height: 22px; }
+.canal-ic.dora { background: linear-gradient(135deg, #FFB06B, #E8692A); }
+.canal-txt { grid-area: txt; display: grid; gap: 3px; min-width: 0; }
+.canal-txt b { font-size: 16.5px; }
+.canal-txt > span { color: var(--grafite); font-size: 14.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.canal-linha .pill { grid-area: pill; justify-self: end; }
+.canal-acao { grid-area: acao; justify-self: end; display: flex; gap: 8px; align-items: center; }
+.canal-acao:empty { display: none; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font: 600 12px var(--mono); white-space: nowrap; border: 1px solid transparent; }
+.pill svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.6; }
+.pill.ok { background: color-mix(in srgb, #2FBF71 18%, transparent); color: #1E9C5A; border-color: color-mix(in srgb, #2FBF71 35%, transparent); }
+.pill.nao { background: color-mix(in srgb, var(--cinza) 14%, transparent); color: var(--grafite); border-color: var(--card-borda); }
+.pill.fora { background: transparent; color: var(--cinza); border-color: var(--card-borda); border-style: dashed; }
+.pill.breve { background: color-mix(in srgb, var(--laranja) 14%, transparent); color: var(--laranja); border-color: color-mix(in srgb, var(--laranja) 35%, transparent); }
+.pill.atencao { background: color-mix(in srgb, var(--ambar) 18%, transparent); color: var(--ambar); }
+:root[data-theme="dark"] .pill.ok { color: #5BE39A; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.ok { color: #5BE39A; } }
+details.mais { margin-top: 4px; }
+details.mais summary { cursor: pointer; color: var(--teal-forte); font-weight: 600; font-size: 14px; min-height: 32px; display: inline-flex; align-items: center; }
+details.mais .botoes, details.mais .dica { margin-top: 8px; }
+.canal-txt details.mais { grid-column: 1 / -1; }
+.modos-dobra { padding: 0; }
+.modos-dobra > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 18px 22px; min-height: 56px; font-weight: 700; }
+.modos-dobra > summary b { margin-left: auto; }
+.modos-dobra > summary::-webkit-details-marker { display: none; }
+.modos-dobra > summary b { font: 600 13px var(--mono); padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 16%, transparent); color: var(--teal-forte); }
+.modos-dobra > summary::after { content: '›'; font-size: 22px; color: var(--grafite); transition: transform .2s; }
+.modos-dobra[open] > summary::after { transform: rotate(90deg); }
+.modos-dobra > :not(summary) { padding: 0 22px 18px; }
+@media (max-width: 980px) { .agentes-con { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .canal-linha { grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "ic txt" "pill pill" "acao acao"; }
+  .canal-linha .canal-ic { width: 40px; height: 40px; }
+  .canal-linha .pill, .canal-acao { justify-self: start; }
+  .canal-acao .bt { width: 100%; justify-content: center; }
+  .canal-acao { width: 100%; }
+}
 .cupom .linha-cupom input { flex: 1; min-width: 0; text-transform: uppercase; }
 
 /* ===== 15/11 à noite: o mesmo visual do site (o teste B que ele escolheu). Verde = Sol, LARANJA = Dora (não amarelo);
