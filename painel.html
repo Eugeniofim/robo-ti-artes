@@ -564,6 +564,42 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 }
 .cupom .linha-cupom input { flex: 1; min-width: 0; text-transform: uppercase; }
 
+/* ===== 16/11: o plano em vigência no Conectar + o plano sugerido em destaque (um só, já com o assinar) ===== */
+.plano-vig { gap: 16px; }
+.pv-topo { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.pv-topo > div { flex: 1; min-width: 0; }
+.pv-topo .rotulo { margin: 0 0 4px; }
+.pv-topo h2 { margin: 0; font-size: 26px; }
+.pv-topo h2 small { font: 500 15px var(--sans); color: var(--grafite); margin-left: 6px; white-space: nowrap; }
+.pv-texto { margin: 0; color: var(--grafite); }
+.pv-tem { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.pv-tem li { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px; font-size: 14.5px; border: 1px solid var(--card-borda); background: color-mix(in srgb, var(--folha) 60%, transparent); }
+.pv-tem li svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; flex: none; }
+.pv-tem li.sim svg { color: var(--teal-forte); }
+.pv-tem li.nao { color: var(--cinza); border-style: dashed; background: transparent; }
+.pv-tem li.nao i { font-style: normal; font-size: 12.5px; }
+.pv-acoes { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.pv-modos { border-top: 1px solid var(--card-borda); padding-top: 12px; }
+.pv-modos > summary b { font: 600 13px var(--mono); padding: 3px 10px; border-radius: 999px; margin-left: 6px; background: color-mix(in srgb, var(--teal) 16%, transparent); color: var(--teal-forte); }
+.pv-modos .modos-opcoes { margin-top: 12px; }
+.sugerido { position: relative; display: grid; gap: 12px; padding: 22px; border-radius: 22px; outline: none;
+  border: 1.5px solid var(--sinal); background: linear-gradient(160deg, color-mix(in srgb, var(--sinal) 12%, transparent), color-mix(in srgb, var(--laranja) 6%, transparent) 70%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sinal) 14%, transparent), 0 22px 44px -28px color-mix(in srgb, var(--sinal) 70%, transparent);
+  animation: entra .32s cubic-bezier(.2, .8, .2, 1); }
+.sugerido:focus-visible { box-shadow: 0 0 0 4px color-mix(in srgb, var(--sinal) 40%, transparent); }
+.selo-sug { justify-self: start; font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; background: var(--menta); color: var(--menta-texto); }
+.sug-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.sug-topo h3 { margin: 0; font: 700 28px var(--serif); }
+.sug-topo .preco { margin: 0; font: 700 34px var(--serif); font-variant-numeric: tabular-nums; }
+.sug-topo .preco small { font: 400 15px var(--sans); color: var(--cinza); }
+.sug-porque { margin: 0; font-size: 16px; }
+.sugerido ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; color: var(--grafite); }
+.sugerido li { display: flex; gap: 9px; align-items: flex-start; }
+.sugerido li svg { width: 17px; height: 17px; margin-top: 3px; flex: none; fill: none; stroke: var(--teal-forte); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.sugerido .botoes { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 560px) { .sugerido .botoes .bt { width: 100%; justify-content: center; } .sugerido { padding: 18px; } }
+@media (prefers-reduced-motion: reduce) { .sugerido { animation: none; } }
+
 /* ===== 15/11 à noite: o mesmo visual do site (o teste B que ele escolheu). Verde = Sol, LARANJA = Dora (não amarelo);
    vidro com um aro que vai do verde ao laranja e um brilho laranja no fundo. O aro é um ::before com máscara, para o
    cartão continuar translúcido (a borda de sempre fica por baixo). ===== */

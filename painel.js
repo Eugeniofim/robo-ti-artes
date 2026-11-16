@@ -861,7 +861,7 @@
     const vence = ig.vence ? Math.round((Date.parse(ig.vence) - Date.now()) / 86400000) : null;
     const modo = EU.modo || 'ambos', soSecretaria = EU.plano && Array.isArray(EU.plano.canais) && !EU.plano.canais.length;
     /* o Sol: Instagram e WhatsApp do negócio */
-    const linhaIg = ig.atende === false && !ig.conectado ? { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: 'O atendimento no Instagram entra nos planos Instagram e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<a class="bt pequeno fraco" href="#plano">Ver planos</a>' }
+    const linhaIg = ig.atende === false && !ig.conectado ? { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: 'O atendimento no Instagram entra nos planos Instagram e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<button class="bt pequeno" type="button" data-sugere="instagram">Incluir no plano</button>' }
       : ig.conectado ? { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: `@${esc(ig.usuario)}${ig.atende === false ? ' · no seu plano, o Instagram não responde clientes' : ''}`, estado: vence != null && vence < 15 ? 'atencao' : 'ok', rotulo: vence != null && vence < 15 ? `Renovar em ${vence} dia(s)` : 'Conectado',
           acao: vence != null && vence < 15 ? '<button class="bt pequeno" id="ig-renovar" type="button">Renovar</button>' : `<details class="mais"><summary>Mais opções</summary><div class="botoes"><button class="bt pequeno fraco" id="ig-renovar" type="button">Conectar de novo</button><button class="bt pequeno fraco" id="ig-desligar" type="button">Desconectar</button></div></details>` }
       : { ic: 'ig', icone: 'camera', nome: 'Instagram', sub: 'O direct da sua conta profissional (Empresa ou Criador).', estado: 'nao', rotulo: 'Não conectado', acao: '<button class="bt pequeno" id="ig-conectar" type="button">Conectar</button>',
@@ -869,7 +869,7 @@
     const linhaWa = wa.conectado ? { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: `O ${esc(NOME())} responde no seu número. Se você digitar no celular, ele se cala naquela conversa.`, estado: 'ok', rotulo: 'Conectado', acao: '' }
       : wa.liberado ? { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: 'O número que você já usa no WhatsApp Business, ou uma linha nova.', estado: 'nao', rotulo: 'Não conectado', acao: '<button class="bt pequeno" id="wa-conectar" type="button">Conectar</button>',
           extra: `<details class="mais"><summary>Prefere uma linha nova?</summary><p class="dica">A Ti Artes liga uma linha só para o atendimento, com as mensagens da Meta dentro da mensalidade. No seu número, a Meta libera para todos com previsão para o começo de dezembro e cobra as mensagens na conta Meta da sua empresa.</p><a class="lnk" href="mailto:contato@eugeniofim.com?subject=${encodeURIComponent('Linha nova para o atendimento · ' + (EU.negocio || ''))}">Pedir a linha nova</a></details>` }
-      : { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: 'O atendimento no WhatsApp entra nos planos WhatsApp e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<a class="bt pequeno fraco" href="#plano">Ver planos</a>' };
+      : { ic: 'wa', icone: 'balao', nome: 'WhatsApp do negócio', sub: 'O atendimento no WhatsApp entra nos planos WhatsApp e Completo.', estado: 'fora', rotulo: 'Fora do seu plano', acao: '<button class="bt pequeno" type="button" data-sugere="whatsapp">Incluir no plano</button>' };
     const solLigado = !!(EU.robo && EU.robo.ativo), solPausado = modo === 'assistente' || soSecretaria;
     /* a Dora: o WhatsApp dela (da Ti Artes) */
     let linhaDora;
@@ -881,7 +881,6 @@
     else linhaDora = { ic: 'dora', icone: 'balao', nome: `WhatsApp da ${esc(ASSIST())}`, sub: `<span class="num">${esc(foneBonito(a.otto_wa))}</span> · toque em Ligar: o WhatsApp abre com um código. É só enviar.`, estado: 'nao', rotulo: 'Falta ligar',
       acao: `<button class="bt pequeno" id="assist-wa" type="button">${svg('balao')} Ligar</button>`, extra: '<div id="assist-mostra" hidden></div>' };
     const doraEstado = linhaDora.estado === 'ok' ? ['ok', 'Ligada'] : linhaDora.estado === 'breve' ? ['breve', 'Em breve'] : ['nao', linhaDora.rotulo];
-    const modoNome = ({ ambos: 'Os dois', atendimento: 'Só atendimento', assistente: 'Só secretária' })[modo];
     alvo.innerHTML = `<section class="aba conectar">${topo}
       <div class="cabeca-aba"><div><p class="rotulo">Contas</p><h1>Conectar</h1>
       <p class="lede">Os seus dois agentes, cada um no seu lugar: o ${esc(NOME())} atende os seus clientes, e a ${esc(ASSIST())} fala só com você. Tudo pelo login oficial; a Ti Artes nunca vê a sua senha.</p></div></div>
@@ -900,11 +899,12 @@
           ${linhaDora.estado === 'ok' ? avisosDora(a.avisos) : ''}
         </article>
       </div>
-      ${(a.disponivel && !soSecretaria) ? `<details class="cartao modos-dobra"><summary><span>Quem trabalha nesta conta</span><b>${esc(modoNome)}</b></summary>${cartaoModo().replace(/^<article class="cartao modos"><h2>[^<]*<\/h2>/, '').replace(/<\/article>$/, '')}</details>` : cartaoModo()}
+      ${cartaoPlanoVigente()}
       <p class="rotulo sec-conectar">Arquivos e cópia de segurança</p>
       ${cartaoDrive(true)}</section>`;
     ligaAssistente(alvo);
     ligaModo(alvo);
+    ligaPlanoVigente(alvo);
     const vai = async (rota, bt) => { bt.disabled = true; const r = await api(rota, {}); if (r.url) location.href = r.url; else { bt.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); } };
     if ($('ig-conectar')) $('ig-conectar').onclick = (e) => vai('/instagram', e.currentTarget);
     if ($('ig-renovar')) $('ig-renovar').onclick = (e) => vai('/instagram', e.currentTarget);
@@ -1091,6 +1091,118 @@
     pinta();
   }
 
+  /* ---------- o plano: o que entra em cada um e o botão de assinar (a aba Plano e o cartão do Conectar usam os dois) ---------- */
+  const itensDoPlano = (x) => (x.canais.length ? [
+    `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
+    `${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos',
+    ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
+  ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+  function ligaAssinar(alvo) {
+    alvo.querySelectorAll('[data-plano]').forEach((b) => b.onclick = async () => {
+      b.disabled = true;
+      const r = await api('/assinar', { plano: b.dataset.plano, forma: b.dataset.forma, ...(b.dataset.umreal ? { um_real: true } : {}) });
+      if (r.url) location.href = r.url; else { b.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); }
+    });
+    alvo.querySelectorAll('[data-portal]').forEach((b) => b.onclick = async () => {
+      b.disabled = true; const r = await api('/portal', {});
+      if (r.url) location.href = r.url; else { b.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); }
+    });
+  }
+
+  /* ---------- O PLANO EM VIGÊNCIA no Conectar (16/11, pedido dele: "aqui não seria o plano em vigência? Quando a pessoa
+     aperta o botão, aparece o plano sugerido em destaque para ela assinar: joga o cliente para a assinatura com elegância").
+     Mostra o plano (ou o teste), o que ele tem e o que falta; o botão abre UM plano sugerido, já com o assinar.
+     O "quem trabalha nesta conta" (pausar um agente) foi para uma linha que abre, no fim do cartão. ---------- */
+  /* qual plano sugerir: o mais barato que tem o que a pessoa usa + o canal que ela tocou */
+  function planoSugerido(extra) {
+    const planos = EU.planos || [], p = EU.plano;
+    const tem = new Set(p ? p.canais : []);
+    if (!p) { if (EU.instagram && EU.instagram.conectado) tem.add('instagram'); if (EU.whatsapp && EU.whatsapp.conectado) tem.add('whatsapp'); }
+    if (extra) tem.add(extra);
+    let id = tem.has('instagram') && tem.has('whatsapp') ? 'completo' : tem.has('whatsapp') ? 'whatsapp' : 'instagram';
+    /* quem já paga e só quer "o próximo": sobe um degrau */
+    if (p && id === p.id) id = p.id === 'completo' ? '' : p.id === 'otto' ? 'instagram' : 'completo';
+    return planos.find((x) => x.id === id) || null;
+  }
+  function porqueSugerido(x) {
+    const p = EU.plano, canal = (c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram');
+    if (p) {
+      const novos = x.canais.filter((c) => !p.canais.includes(c));
+      return novos.length ? `Fica com tudo o que você já tem e põe o ${NOME()} para atender no ${novos.map(canal).join(' e no ')}.` : `Mais mensagens por mês, com tudo o que você já tem.`;
+    }
+    const testando = EU.instagram && EU.instagram.conectado && x.id === 'instagram';
+    return testando ? `É o que você está testando: o ${NOME()} no Instagram, a ${ASSIST()} e o app. Assinando, ele não para quando o teste acabar.`
+      : `O ${NOME()} atendendo no ${x.canais.map(canal).join(' e no ')}, a ${ASSIST()} e o app com CRM e agenda.`;
+  }
+  function quadroSugerido(x) {
+    if (!x) return '';
+    const botoes = EU.cartao
+      ? `<button class="bt" type="button" data-portal="1">Trocar para o ${esc(x.nome)}</button><p class="dica">Abre a página segura do Stripe. A troca fica na mesma assinatura: você não paga duas vezes.</p>`
+      : `<button class="bt" type="button" data-plano="${esc(x.id)}" data-forma="cartao">${EU.status === 'novo' && EU.teste_dias ? `Assinar: ${EU.teste_dias} dias grátis no cartão` : 'Assinar no cartão'}</button>
+         <button class="bt fraco" type="button" data-plano="${esc(x.id)}" data-forma="pix">Pagar 1 mês no Pix</button>`;
+    return `<div class="sugerido" tabindex="-1">
+      <span class="selo-sug">Sugerido para você</span>
+      <div class="sug-topo"><h3>${esc(x.nome)}</h3><p class="preco">${esc(x.preco)}<small> por mês</small></p></div>
+      <p class="sug-porque">${esc(porqueSugerido(x))}</p>
+      <ul>${itensDoPlano(x).map((t) => `<li>${svg('check')}<span>${esc(t)}</span></li>`).join('')}</ul>
+      <div class="botoes">${botoes}</div>
+      <p class="dica">${EU.cartao ? '' : 'No cartão renova todo mês e você cancela quando quiser. '}<a href="#plano">Ver todos os planos</a></p></div>`;
+  }
+  function cartaoPlanoVigente() {
+    const p = EU.plano, t = EU.teste || {}, a = EU.assistente || {};
+    const ST = { ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}` : `Renova em ${dia(EU.pago_ate)}`, teste: `Grátis no cartão até ${dia(EU.pago_ate)}`,
+      atrasada: 'Pagamento não passou', cancelada: `Responde até ${dia(EU.pago_ate)}`, vencida: 'Venceu' };
+    let nome, preco = '', pill, texto;
+    if (p) {
+      nome = `Plano ${p.nome}`; preco = (EU.planos || []).find((x) => x.id === p.id)?.preco || '';
+      const ok = EU.em_dia && !['atrasada', 'vencida'].includes(EU.status);
+      pill = `<span class="pill ${ok ? 'ok' : 'atencao'}">${ok ? svg('check') : ''}${esc(ok ? (EU.status === 'teste' ? 'Em teste' : 'Ativo') : (ST[EU.status] || 'Atenção'))}</span>`;
+      texto = ok ? (ST[EU.status] ? ST[EU.status] + '.' : '') : 'Resolva em Plano e uso para os agentes não pararem.';
+    } else if (t.ate && !t.pagou && t.ligado) {
+      const dias = Math.max(0, Math.ceil((Date.parse(t.ate) - Date.now()) / 86400000));
+      nome = 'Teste grátis'; pill = `<span class="pill breve">${dias > 1 ? `Faltam ${dias} dias` : 'Termina hoje'}</span>`;
+      texto = `Vai até ${esc(hora(t.ate))}. Escolha o plano antes para o ${esc(NOME())} não parar.`;
+    } else {
+      nome = t.ate ? 'O teste grátis acabou' : 'Sem plano ainda';
+      pill = `<span class="pill nao">${t.ate ? 'Parado' : 'Escolha um plano'}</span>`;
+      texto = t.ate ? `O ${esc(NOME())} parou de responder os clientes. Assine para ele voltar.` : 'Escolha um plano para os agentes trabalharem.';
+    }
+    /* o que este plano tem (e o que falta, com o sinal de +) */
+    const canais = p ? p.canais : ['instagram'];
+    const tem = [
+      [`${NOME()} no Instagram`, canais.includes('instagram')], [`${NOME()} no WhatsApp`, canais.includes('whatsapp')],
+      [`${ASSIST()}, a secretária`, true], ['CRM e agenda', true],
+    ];
+    const sug = planoSugerido();
+    const modoNome = ({ ambos: 'Os dois', atendimento: `Só o ${NOME()}`, assistente: `Só a ${ASSIST()}` })[EU.modo || 'ambos'];
+    const soSecretaria = p && Array.isArray(p.canais) && !p.canais.length;
+    const modos = (a.disponivel && !soSecretaria) ? `<details class="mais pv-modos"><summary>Quem trabalha nesta conta: <b>${esc(modoNome)}</b></summary>
+      ${cartaoModo().replace(/^<article class="cartao modos"><h2>[^<]*<\/h2>/, '').replace(/<\/article>$/, '')}</details>` : '';
+    return `<article class="cartao plano-vig" id="plano-vig">
+      <header class="pv-topo"><div><p class="rotulo">O seu plano</p><h2>${esc(nome)}${preco ? ` <small>${esc(preco)} por mês</small>` : ''}</h2></div>${pill}</header>
+      ${texto ? `<p class="pv-texto">${texto}</p>` : ''}
+      <ul class="pv-tem" aria-label="O que o plano tem">${tem.map(([n, sim]) => `<li class="${sim ? 'sim' : 'nao'}">${svg(sim ? 'check' : 'mais')}<span>${esc(n)}${sim ? '' : ' <i>não está no plano</i>'}</span></li>`).join('')}</ul>
+      ${sug ? `<div class="pv-acoes"><button class="bt" type="button" id="pv-sugere" aria-expanded="false" aria-controls="pv-sugerido">${p ? 'Ver o plano sugerido' : 'Escolher o meu plano'}</button><a class="lnk" href="#plano">Plano e uso</a></div>`
+        : `<div class="pv-acoes"><a class="bt fraco" href="#plano">Plano e uso</a></div>`}
+      <div id="pv-sugerido" hidden></div>
+      ${modos}
+    </article>`;
+  }
+  function ligaPlanoVigente(alvo) {
+    const caixa = $('pv-sugerido'), bt = $('pv-sugere');
+    const abre = (extra) => {
+      const x = planoSugerido(extra); if (!caixa || !x) return;
+      caixa.innerHTML = quadroSugerido(x); caixa.hidden = false; ligaAssinar(caixa);
+      if (bt) bt.setAttribute('aria-expanded', 'true');
+      const s = caixa.querySelector('.sugerido');
+      s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+      s.focus({ preventScroll: true });
+    };
+    if (bt) bt.onclick = () => { if (!caixa.hidden && bt.getAttribute('aria-expanded') === 'true') { caixa.hidden = true; bt.setAttribute('aria-expanded', 'false'); return; } abre(); };
+    /* o "Incluir no plano" da linha do Instagram ou do WhatsApp abre o sugerido com aquele canal */
+    alvo.querySelectorAll('[data-sugere]').forEach((b) => b.onclick = () => abre(b.dataset.sugere));
+  }
+
   /* ---------- Plano e uso ---------- */
   async function telaPlano(alvo, topo) {
     const p = EU.plano;
@@ -1098,11 +1210,7 @@
       atrasada: 'O último pagamento não passou. Atualize o cartão para o agente não parar.', cancelada: `Cancelada. O agente responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o agente parou.', novo: '' };
     /* o plano Secretária vive no WhatsApp do Otto: sem o número no ar, o cartão aparece, mas não vende */
     const semOtto = !(EU.assistente && EU.assistente.otto_wa);
-    const itens = (x) => (x.canais.length ? [
-      `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
-      `${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos',
-      ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
-    ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+    const itens = itensDoPlano;
     const cartoes = EU.planos.map((x) => `<article class="plano ${x.id === 'otto' ? 'da-dora' : ''} ${(planoPedido === x.id || (p && p.id === x.id)) ? 'escolhido' : ''}">
       <h2>${esc(x.nome)}</h2><p class="preco">${esc(x.preco)}<small> por mês</small></p>
       <ul>${itens(x).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
@@ -1131,11 +1239,7 @@
       ${EU.estudio && !EU.teste_pagamento ? `<div class="cartao leve"><h2>Teste de R$ 1 <span class="selo">só o estúdio</span></h2>
         <p class="dica">Paga R$ 1 no Pix de verdade, para provar que a cobrança libera a conta e cai nas Mensalidades. Conta como um mês do plano Instagram nesta conta.</p>
         <div><button class="bt pequeno fraco" type="button" data-plano="instagram" data-forma="pix" data-umreal="1">Pagar R$ 1 no Pix</button></div></div>` : ''}</section>`;
-    alvo.querySelectorAll('[data-plano]').forEach((b) => b.onclick = async () => {
-      b.disabled = true;
-      const r = await api('/assinar', { plano: b.dataset.plano, forma: b.dataset.forma, ...(b.dataset.umreal ? { um_real: true } : {}) });
-      if (r.url) location.href = r.url; else { b.disabled = false; alvo.insertAdjacentHTML('afterbegin', aviso('erro', r.erro || 'Não deu certo.')); }
-    });
+    ligaAssinar(alvo);
     const fc = $('f-cupom');
     if (fc) fc.onsubmit = async (e) => {
       e.preventDefault();
