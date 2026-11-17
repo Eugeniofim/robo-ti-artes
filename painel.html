@@ -437,6 +437,13 @@ details.dobra[open] > summary::after { content: '–'; }
 .medidor { height: 10px; border-radius: 999px; background: color-mix(in srgb, var(--tinta) 10%, transparent); overflow: hidden; }
 .medidor i { display: block; height: 100%; background: var(--menta); border-radius: 999px; }
 .medidor.alto i { background: linear-gradient(90deg, #F4C062, #E08A2E); }
+/* 17/11: o saldo de respostas e os pacotes (Plano e uso) */
+.saldo-grande { margin: 4px 0 10px; } .saldo-grande b { font: 700 34px var(--serif); }
+.saldo-grande.acabou b { color: var(--laranja); }
+.pacotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+.pacote { display: grid; gap: 6px; padding: 14px; border: 1px solid var(--card-borda); border-radius: 14px; background: color-mix(in srgb, var(--teal) 5%, transparent); }
+.pacote b { font-size: 17px; } .pacote .botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.pacote .bt { flex: 1 1 90px; }
 
 /* conectar, plano, uso */
 .perfil { display: flex; align-items: center; gap: 12px; }

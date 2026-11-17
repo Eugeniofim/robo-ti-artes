@@ -67,6 +67,7 @@
   if (q.get('drive') === 'erro') avisoVolta = { tipo: 'erro', texto: 'Não deu para conectar o Google Drive. ' + (q.get('motivo') || 'Tente de novo.') };
   if (q.get('pago') === '1') avisoVolta = { tipo: 'info', texto: 'Pagamento recebido. Pode levar alguns segundos para o plano aparecer aqui.' };
   if (q.get('cancelou') === '1') avisoVolta = { tipo: 'atencao', texto: 'Você saiu do pagamento sem concluir. Nada foi cobrado.' };
+  if (q.get('respostas') === '1') avisoVolta = { tipo: 'info', texto: 'Pagamento recebido. As respostas extras entram no seu saldo em alguns segundos (no Pix, assim que o banco confirmar).' };
   const planoPedido = q.get('plano');
   /* o cupom dos chegados: o entrar.html guarda o código; aqui ele vale na conta (uma vez) */
   const cupomGuardado = () => { try { return localStorage.getItem('robo-cupom') || ''; } catch (_) { return ''; } };
@@ -229,6 +230,16 @@
     if (MENU) MENU.ativar(aba);
     $('baixo').querySelectorAll('[data-aba]').forEach((a) => a.dataset.aba === aba ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   }
+  /* 17/11 — o saldo de respostas do mês (atendimento + Dora; servidor _comum/saldo.js). Acabou: o atendimento manda só
+     uma resposta curta e a Dora pausa, até comprar mais (Plano e uso) ou virar o mês. */
+  const avisoSaldo = () => {
+    const sd = EU && EU.saldo;
+    if (!sd || !sd.limita) return '';
+    if (sd.esgotado) return aviso('erro', `<b>Acabaram as respostas do seu plano este mês.</b> O ${esc(NOME())} manda só uma resposta curta e a ${esc(ASSIST())} pausou. <a href="#plano">Comprar mais respostas</a>`, true);
+    if (sd.doPlano <= 0 && sd.extra > 0) return aviso('info', `As respostas do plano deste mês acabaram. Agora estão sendo usadas as extras que você comprou: restam ${inteiro(sd.extra)}. <a href="#plano">Ver o saldo</a>`, true);
+    if (sd.pct >= 80) return aviso('atencao', `Você já usou ${inteiro(Math.min(sd.pct, 99))}% das respostas do plano este mês. Quando acabar, o atendimento passa a mandar só uma resposta curta. <a href="#plano">Ver o saldo e comprar mais</a>`, true);
+    return '';
+  };
   /* o relógio do teste livre: quanto falta (ou que acabou) */
   function relogio() {
     const r = $('relogio'), t = (EU && EU.teste) || {};
@@ -278,7 +289,7 @@
     cabecalho();
     if (MENU && MENU.dicas) MENU.dicas(dicasDoMenu());
     const aba = abaAtual(), alvo = $('conteudo');
-    const topo = avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '';
+    const topo = (avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '') + (aba !== 'plano' ? avisoSaldo() : '');
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, conectar: telaConectar,
@@ -1125,10 +1136,11 @@
 
   /* ---------- o plano: o que entra em cada um e o botão de assinar (a aba Plano e o cartão do Conectar usam os dois) ---------- */
   const itensDoPlano = (x) => (x.canais.length ? [
-    `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}, até ${inteiro(x.respostas)} mensagens por mês`,
+    `Atendimento no ${x.canais.map((c) => (c === 'whatsapp' ? 'WhatsApp' : 'Instagram')).join(' e no ')}`,
+    `${inteiro(x.respostas)} respostas por mês, somando o atendimento e a ${ASSIST()}`,
     `${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos',
     ...(x.canais.includes('whatsapp') ? ['WhatsApp numa linha nova, ou no seu número quando a Meta liberar (começo de dezembro)'] : []),
-  ] : [`${ASSIST()}, a sua secretária no WhatsApp`, 'CRM, agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
+  ] : [`${ASSIST()}, a sua secretária no WhatsApp`, ...(x.dora ? [`${inteiro(x.dora)} respostas da ${ASSIST()} por mês`] : []), 'CRM, agenda, notas e arquivos', 'Para se organizar, com ou sem empresa', 'Sem atendimento de clientes']);
   function ligaAssinar(alvo) {
     alvo.querySelectorAll('[data-plano]').forEach((b) => b.onclick = async () => {
       b.disabled = true;
@@ -1293,6 +1305,40 @@
     const pct = r.franquia.pct || 0;
     const anterior = (() => { const d = new Date(r.mes + '-15T12:00:00Z'); d.setUTCMonth(d.getUTCMonth() - 1); return d.toISOString().slice(0, 7); })();
     const canais = r.mensagens && r.mensagens.por_canal ? Object.entries(r.mensagens.por_canal) : [];
+    /* 17/11: o mês de agora com saldo (franquia + extras comprados) → o quadro novo, com os pacotes */
+    const sd = r.saldo && r.saldo.limita ? r.saldo : null;
+    if (sd) {
+      if (EU.saldo) EU.saldo = sd;
+      const pk = r.pacotes || EU.pacotes || [], podeComprar = !!(EU.plano && EU.em_dia);
+      const estadoTxt = sd.esgotado ? `Acabou. O ${esc(NOME())} manda só uma resposta curta (quem escrever aparece em Clientes) e a ${esc(ASSIST())} pausou. Compre mais para voltar agora, ou espere o mês virar.`
+        : sd.doPlano <= 0 ? `As do plano acabaram; agora estão sendo usadas as extras que você comprou.`
+        : sd.pct >= 80 ? `Já usou ${inteiro(sd.pct)}% do plano. Quando acabar, entram as extras${sd.extra ? '' : ' (se você comprar)'}; sem nenhuma, o atendimento passa a mandar só uma resposta curta.`
+        : `Conta cada resposta do atendimento e da ${esc(ASSIST())}. Os testes do painel e os avisos automáticos da ${esc(ASSIST())} não contam. Todo mês o plano começa de novo.`;
+      el.innerHTML = `<h2>${ic('relogio')} Respostas de ${esc(nomeMes(r.mes))}</h2>
+        <p class="num saldo-grande ${sd.esgotado ? 'acabou' : ''}"><b>${inteiro(sd.restante)}</b> ${sd.restante === 1 ? 'resposta sobrando' : 'respostas sobrando'}</p>
+        <div class="medidor ${pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="Respostas do plano usadas" aria-valuenow="${Math.min(100, sd.pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, sd.pct)}%"></i></div>
+        <p class="dica num">${inteiro(Math.min(sd.usadas, sd.franquia))} de ${inteiro(sd.franquia)} do plano usadas${sd.extra ? ` · ${inteiro(sd.extra)} extras compradas` : ''}</p>
+        <p class="${sd.esgotado ? 'aviso erro' : 'dica'}">${estadoTxt}</p>
+        <div class="pacotes" id="pacotes">${podeComprar ? pk.map((x) => `<div class="pacote"><b>${esc(x.nome)}</b><span class="dica">${esc(x.preco)} · não vencem</span>
+            <div class="botoes"><button class="bt pequeno ${sd.esgotado ? '' : 'fraco'}" type="button" data-pacote="${esc(x.id)}" data-forma="cartao">Cartão</button><button class="bt pequeno fraco" type="button" data-pacote="${esc(x.id)}" data-forma="pix">Pix</button></div></div>`).join('')
+          : '<p class="dica">Os pacotes de respostas extras aparecem aqui quando você tiver um plano.</p>'}</div>
+        ${podeComprar ? '<p class="dica">As extras só são usadas depois que as do plano acabam, e não vencem. Pagamento avulso: não vira assinatura.</p>' : ''}
+        <div class="numeros">
+          <div><b>${inteiro(r.respostas)}</b><span>respostas escritas pela IA</span></div>
+          ${canais.length ? canais.map(([c, n]) => `<div><b>${inteiro(n)}</b><span>no ${esc(c === 'whatsapp' ? 'WhatsApp' : c === 'instagram' ? 'Instagram' : c)}</span></div>`).join('') : '<div><b>0</b><span>por canal</span></div>'}
+          <div><b>${r.ultima ? dia(r.ultima) : '—'}</b><span>última resposta</span></div>
+        </div>
+        <div><button class="bt fraco pequeno" id="mes-anterior" type="button">Ver ${esc(nomeMes(anterior))}</button></div>`;
+      $('mes-anterior').onclick = () => usoDoMes(anterior);
+      el.querySelectorAll('[data-pacote]').forEach((b) => b.onclick = async () => {
+        el.querySelectorAll('[data-pacote]').forEach((x) => (x.disabled = true));
+        const c = await api('/comprar-respostas', { pacote: b.dataset.pacote, forma: b.dataset.forma });
+        if (c.url) { location.href = c.url; return; }
+        el.querySelectorAll('[data-pacote]').forEach((x) => (x.disabled = false));
+        $('pacotes').insertAdjacentHTML('beforebegin', aviso('erro', c.erro || 'Não deu certo. Tente de novo.'));
+      });
+      return;
+    }
     el.innerHTML = `<h2>${ic('relogio')} Uso de ${esc(nomeMes(r.mes))}</h2>
       <p class="num"><b style="font:700 34px var(--serif)">${inteiro(r.franquia.usadas)}</b> de ${inteiro(r.franquia.incluidas)} mensagens incluídas no seu plano</p>
       <div class="medidor ${pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="Mensagens usadas" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, pct)}%"></i></div>
