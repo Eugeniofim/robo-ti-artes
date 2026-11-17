@@ -430,6 +430,8 @@
       const r = await o.envia(texto);
       p.remove(); env.disabled = false; txt.focus();
       if (r.erro) return poe('ele', r.erro, { convite: bloqueio(r) });
+      /* 17/11: o dono assumiu esta conversa na ficha do cliente: o agente não responde (a mensagem fica só do lado de cá) */
+      if (r.assumido) { poe('sistema', `Você assumiu esta conversa na ficha do cliente, então o ${NOME()} não respondeu. Para ele voltar, toque em "Devolver para o ${NOME()}" na ficha.`); return; }
       poe('ele', r.resposta, { feito: r.feito, nota: o.notaDe ? o.notaDe(r) : '' });
       if (o.depois) o.depois(r);
     };
@@ -1501,6 +1503,7 @@
     const r = await api('/clientes');
     if (abaAtual() !== 'clientes') return;
     let L = r.fichas || [];
+    let ASSUMIDOS = r.assumidos || {};   /* 17/11: { id da ficha: até quando } — o Sol está quieto com essa pessoa */
     let filtro = 'todos', busca = '';
     const conta = () => {
       const c = { todos: L.length, precisa: 0, novo: 0, conversando: 0, fechado: 0, perdido: 0 };
@@ -1523,7 +1526,7 @@
           <span class="dica">${esc(ult ? (ult.assunto || ult.resumo || 'pedido') : f.nota ? f.nota.slice(0, 60) : 'cadastrado por você')}</span>
           ${f.proximo ? `<span class="cl-prox">${ic('agenda')} ${esc(proxTxt(f.proximo))}</span>` : ''}</div>
         <div class="cl-lado">${compacto ? '' : `<span class="sit sit-${esc(f.situacao)}">${esc(SIT[f.situacao] || f.situacao)}</span>`}
-          ${p ? `<span class="selo-precisa">${p === 'novo' ? 'responder' : 'parado'}</span>` : ''}<span class="dica num">${esc(quandoCurto(f.ultimo))}</span>
+          ${p ? `<span class="selo-precisa">${p === 'novo' ? 'responder' : 'parado'}</span>` : ''}${ASSUMIDOS[f.id] ? `<span class="selo-assumido" title="O ${esc(NOME())} está quieto com essa pessoa: você assumiu a conversa">você assumiu</span>` : ''}<span class="dica num">${esc(quandoCurto(f.ultimo))}</span>
           ${f.teste ? `<button type="button" class="cl-apaga" data-apaga="${esc(f.id)}" draggable="false" title="Apagar este cliente de teste" aria-label="Apagar o cliente de teste ${esc(nomeDe(f))}">${svg('lixo')}<span>Apagar</span></button>` : ''}</div></li>`;
     };
     const desenha = () => {
@@ -1608,6 +1611,30 @@
     };
     const toast = (t) => { const m = $('cl-toast'); m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 2600); };
 
+    /* 17/11 — ASSUMIR A CONVERSA (pedido dele: "aonde aparece no cliente a opção de assumir a conversa com ele no whats?").
+       O Sol fica quieto SÓ com essa pessoa por 24 h e o dono responde do celular; "Devolver" religa na hora. Servidor:
+       /cliente-assumir (guia-cofre _comum/assumir.js). Quem nunca conversou com o Sol não tem o bloco. */
+    const temConversa = (f) => (f.teste ? !!f.teste_de : !!(f.whatsapp || f.telefone || f.ig_id));
+    const ateTxt = (iso) => {
+      const d = new Date(iso), um = 86400000, mesmo = (x) => x.toDateString() === d.toDateString();
+      const dia = mesmo(new Date()) ? 'hoje' : mesmo(new Date(Date.now() + um)) ? 'amanhã' : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      return dia + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    };
+    const blocoConversa = (f, st) => {
+      const prim = f.nome ? f.nome.split(' ')[0] : 'essa pessoa', N = esc(NOME());
+      const wa = f.whatsapp || (!f.ig_id ? f.telefone : '');
+      const forte = st.assumido ? '' : 'fraco';
+      const responder = f.teste ? `<a class="bt pequeno ${forte}" href="#testar">${svg('balao')} Abrir o Testar</a>`
+        : wa ? `<a class="bt pequeno ${forte}" href="${waLink({ whatsapp: wa })}" target="_blank" rel="noopener">${svg('balao')} Responder no WhatsApp</a>`
+        : f.instagram ? `<a class="bt pequeno ${forte}" href="https://ig.me/m/${encodeURIComponent(f.instagram.replace('@', ''))}" target="_blank" rel="noopener">${svg('balao')} Responder no Instagram</a>` : '';
+      if (st.assumido) return `<h3>${ic('balao')} Você assumiu a conversa</h3>
+        <p>O ${N} não responde ${esc(prim)} ${st.ate ? 'até ' + esc(ateTxt(st.ate)) : 'por 12 horas, porque você respondeu pelo celular'}. Converse você mesmo${f.teste ? ' no Testar' : ''}.</p>
+        <div class="botoes">${responder}<button type="button" class="bt pequeno fraco" id="fi-devolver">${svg('play')} Devolver para o ${N}</button></div>`;
+      return `<h3>${ic('balao')} Conversa</h3>
+        <p>O ${N} está respondendo ${esc(prim)}${f.teste ? ' no Testar' : ''}. Quer conversar você mesmo? Assuma a conversa: ele fica quieto só com essa pessoa por 24 horas.</p>
+        <div class="botoes"><button type="button" class="bt pequeno" id="fi-assumir">${svg('pausa')} Assumir a conversa</button>${responder}</div>`;
+    };
+
     /* a ficha: um painel ao lado (no celular, a tela inteira) */
     const abre = (id) => {
       const f = id ? L.find((x) => x.id === id) : null;
@@ -1634,6 +1661,7 @@
             <button type="button" class="bt-ic" data-fecha aria-label="Fechar">${svg('x')}</button></div>
           ${f.teste ? `<div class="aviso-teste">${ic('info')}<div><p>Este cliente veio de uma conversa sua no Testar, para você ver o caminho completo. Quando não precisar mais, apague.</p>
             <button type="button" class="bt pequeno perigo" id="fi-apaga-teste">${svg('lixo')} Apagar este teste</button></div></div>` : ''}
+          ${temConversa(f) ? `<div class="ficha-bloco conversa-bloco ${ASSUMIDOS[f.id] ? 'assumido' : ''}" id="fi-conversa" aria-live="polite"></div>` : ''}
           <div class="segmento" role="group" aria-label="Situação">${sitBt}</div>
           ${f.situacao === 'perdido' ? `<label class="campo">Por que perdeu?<input id="fi-motivo" value="${esc(f.motivo || '')}" placeholder="achou caro, fechou com outro…"></label>` : ''}
           <div class="ficha-bloco contatos">
@@ -1658,6 +1686,27 @@
           <div class="ficha-bloco"><h3>${ic('relogio')} Histórico</h3>${hist.length ? `<ul class="historico">${hist.map((h) => `<li>${h.html}</li>`).join('')}</ul>` : '<p class="dica">Ainda nada. Os pedidos do atendimento e os compromissos com essa pessoa aparecem aqui.</p>'}
             <p class="dica">Primeiro contato ${esc(dia(f.primeiro))} · pelo ${esc(f.origem === 'whatsapp' ? 'WhatsApp' : f.origem === 'instagram' ? 'Instagram' : f.origem === 'teste' ? 'Testar (conversa de teste)' : 'cadastro')}</p></div>
           <div class="ficha-pe"><button type="button" class="bt pequeno perigo" id="fi-apaga">${svg('lixo')} Apagar ficha</button></div>`;
+        const conv = $('fi-conversa');
+        const poeConversa = (st) => {
+          if (!conv || !conv.isConnected) return;
+          conv.classList.toggle('assumido', !!st.assumido); conv.innerHTML = blocoConversa(f, st);
+          const age = async (b, acao) => {
+            b.disabled = true;
+            const x = await api('/cliente-assumir', { id: f.id, acao });
+            if (x.erro) { b.disabled = false; return toast(x.erro); }
+            if (x.assumido) ASSUMIDOS[f.id] = x.ate; else delete ASSUMIDOS[f.id];
+            poeConversa(x); desenha();
+            toast(x.assumido ? `Pronto: o ${NOME()} ficou quieto com ${f.nome ? f.nome.split(' ')[0] : 'essa pessoa'}.` : `O ${NOME()} voltou a responder.`);
+          };
+          const ba = $('fi-assumir'), bd = $('fi-devolver');
+          if (ba) ba.onclick = () => age(ba, 'assumir');
+          if (bd) bd.onclick = () => age(bd, 'devolver');
+        };
+        if (conv) {
+          poeConversa({ assumido: !!ASSUMIDOS[f.id], ate: ASSUMIDOS[f.id] || null });
+          /* o estado de verdade: inclui quando o dono respondeu pelo celular (o Sol se cala 12 h sozinho) */
+          api('/cliente-assumir', { id: f.id, acao: 'ver' }).then((x) => { if (x && !x.erro && x.pode) poeConversa(x); });
+        }
         const salva = (campos) => muda(f.id, campos).then((n) => n && abre(n.id));
         g.querySelectorAll('[data-sit]').forEach((b) => b.onclick = () => salva({ situacao: b.dataset.sit }));
         const nome = $('fi-nome'); nome.onchange = () => nome.value.trim() && muda(f.id, { nome: nome.value.trim() });
@@ -1692,7 +1741,7 @@
     };
     const fecha = () => { $('cl-ficha').hidden = true; $('cl-fundo').hidden = true; document.body.classList.remove('ficha-aberta'); };
     /* depois do próximo passo: relê (o compromisso novo entra no histórico) e reabre a mesma ficha */
-    const recarrega = async (id) => { const x = await api('/clientes'); if (x.fichas) L = x.fichas; desenha(); abre(id); };
+    const recarrega = async (id) => { const x = await api('/clientes'); if (x.fichas) { L = x.fichas; ASSUMIDOS = x.assumidos || {}; } desenha(); abre(id); };
 
     alvo.innerHTML = `<section class="aba crm">${topo}
       <div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1>
