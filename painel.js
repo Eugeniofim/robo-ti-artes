@@ -112,7 +112,7 @@
   /* o balão de cada item do menu: "(D) Dora anota" */
   const dicasDoMenu = () => Object.fromEntries(Object.entries(quemFaz()).map(([k, q]) => [k, q && { html: avatares(q.quem) + `<span>${q.html}</span>`, txt: q.txt }]));
   const ABAS = {
-    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
+    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', marketing: 'Marketing', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
   };
   /* nomes antigos de aba (links de volta do Stripe e do Instagram, favoritos) */
@@ -161,6 +161,7 @@
           { id: 'inicio', rotulo: 'Início', icone: 'casa', href: '#inicio' },
           { id: 'cerebro', rotulo: 'Cérebro', icone: 'cerebro', href: '#cerebro', ponto: !c.pronto },
           { id: 'testar', rotulo: 'Testar', icone: 'balao', href: '#testar' },
+          { id: 'marketing', rotulo: 'Marketing', icone: 'megafone', href: '#marketing' },
         ] },
         { secao: 'O seu dia', itens: [
           { id: 'agenda', rotulo: 'Agenda', icone: 'agenda', href: '#agenda' },
@@ -307,7 +308,7 @@
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, conectar: telaConectar,
-      plano: telaPlano, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
+      plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
     window.scrollTo(0, 0);
   }
 
@@ -1345,7 +1346,7 @@
           conta: `Cada resposta da ${esc(ASSIST())} para você. Os avisos automáticos dela (resumo da manhã, lembretes) não contam.`,
           acabou: `Acabou. A ${esc(ASSIST())} pausou até você carregar ou o mês virar. O atendimento aos clientes segue normal.` },
         marketing: { titulo: 'Marketing', icone: 'camera', unid: ['crédito', 'créditos'],
-          conta: 'Um post ou uma legenda gasta 1 crédito, um relatório 2 e um carrossel 3.',
+          conta: 'Um post ou story com arte gasta 3 créditos, um carrossel de 4 artes 8, o plano do mês e o relatório 2, e só a legenda 1.',
           acabou: 'Acabou. O agente de marketing pausou até você carregar ou o mês virar. O atendimento segue normal.' },
       };
       const cartao = (t) => {
@@ -1605,6 +1606,118 @@
     alvo.querySelectorAll('[data-apaga]').forEach((b) => b.onclick = () => {
       if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.textContent = 'apagar?'; b.classList.add('certeza'); return; }
       salva({ acao: 'apagar', item: { id: b.dataset.apaga } });
+    });
+  }
+
+  /* ---------- Marketing (25/11/2026, pedido dele: "competir e ganhar do mLabs… criativos melhores… qualidade de Canva e
+     Predis"). A regra do benchmark de 01/10: UM PEDIDO → A PEÇA PRONTA → UM BOTÃO. Servidor: robo/marketing.ts, que
+     cobra dos créditos de marketing antes e devolve se falhar. Nada é postado sozinho: ele baixa e copia. ---------- */
+  const MKT_FORMATOS = [
+    { id: 'post', nome: 'Post', dica: 'uma arte para o feed' },
+    { id: 'carrossel', nome: 'Carrossel', dica: '4 artes que contam uma história' },
+    { id: 'story', nome: 'Story', dica: 'uma arte em pé' },
+    { id: 'legenda', nome: 'Só a legenda', dica: '3 opções de texto, sem arte' },
+  ];
+  let MKT_FORMATO = 'post', MKT_PEDIDO = '';
+  const creditos = (n) => `${n} ${n === 1 ? 'crédito' : 'créditos'}`;
+  async function telaMarketing(alvo, topo) {
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Crescer</p><h1>Marketing</h1></div></div><p class="dica">Carregando…</p></section>`;
+    const r = await api('/marketing');
+    if (abaAtual() !== 'marketing') return;
+    if (r.erro) { alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Crescer</p><h1>Marketing</h1></div></div>${aviso('erro', r.erro)}</section>`; return; }
+    const C = r.custos || {}, sd = r.saldo || {};
+    const saldoTxt = r.casa ? 'Sem limite (conta da casa)' : `${inteiro(sd.restante || 0)} ${sd.restante === 1 ? 'crédito' : 'créditos'} de marketing`;
+    const cabeca = `<div class="cabeca-aba"><div><p class="rotulo">Crescer</p><h1>Marketing</h1>
+      <p class="lede">Diga o que você quer divulgar. O agente escreve, desenha a arte com o seu negócio e entrega pronto para postar.</p></div></div>`;
+    if (!r.liberado) {
+      alvo.innerHTML = `<section class="aba">${topo}${cabeca}<div class="cartao"><h2>${ic('camera')} O agente de marketing</h2>
+        <p>Posts, carrosséis e stories com arte e legenda prontos, o plano do mês e o relatório do que deu certo, tudo a partir do que o ${esc(NOME())} já sabe do seu negócio.</p>
+        <p class="dica">Ele vem no plano <b>Completo + Marketing</b>.</p><div><a class="bt" href="#plano">Ver os planos</a></div></div></section>`;
+      return;
+    }
+    const formatos = MKT_FORMATOS.map((f) => `<button type="button" class="per mkt-fmt" data-fmt="${f.id}" aria-pressed="${f.id === MKT_FORMATO}"><b>${esc(f.nome)}</b><span class="dica">${esc(f.dica)} · ${creditos(C[f.id] || 0)}</span></button>`).join('');
+    alvo.innerHTML = `<section class="aba">${topo}${cabeca}
+      <form class="cartao compor mkt-criar" id="mk-form">
+        <div class="mkt-topo"><h2>${ic('mais')} Criar</h2><span class="selo ${r.casa || (sd.restante || 0) > 0 ? 'ok' : 'atencao'}">${esc(saldoTxt)}</span></div>
+        <label class="campo">O que você quer postar?<textarea id="mk-pedido" rows="3" maxlength="600" placeholder="Ex.: o bolo de pote de morango que voltou, só esta semana. Ou deixe em branco e o agente escolhe o assunto.">${esc(MKT_PEDIDO)}</textarea></label>
+        <div class="pers mkt-fmts" role="group" aria-label="Formato">${formatos}</div>
+        <p id="mk-erro" class="aviso erro" hidden></p>
+        <div class="botoes"><button class="bt" id="mk-criar" type="submit">${ic('mais')} Criar ${esc((MKT_FORMATOS.find((f) => f.id === MKT_FORMATO) || {}).nome || '').toLowerCase()}</button></div>
+        <p class="dica">Nada é postado sozinho: você vê a peça, baixa a arte e copia a legenda. Se der erro, os créditos voltam.</p>
+      </form>
+      <div class="mkt-extras">
+        <div class="cartao leve"><h2>${ic('agenda')} Plano do mês</h2><p class="dica">12 publicações, 3 por semana, com o gancho de cada uma. ${creditos(C.calendario || 0)}.</p>
+          <div><button class="bt pequeno fraco" type="button" data-mk-extra="calendario">Montar o plano</button></div></div>
+        <div class="cartao leve"><h2>${ic('relogio')} Relatório do mês</h2><p class="dica">O que deu certo, o que precisa de atenção e 3 ações, com os números do atendimento e dos clientes. ${creditos(C.relatorio || 0)}.</p>
+          <div><button class="bt pequeno fraco" type="button" data-mk-extra="relatorio">Fazer o relatório</button></div></div>
+      </div>
+      <h2 class="mkt-titulo">Suas peças</h2>
+      <div class="mkt-pecas">${(r.pecas || []).length ? r.pecas.map(pecaHtml).join('') : '<div class="cartao"><p class="vazio">Nenhuma peça ainda. Escreva o que quer divulgar aqui em cima.</p></div>'}</div>
+    </section>`;
+    const erro = (t, comprar) => { const e = $('mk-erro'); e.innerHTML = t ? esc(t) + (comprar ? ' <a href="#plano">Carregar créditos</a>' : '') : ''; e.hidden = !t; };
+    alvo.querySelectorAll('[data-fmt]').forEach((b) => b.onclick = () => {
+      MKT_FORMATO = b.dataset.fmt; MKT_PEDIDO = $('mk-pedido').value;
+      alvo.querySelectorAll('[data-fmt]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      $('mk-criar').innerHTML = `${ic('mais')} Criar ${esc((MKT_FORMATOS.find((f) => f.id === MKT_FORMATO) || {}).nome || '').toLowerCase()}`;
+    });
+    const cria = async (tipo, botao) => {
+      erro('');
+      const pedido = $('mk-pedido').value.trim(); MKT_PEDIDO = pedido;
+      const antes = botao.innerHTML; botao.disabled = true;
+      botao.innerHTML = tipo === 'legenda' || tipo === 'calendario' || tipo === 'relatorio' ? 'Escrevendo…' : tipo === 'carrossel' ? 'Escrevendo e desenhando as 4 artes… (até 2 min)' : 'Escrevendo e desenhando… (até 1 min)';
+      alvo.querySelectorAll('button').forEach((b) => b.disabled = true);
+      const x = await api('/marketing/criar', { tipo, pedido });
+      if (abaAtual() !== 'marketing') return;
+      if (x.erro) { alvo.querySelectorAll('button').forEach((b) => b.disabled = false); botao.innerHTML = antes; erro(x.erro, x.codigo === 'sem_saldo'); return; }
+      if (tipo !== 'calendario' && tipo !== 'relatorio') MKT_PEDIDO = '';
+      telaMarketing(alvo, '');
+    };
+    $('mk-form').onsubmit = (e) => { e.preventDefault(); cria(MKT_FORMATO, $('mk-criar')); };
+    alvo.querySelectorAll('[data-mk-extra]').forEach((b) => b.onclick = () => cria(b.dataset.mkExtra, b));
+    ligaPecas(alvo);
+  }
+  const fmtNome = { post: 'Post', carrossel: 'Carrossel', story: 'Story', legenda: 'Legendas', calendario: 'Plano do mês', relatorio: 'Relatório do mês' };
+  function pecaHtml(p) {
+    const quando = new Date(p.criado).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const cab = `<div class="mkt-cab"><b>${esc(fmtNome[p.tipo] || p.tipo)}</b><span class="dica">${esc(quando)}${p.pedido ? ' · ' + esc(p.pedido) : ''}</span>
+      <button class="bt-ic" type="button" data-mk-apaga="${esc(p.id)}" aria-label="Apagar esta peça">${ic('lixo')}</button></div>`;
+    const tags = (p.hashtags || []).join(' ');
+    if (p.imagens) {
+      const legenda = [p.legenda, tags].filter(Boolean).join('\n\n');
+      return `<article class="cartao mkt-peca" data-peca="${esc(p.id)}">${cab}
+        <div class="mkt-artes ${p.tipo === 'story' ? 'em-pe' : ''}" tabindex="0" aria-label="${p.imagens.length > 1 ? `Carrossel com ${p.imagens.length} artes: role para o lado` : 'A arte'}">${p.imagens.map((u, i) => `<img src="${esc(u)}" alt="${esc((p.slides || [])[i] ? p.slides[i].chamada : 'arte')}" loading="lazy">`).join('')}</div>
+        ${p.imagens.length > 1 ? `<p class="dica mkt-conta">${p.imagens.length} artes · role para o lado</p>` : ''}
+        <p class="mkt-legenda">${esc(p.legenda || '')}${tags ? `<span class="mkt-tags">${esc(tags)}</span>` : ''}</p>
+        ${p.hora ? `<p class="dica">${ic('relogio')} ${esc(p.hora)}</p>` : ''}
+        <div class="botoes"><button class="bt pequeno" type="button" data-mk-copia="${esc(legenda)}">Copiar a legenda</button>
+          ${p.imagens.map((u, i) => `<a class="bt pequeno fraco" href="${esc(u)}" download target="_blank" rel="noopener">${ic('baixar')} ${p.imagens.length > 1 ? 'Arte ' + (i + 1) : 'Baixar a arte'}</a>`).join('')}</div>
+      </article>`;
+    }
+    if (p.tipo === 'legenda') return `<article class="cartao mkt-peca">${cab}${(p.opcoes || []).map((o, i) => `<div class="mkt-opcao"><p class="mkt-legenda">${esc(o)}</p>
+      <button class="bt pequeno fraco" type="button" data-mk-copia="${esc([o, tags].filter(Boolean).join('\n\n'))}">Copiar a opção ${i + 1}</button></div>`).join('')}
+      ${tags ? `<p class="mkt-tags">${esc(tags)}</p>` : ''}${p.hora ? `<p class="dica">${ic('relogio')} ${esc(p.hora)}</p>` : ''}</article>`;
+    if (p.tipo === 'calendario') {
+      const sem = [...new Set((p.dias || []).map((d) => d.semana))].sort((a, b) => a - b);
+      return `<article class="cartao mkt-peca">${cab}<p>${esc(p.resumo || '')}</p>
+        ${sem.map((n) => `<div class="mkt-semana"><h3>Semana ${n}</h3>${(p.dias || []).filter((d) => d.semana === n).map((d) => `<div class="mkt-dia">
+          <span class="dica">${esc(d.dia)} · ${esc(d.formato)}</span><p><b>${esc(d.gancho)}</b><br>${esc(d.ideia)}</p>
+          ${['post', 'carrossel', 'story'].includes(d.formato) ? `<button class="bt pequeno fraco" type="button" data-mk-usar="${esc(d.formato)}" data-mk-texto="${esc(d.ideia + ' Gancho: ' + d.gancho)}">Criar esta</button>` : ''}</div>`).join('')}</div>`).join('')}</article>`;
+    }
+    const lista = (t, l) => (l && l.length ? `<h3>${t}</h3><ul>${l.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
+    return `<article class="cartao mkt-peca">${cab}<p class="mkt-frase">${esc(p.frase || '')}</p>${lista('O que foi bem', p.bom)}${lista('Atenção', p.atencao)}${lista('Para o próximo mês', p.fazer)}</article>`;
+  }
+  function ligaPecas(alvo) {
+    alvo.querySelectorAll('[data-mk-copia]').forEach((b) => b.onclick = async () => {
+      try { await navigator.clipboard.writeText(b.dataset.mkCopia); const t = b.textContent; b.textContent = 'Copiado'; setTimeout(() => (b.textContent = t), 1600); } catch (_) { b.textContent = 'Não consegui copiar'; }
+    });
+    alvo.querySelectorAll('[data-mk-usar]').forEach((b) => b.onclick = () => {
+      MKT_FORMATO = b.dataset.mkUsar; MKT_PEDIDO = b.dataset.mkTexto;
+      telaMarketing(alvo, '');
+    });
+    alvo.querySelectorAll('[data-mk-apaga]').forEach((b) => b.onclick = async () => {
+      if (b.dataset.certeza !== '1') { b.dataset.certeza = '1'; b.innerHTML = 'apagar?'; b.classList.add('certeza'); return; }
+      await api('/marketing/apagar', { id: b.dataset.mkApaga });
+      telaMarketing(alvo, '');
     });
   }
 
@@ -1963,6 +2076,7 @@ function criaMenuVidro(raiz, o) {
     agenda: '<rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>',
     balao: '<path d="M12 4c4.7 0 8.5 3.2 8.5 7.2s-3.8 7.2-8.5 7.2c-1 0-2-.2-2.9-.4L4.5 20l1.2-3.9C4.3 14.8 3.5 13.1 3.5 11.2 3.5 7.2 7.3 4 12 4z"/>',
     barras: '<path d="M4 20h16M7 16v-5M12 16V6M17 16V9"/>',
+    megafone: '<path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/>',
     casa: '<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 9.5V20h12V9.5"/>',
     pessoas: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.6 14.4a4.4 4.4 0 0 1 4.9 4.6"/>',
     sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/>',

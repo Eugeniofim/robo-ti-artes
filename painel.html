@@ -820,6 +820,35 @@ body.ficha-aberta { overflow: hidden; }
   .contatos .ct { grid-template-columns: 1fr auto; } .contatos .ct .dica { grid-column: 1 / -1; }
   .cliente { grid-template-columns: 40px minmax(0, 1fr); } .cliente .cl-lado { grid-column: 2; justify-items: start; grid-auto-flow: column; justify-content: start; gap: 8px; }
 }
+
+/* ---------- Marketing (25/11) ---------- */
+.mkt-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mkt-topo h2 { margin: 0; }
+.mkt-fmts { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.mkt-fmt { min-height: 64px; text-align: left; }
+.mkt-fmt .dica { display: block; margin-top: 2px; }
+.mkt-extras { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+.mkt-titulo { font-size: 22px; margin: 28px 0 12px; }
+.mkt-pecas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; align-items: start; }
+.mkt-cab { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+.mkt-cab .dica { grid-column: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mkt-cab .bt-ic { grid-row: 1 / span 2; grid-column: 2; }
+.mkt-artes { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 16px; -webkit-overflow-scrolling: touch; }
+.mkt-artes img { flex: 0 0 100%; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; scroll-snap-align: start; border-radius: 16px; background: color-mix(in srgb, var(--linha) 50%, transparent); }
+.mkt-artes.em-pe img { aspect-ratio: 9 / 16; max-height: 560px; object-fit: contain; }
+.mkt-artes:focus-visible { outline: 3px solid var(--sinal); outline-offset: 2px; }
+.mkt-conta { margin: -6px 0 0; }
+.mkt-legenda { white-space: pre-line; margin: 0; line-height: 1.5; }
+.mkt-tags { display: block; margin-top: 8px; color: var(--teal); font-size: 14px; word-break: break-word; }
+.mkt-opcao { display: grid; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--card-borda); }
+.mkt-opcao:last-of-type { border-bottom: 0; }
+.mkt-semana h3 { margin: 8px 0 6px; font-size: 16px; }
+.mkt-dia { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--card-borda); }
+.mkt-dia p { margin: 0; }
+.mkt-dia .bt { justify-self: start; }
+.mkt-frase { font-size: 18px; font-weight: 600; margin: 0; }
+.mkt-peca h3 { margin: 6px 0 2px; font-size: 16px; }
+.mkt-peca ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 </head>
 <body>
