@@ -1208,7 +1208,7 @@
   }
   function cartaoPlanoVigente() {
     const p = EU.plano, t = EU.teste || {}, a = EU.assistente || {};
-    const ST = { ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}` : `Renova em ${dia(EU.pago_ate)}`, teste: `Grátis no cartão até ${dia(EU.pago_ate)}`,
+    const ST = { ativa: EU.casa ? 'Conta da casa: tudo liberado' : EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}` : `Renova em ${dia(EU.pago_ate)}`, teste: `Grátis no cartão até ${dia(EU.pago_ate)}`,
       atrasada: 'Pagamento não passou', cancelada: `Responde até ${dia(EU.pago_ate)}`, vencida: 'Venceu' };
     let nome, preco = '', pill, texto;
     if (p) {
@@ -1282,7 +1282,9 @@
         <span class="linha-cupom"><input id="cupom" autocomplete="off" autocapitalize="characters" placeholder="Código do cupom"><button class="bt pequeno fraco" type="submit">Usar</button></span></label>
         <p id="cupom-msg" class="dica" hidden></p></form>` : ''}
       ${EU.teste_pagamento ? aviso('atencao', 'Modo de teste: nada é cobrado de verdade. No cartão, use 4242 4242 4242 4242, qualquer data futura e qualquer código.') : ''}
-      ${pagando ? `<div class="cartao"><h2>${esc(p.nome)} <span class="selo ok">${esc(EU.status)}</span></h2><p>${esc(ST[EU.status] || '')}</p>
+      ${EU.casa && p ? `<div class="cartao"><h2>${esc(p.nome)} <span class="selo ok">conta da casa</span></h2>
+        <p>Tudo liberado: ${esc(NOME())}, ${esc(ASSIST())}, o app (CRM, agenda) e o marketing, sem limite de créditos e sem cobrança.</p></div>`
+      : pagando ? `<div class="cartao"><h2>${esc(p.nome)} <span class="selo ok">${esc(EU.status)}</span></h2><p>${esc(ST[EU.status] || '')}</p>
         <div class="botoes"><button class="bt pequeno" id="portal" type="button">Trocar cartão ou cancelar</button></div>
         <p class="dica">Abre a página segura do Stripe, que guarda o seu cartão. A Ti Artes não vê o número do cartão.</p></div>`
         : (EU.status !== 'novo' && ST[EU.status] ? aviso('atencao', ST[EU.status]) : '')}
@@ -1290,7 +1292,7 @@
       ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<div class="cartao"><h2>${ic(EU.pausado ? 'play' : 'pausa')} Ligar e desligar</h2>
         <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
         <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></div>` : ''}
-      ${EU.cartao ? '<p class="dica">Para trocar de plano, use "Trocar cartão ou cancelar": a troca fica na mesma assinatura e você não paga duas vezes.</p>'
+      ${EU.casa ? '' : EU.cartao ? '<p class="dica">Para trocar de plano, use "Trocar cartão ou cancelar": a troca fica na mesma assinatura e você não paga duas vezes.</p>'
         : `<h2 style="font-size:24px">${pagando ? 'Pagar mais um mês' : 'Escolha o plano'}</h2>
       <div class="planos">${cartoes}</div>
       <p class="dica">No Pix, você paga um mês por vez (o Pix não renova sozinho). No cartão, renova todo mês e você cancela quando quiser. Na primeira assinatura, você tem 7 dias para desistir e receber o dinheiro de volta (<a href="termos.html" target="_blank" rel="noopener">termos de uso</a>).</p>`}
@@ -1321,6 +1323,17 @@
     const canais = r.mensagens && r.mensagens.por_canal ? Object.entries(r.mensagens.por_canal) : [];
     /* 25/11: três carteiras → três cartões, cada um com o saldo, o aviso e os pacotes DELE */
     const cs = r.saldo && r.saldo.carteiras && !(r.saldo.carteiras.dora && r.saldo.carteiras.dora.junta) ? r.saldo.carteiras : null;
+    /* 25/11: a conta da casa (o estúdio, servidor app.ts liberaCasa): tudo liberado, sem limite; só mostra quanto usou */
+    if (cs && r.saldo.casa) {
+      const linhaCasa = (t, titulo, icone, unid) => `<div class="carteira" data-carteira="${t}"><h3>${ic(icone)} ${titulo}</h3>
+        <p class="num saldo-grande"><b>Sem limite</b></p><p class="dica num">${inteiro((cs[t] && cs[t].usadas) || 0)} ${unid} este mês</p></div>`;
+      el.innerHTML = `<h2>${ic('relogio')} Uso de ${esc(nomeMes(r.mes))}</h2>
+        <p class="dica">Conta da casa: tudo liberado, nada trava e nenhum aviso de saldo. O uso fica contado aqui para a gente medir o custo.</p>
+        <div class="carteiras">${linhaCasa('atendimento', `Atendimento · ${esc(NOME())}`, 'balao', 'respostas')}${linhaCasa('dora', `Assistente · ${esc(ASSIST())}`, 'agenda', 'respostas')}${linhaCasa('marketing', 'Marketing', 'camera', 'créditos usados')}</div>
+        <div class="numeros"><div><b>${inteiro(r.respostas)}</b><span>respostas escritas pela IA</span></div>
+          <div><b>${r.ultima ? dia(r.ultima) : '—'}</b><span>última resposta</span></div></div>`;
+      return;
+    }
     if (cs && ['atendimento', 'dora', 'marketing'].some((t) => cs[t] && cs[t].limita)) {
       if (EU.saldo) EU.saldo = r.saldo;
       const pk = r.pacotes || EU.pacotes || [], podeComprar = !!(EU.plano && EU.em_dia);
