@@ -444,6 +444,18 @@ details.dobra[open] > summary::after { content: '–'; }
 .pacote { display: grid; gap: 6px; padding: 14px; border: 1px solid var(--card-borda); border-radius: 14px; background: color-mix(in srgb, var(--teal) 5%, transparent); }
 .pacote b { font-size: 17px; } .pacote .botoes { display: flex; gap: 8px; flex-wrap: wrap; }
 .pacote .bt { flex: 1 1 90px; }
+/* 25/11 — as três carteiras (atendimento, Dora, marketing) */
+.carteiras { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
+.carteira { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 16px; border: 1px solid var(--card-borda); border-radius: 16px; background: color-mix(in srgb, var(--teal) 4%, transparent); }
+.carteira h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font-size: 16px; }
+.carteira.alto { border-color: #E9B04F; }
+.carteira.acabou { border-color: var(--laranja); background: color-mix(in srgb, var(--laranja) 6%, transparent); }
+.carteira.leve { opacity: .85; }
+.carteira .aviso { margin: 6px 0 0; }
+.carteira .carregar { margin-top: 8px; }
+.carteira .carregar summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+.carteira .carregar summary::-webkit-details-marker { display: none; }
+.carteira .pacotes { grid-template-columns: 1fr; margin: 10px 0 0; }
 
 /* conectar, plano, uso */
 .perfil { display: flex; align-items: center; gap: 12px; }

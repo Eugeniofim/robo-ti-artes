@@ -230,14 +230,28 @@
     if (MENU) MENU.ativar(aba);
     $('baixo').querySelectorAll('[data-aba]').forEach((a) => a.dataset.aba === aba ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   }
-  /* 17/11 — o saldo de respostas do mês (atendimento + Dora; servidor _comum/saldo.js). Acabou: o atendimento manda só
-     uma resposta curta e a Dora pausa, até comprar mais (Plano e uso) ou virar o mês. */
+  /* 17/11 — o saldo do mês (servidor _comum/saldo.js). 25/11: três carteiras (atendimento, Dora, marketing), cada uma
+     com o seu aviso; acabou uma, só aquela para. Mostra a mais urgente. Linha antiga (junta): o aviso de 17/11. */
+  const NOME_CART = { atendimento: () => 'do atendimento', dora: () => 'da ' + ASSIST(), marketing: () => 'de marketing' };
   const avisoSaldo = () => {
     const sd = EU && EU.saldo;
-    if (!sd || !sd.limita) return '';
-    if (sd.esgotado) return aviso('erro', `<b>Acabaram as respostas do seu plano este mês.</b> O ${esc(NOME())} manda só uma resposta curta e a ${esc(ASSIST())} pausou. <a href="#plano">Comprar mais respostas</a>`, true);
-    if (sd.doPlano <= 0 && sd.extra > 0) return aviso('info', `As respostas do plano deste mês acabaram. Agora estão sendo usadas as extras que você comprou: restam ${inteiro(sd.extra)}. <a href="#plano">Ver o saldo</a>`, true);
-    if (sd.pct >= 80) return aviso('atencao', `Você já usou ${inteiro(Math.min(sd.pct, 99))}% das respostas do plano este mês. Quando acabar, o atendimento passa a mandar só uma resposta curta. <a href="#plano">Ver o saldo e comprar mais</a>`, true);
+    if (!sd) return '';
+    const cs = sd.carteiras;
+    if (!cs || (cs.dora && cs.dora.junta)) {
+      if (!sd.limita) return '';
+      if (sd.esgotado) return aviso('erro', `<b>Acabaram as respostas do seu plano este mês.</b> O ${esc(NOME())} manda só uma resposta curta e a ${esc(ASSIST())} pausou. <a href="#plano">Comprar mais respostas</a>`, true);
+      if (sd.doPlano <= 0 && sd.extra > 0) return aviso('info', `As respostas do plano deste mês acabaram. Agora estão sendo usadas as extras que você comprou: restam ${inteiro(sd.extra)}. <a href="#plano">Ver o saldo</a>`, true);
+      if (sd.pct >= 80) return aviso('atencao', `Você já usou ${inteiro(Math.min(sd.pct, 99))}% das respostas do plano este mês. Quando acabar, o atendimento passa a mandar só uma resposta curta. <a href="#plano">Ver o saldo e comprar mais</a>`, true);
+      return '';
+    }
+    const ordem = ['atendimento', 'dora', 'marketing'].filter((t) => cs[t] && cs[t].limita);
+    const parado = { atendimento: () => `O ${esc(NOME())} manda só uma resposta curta (quem escrever aparece em Clientes).`, dora: () => `A ${esc(ASSIST())} pausou; o atendimento segue normal.`, marketing: () => 'O agente de marketing pausou; o atendimento segue normal.' };
+    const acabou = ordem.find((t) => cs[t].esgotado);
+    if (acabou) return aviso('erro', `<b>Acabaram os créditos ${NOME_CART[acabou]()} este mês.</b> ${parado[acabou]()} <a href="#plano">Carregar créditos</a>`, true);
+    const quase = ordem.filter((t) => cs[t].doPlano > 0 && cs[t].pct >= 80).sort((x, y) => cs[y].pct - cs[x].pct)[0];
+    if (quase) return aviso('atencao', `Os créditos ${NOME_CART[quase]()} estão acabando: já usou ${inteiro(Math.min(cs[quase].pct, 99))}% do plano este mês. <a href="#plano">Ver o saldo e carregar</a>`, true);
+    const extra = ordem.find((t) => cs[t].doPlano <= 0 && cs[t].extra > 0);
+    if (extra) return aviso('info', `Os créditos ${NOME_CART[extra]()} do plano acabaram; agora estão sendo usados os extras que você comprou: restam ${inteiro(cs[extra].extra)}. <a href="#plano">Ver o saldo</a>`, true);
     return '';
   };
   /* o relógio do teste livre: quanto falta (ou que acabou) */
@@ -1305,6 +1319,62 @@
     const pct = r.franquia.pct || 0;
     const anterior = (() => { const d = new Date(r.mes + '-15T12:00:00Z'); d.setUTCMonth(d.getUTCMonth() - 1); return d.toISOString().slice(0, 7); })();
     const canais = r.mensagens && r.mensagens.por_canal ? Object.entries(r.mensagens.por_canal) : [];
+    /* 25/11: três carteiras → três cartões, cada um com o saldo, o aviso e os pacotes DELE */
+    const cs = r.saldo && r.saldo.carteiras && !(r.saldo.carteiras.dora && r.saldo.carteiras.dora.junta) ? r.saldo.carteiras : null;
+    if (cs && ['atendimento', 'dora', 'marketing'].some((t) => cs[t] && cs[t].limita)) {
+      if (EU.saldo) EU.saldo = r.saldo;
+      const pk = r.pacotes || EU.pacotes || [], podeComprar = !!(EU.plano && EU.em_dia);
+      const CART = {
+        atendimento: { titulo: `Atendimento · ${esc(NOME())}`, icone: 'balao', unid: ['resposta', 'respostas'],
+          conta: `Cada resposta do ${esc(NOME())} aos seus clientes, no Instagram e no WhatsApp.`,
+          acabou: `Acabou. O ${esc(NOME())} manda só uma resposta curta (quem escrever aparece em Clientes). A ${esc(ASSIST())} e o marketing seguem normais.` },
+        dora: { titulo: `Assistente · ${esc(ASSIST())}`, icone: 'agenda', unid: ['resposta', 'respostas'],
+          conta: `Cada resposta da ${esc(ASSIST())} para você. Os avisos automáticos dela (resumo da manhã, lembretes) não contam.`,
+          acabou: `Acabou. A ${esc(ASSIST())} pausou até você carregar ou o mês virar. O atendimento aos clientes segue normal.` },
+        marketing: { titulo: 'Marketing', icone: 'camera', unid: ['crédito', 'créditos'],
+          conta: 'Um post ou uma legenda gasta 1 crédito, um relatório 2 e um carrossel 3.',
+          acabou: 'Acabou. O agente de marketing pausou até você carregar ou o mês virar. O atendimento segue normal.' },
+      };
+      const cartao = (t) => {
+        const c = cs[t], k = CART[t];
+        if (!c || !c.limita) return t === 'marketing' ? `<div class="carteira leve"><h3>${ic(k.icone)} ${k.titulo}</h3>
+          <p class="dica">O agente de marketing cria posts, carrosséis e relatórios. Ele vem no plano <b>Completo + Marketing</b>.</p></div>` : '';
+        const meus = pk.filter((x) => (x.tipo || 'atendimento') === t);
+        const estado = c.esgotado ? k.acabou
+          : c.doPlano <= 0 ? `Os do plano acabaram; agora estão sendo usados os extras que você comprou.`
+          : c.pct >= 80 ? `Tá acabando: já usou ${inteiro(c.pct)}% do plano.${c.extra ? '' : ' Carregue para não parar.'}`
+          : k.conta + ' Todo mês o plano começa de novo.';
+        return `<div class="carteira ${c.esgotado ? 'acabou' : c.pct >= 80 ? 'alto' : ''}" data-carteira="${t}">
+          <h3>${ic(k.icone)} ${k.titulo}</h3>
+          <p class="num saldo-grande ${c.esgotado ? 'acabou' : ''}"><b>${inteiro(c.restante)}</b> ${c.restante === 1 ? k.unid[0] : k.unid[1]} sobrando</p>
+          <div class="medidor ${c.pct >= 80 ? 'alto' : ''}" role="progressbar" aria-label="${k.titulo}: plano usado" aria-valuenow="${Math.min(100, c.pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100, c.pct)}%"></i></div>
+          <p class="dica num">${inteiro(Math.min(c.usadas, c.franquia))} de ${inteiro(c.franquia)} do plano usadas${c.extra ? ` · ${inteiro(c.extra)} extras` : ''}</p>
+          <p class="${c.esgotado ? 'aviso erro' : c.pct >= 80 ? 'aviso atencao' : 'dica'}">${estado}</p>
+          ${podeComprar && meus.length ? `<details class="carregar" ${c.esgotado || c.pct >= 80 ? 'open' : ''}><summary class="bt pequeno ${c.esgotado ? '' : 'fraco'}">${ic('mais')} Carregar créditos</summary>
+            <div class="pacotes">${meus.map((x) => `<div class="pacote"><b>${esc(x.nome)}</b><span class="dica">${esc(x.preco)} · não vencem</span>
+              <div class="botoes"><button class="bt pequeno" type="button" data-pacote="${esc(x.id)}" data-forma="cartao">Cartão</button><button class="bt pequeno fraco" type="button" data-pacote="${esc(x.id)}" data-forma="pix">Pix</button></div></div>`).join('')}</div></details>` : ''}
+        </div>`;
+      };
+      el.innerHTML = `<h2>${ic('relogio')} Créditos de ${esc(nomeMes(r.mes))}</h2>
+        <p class="dica">Cada parte tem o seu saldo. Se uma acabar, só ela para: as outras seguem.</p>
+        <div class="carteiras">${['atendimento', 'dora', 'marketing'].map(cartao).join('')}</div>
+        ${podeComprar ? '<p class="dica">Os extras só são usados depois que os do plano acabam, e não vencem. Pagamento avulso: não vira assinatura.</p>' : '<p class="dica">Os pacotes de créditos extras aparecem aqui quando você tiver um plano.</p>'}
+        <div class="numeros">
+          <div><b>${inteiro(r.respostas)}</b><span>respostas escritas pela IA</span></div>
+          ${canais.length ? canais.map(([c, n]) => `<div><b>${inteiro(n)}</b><span>no ${esc(c === 'whatsapp' ? 'WhatsApp' : c === 'instagram' ? 'Instagram' : c)}</span></div>`).join('') : '<div><b>0</b><span>por canal</span></div>'}
+          <div><b>${r.ultima ? dia(r.ultima) : '—'}</b><span>última resposta</span></div>
+        </div>
+        <div><button class="bt fraco pequeno" id="mes-anterior" type="button">Ver ${esc(nomeMes(anterior))}</button></div>`;
+      $('mes-anterior').onclick = () => usoDoMes(anterior);
+      el.querySelectorAll('[data-pacote]').forEach((b) => b.onclick = async () => {
+        el.querySelectorAll('[data-pacote]').forEach((x) => (x.disabled = true));
+        const c = await api('/comprar-respostas', { pacote: b.dataset.pacote, forma: b.dataset.forma });
+        if (c.url) { location.href = c.url; return; }
+        el.querySelectorAll('[data-pacote]').forEach((x) => (x.disabled = false));
+        b.closest('.carteira').insertAdjacentHTML('beforeend', aviso('erro', c.erro || 'Não deu certo. Tente de novo.'));
+      });
+      return;
+    }
     /* 17/11: o mês de agora com saldo (franquia + extras comprados) → o quadro novo, com os pacotes */
     const sd = r.saldo && r.saldo.limita ? r.saldo : null;
     if (sd) {
