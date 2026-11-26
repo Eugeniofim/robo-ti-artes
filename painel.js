@@ -89,6 +89,7 @@
     return {
       cerebro: sol ? f('sol', 'aprende', S, ' aprende') : null,
       testar: sol ? f('sol', 'responde', S, ' responde') : null,
+      dora: dora ? f('dora', 'conversa', D, ' fala com você') : null,
       agenda: sol && dora ? f('ambos', 'marca', D, ' e ', S, ' marcam') : dora ? f('dora', 'marca', D, ' marca') : sol ? f('sol', 'marca', S, ' marca') : null,
       clientes: sol ? f('sol', 'cadastra', S, ' cadastra') : dora ? f('dora', 'cuida', D, ' cuida') : null,
       notas: dora ? f('dora', 'anota', D, ' anota') : null,
@@ -112,7 +113,7 @@
   /* o balão de cada item do menu: "(D) Dora anota" */
   const dicasDoMenu = () => Object.fromEntries(Object.entries(quemFaz()).map(([k, q]) => [k, q && { html: avatares(q.quem) + `<span>${q.html}</span>`, txt: q.txt }]));
   const ABAS = {
-    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', marketing: 'Marketing', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
+    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', dora: 'Dora', marketing: 'Marketing', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
   };
   /* nomes antigos de aba (links de volta do Stripe e do Instagram, favoritos) */
@@ -161,6 +162,8 @@
           { id: 'inicio', rotulo: 'Início', icone: 'casa', href: '#inicio' },
           { id: 'cerebro', rotulo: 'Cérebro', icone: 'cerebro', href: '#cerebro', ponto: !c.pronto },
           { id: 'testar', rotulo: 'Testar', icone: 'balao', href: '#testar' },
+          /* 26/11: a Dora no app (some na conta que está no modo só atendimento) */
+          ...(EU.modo === 'atendimento' ? [] : [{ id: 'dora', rotulo: ASSIST(), icone: 'fone', href: '#dora' }]),
           { id: 'marketing', rotulo: 'Marketing', icone: 'megafone', href: '#marketing' },
         ] },
         { secao: 'O seu dia', itens: [
@@ -307,7 +310,7 @@
     const topo = (avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '') + (aba !== 'plano' ? avisoSaldo() : '');
     avisoVolta = null;
     alvo.innerHTML = '';
-    ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, conectar: telaConectar,
+    ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, dora: telaDora, conectar: telaConectar,
       plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
     window.scrollTo(0, 0);
   }
@@ -427,7 +430,7 @@
 
   /* ---------- conversa (serve para treinar e para testar) ---------- */
   function montaChat(alvo, o) {
-    alvo.innerHTML = `<div class="chat"><div class="chat-topo"><span class="avatar-robo" aria-hidden="true">${esc(NOME()[0])}</span><div><b>${esc(o.titulo)}</b><span>${esc(o.sub)}</span></div></div>
+    alvo.innerHTML = `<div class="chat"><div class="chat-topo"><span class="avatar-robo${o.dora ? ' dora' : ''}" aria-hidden="true">${esc(String(o.avatar || NOME())[0])}</span><div><b>${esc(o.titulo)}</b><span>${esc(o.sub)}</span></div></div>
       <div class="msgs" id="${o.id}-msgs" role="log" aria-live="polite"></div>
       <form class="escrever" id="${o.id}-f"><div class="sugestoes" id="${o.id}-sug"></div>
       <div class="linha"><textarea id="${o.id}-txt" rows="1" placeholder="${esc(o.placeholder)}" aria-label="${esc(o.placeholder)}"></textarea>
@@ -883,6 +886,50 @@
     }).catch(() => null);
   }
 
+  /* ---------- a Dora no app (26/11, pedido dele: "faz o teste também da Dora, onde ela ficaria? no app, pois depois será a
+     linha telefônica"). É a mesma secretária do WhatsApp dela, num chat aqui dentro: o que ela marca, anota e cadastra
+     aparece nas outras abas na hora. Os avisos sozinhos continuam só no WhatsApp. ---------- */
+  function telaDora(alvo, topo) {
+    const a = EU.assistente || {}, D = ASSIST(), S = NOME();
+    if (EU.modo === 'atendimento') {
+      alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Secretária</p><h1>A ${esc(D)} está desligada nesta conta</h1>
+        <p class="lede">Esta conta está no modo só atendimento. Para ligar a ${esc(D)} de novo, vá em <a href="#conectar">Conectar</a>.</p></div></div></section>`;
+      return;
+    }
+    alvo.innerHTML = `<section class="aba">${topo}
+      <div class="cabeca-aba"><div><p class="rotulo">Secretária</p><h1>Fale com a ${esc(D)}</h1>
+      <p class="lede">Escreva como escreveria para uma secretária. Ela marca na Agenda, anota nas Notas e cuida dos seus Clientes, e tudo aparece aqui no app na hora.</p></div></div>
+      <div class="conversa"><div id="chat-dora"></div>
+      <aside class="cartao da-dora"><h2>${ic('info')} O que pedir</h2>
+        <p>"Marca reunião com o João sexta às 14h." "Anota: ligar para o contador." "Fechei com a Marina, R$ 400." "Me lembra do Caio daqui a 30 dias." "Escreve uma mensagem para a Ana confirmando amanhã."</p>
+        <p class="dica">${a.whatsapp ? `Ela também atende você no WhatsApp da ${esc(D)}, e é por lá que chegam o resumo da manhã e os lembretes.`
+          : `O resumo da manhã e o lembrete antes do compromisso chegam pelo WhatsApp da ${esc(D)}, quando ele estiver ligado em <a href="#conectar">Conectar</a>. Aqui no app ela responde quando você escreve.`}</p>
+        <p class="dica">Para ver como o ${esc(S)} responde os seus clientes, use a aba <a href="#testar">Testar</a>.</p>
+        <div><button class="bt fraco pequeno" id="dora-limpar" type="button">Começar a conversa de novo</button></div></aside></div></section>`;
+    enche(alvo);
+    const chat = montaChat($('chat-dora'), {
+      id: 'dora', dora: true, avatar: D, titulo: D, sub: 'a sua secretária', placeholder: `Peça algo para a ${D}…`, pensando: 'escrevendo',
+      envia: async (texto) => { const r = await api('/dora', { texto }); return naoExiste(r) ? { erro: `A conversa com a ${D} aqui no app está sendo ligada. Tente de novo daqui a pouco.` } : r; },
+      notaDe: (r) => (r.escreveu ? 'Gravado no app' : ''),
+      sugestoes: [
+        { rotulo: 'O que eu tenho hoje?', texto: 'O que eu tenho pra hoje?', manda: true },
+        { rotulo: 'Marcar um compromisso', texto: 'Marca pra amanhã às 10h: ' },
+        { rotulo: 'Anotar', texto: 'Anota: ' },
+        { rotulo: 'Fechei uma venda', texto: 'Fechei com ' },
+        { rotulo: 'Meus clientes', texto: 'Quem eu tenho na carteira de clientes?', manda: true },
+        { rotulo: 'Mensagem para um cliente', texto: 'Escreve uma mensagem para ' },
+      ],
+    });
+    $('dora-limpar').onclick = async () => { await api('/dora', { limpar: true }); telaDora(alvo, ''); };
+    api('/dora', { historico: true }).then((r) => {
+      if (!r || !Array.isArray(r.msgs) || !r.msgs.length || !$('chat-dora')) return;
+      const ja = [...chat.msgs.children];
+      r.msgs.forEach((m) => chat.poe(m.quem === 'dora' ? 'ele' : 'eu', m.texto));
+      ja.forEach((n) => chat.msgs.appendChild(n));
+      chat.msgs.scrollTop = chat.msgs.scrollHeight;
+    }).catch(() => null);
+  }
+
   /* ---------- Conectar ---------- */
   function cartaoDrive(curto) {
     const d = drive();
@@ -954,6 +1001,7 @@
             <span class="pill ${doraEstado[0]}">${doraEstado[0] === 'ok' ? svg('check') : ''}${esc(doraEstado[1])}</span></header>
           <p class="ag-papel">Mora num WhatsApp da Ti Artes. Marca, anota, avisa você de manhã e antes dos compromissos, cuida dos seus clientes no CRM e guarda os seus papéis no Drive.</p>
           <ul class="canais-lista">${linhaCanal({ ...linhaDora, semPill: true })}</ul>
+          ${EU.modo === 'atendimento' ? '' : `<p class="dica">Enquanto o WhatsApp dela não está ligado, dá para falar com a ${esc(ASSIST())} aqui mesmo. <a class="lnk" href="#dora">Abrir a conversa com a ${esc(ASSIST())}</a></p>`}
           ${linhaDora.estado === 'ok' ? avisosDora(a.avisos) : ''}
         </article>
       </div>
@@ -2077,6 +2125,7 @@ function criaMenuVidro(raiz, o) {
     balao: '<path d="M12 4c4.7 0 8.5 3.2 8.5 7.2s-3.8 7.2-8.5 7.2c-1 0-2-.2-2.9-.4L4.5 20l1.2-3.9C4.3 14.8 3.5 13.1 3.5 11.2 3.5 7.2 7.3 4 12 4z"/>',
     barras: '<path d="M4 20h16M7 16v-5M12 16V6M17 16V9"/>',
     megafone: '<path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/>',
+    fone: '<path d="M4.5 13v-1.5a7.5 7.5 0 0 1 15 0V13"/><rect x="3" y="12.5" width="4" height="6.5" rx="1.7"/><rect x="17" y="12.5" width="4" height="6.5" rx="1.7"/><path d="M19 19v.2a2.8 2.8 0 0 1-2.8 2.8H13.5"/>',
     casa: '<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 9.5V20h12V9.5"/>',
     pessoas: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.6 14.4a4.4 4.4 0 0 1 4.9 4.6"/>',
     sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/>',
