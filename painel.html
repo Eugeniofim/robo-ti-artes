@@ -815,6 +815,38 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 .ficha .linha-form select:focus { border-color: var(--sinal); outline: none; }
 .ficha-form .linha-form input { min-height: 48px; }
 .ficha textarea { resize: vertical; }
+/* 27/11 — lembretes e boletos: a lista de avisos, os boletos de cada cliente e as contas a pagar */
+.lem-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lem-lista > li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: center; padding: 11px 4px; border-top: 1px solid var(--card-borda); }
+.lem-lista > li:first-child { border-top: 0; }
+.lem-lista > li.bol { grid-template-columns: minmax(0, 1fr) auto auto; }
+.lem-lista > li > .ic { color: var(--teal-forte); }
+.lem-lista > li.atrasado > .ic { color: var(--laranja); }
+.lem-txt { display: grid; gap: 2px; min-width: 0; }
+.lem-txt b { font-weight: 700; overflow-wrap: anywhere; }
+.lem-txt .linha-dig { font: 400 12.5px var(--mono); overflow-wrap: anywhere; }
+.lem-lista .botoes { margin: 0; flex-wrap: nowrap; gap: 6px; }
+.selo-bol { padding: 3px 10px; border-radius: 999px; font: 600 11.5px var(--mono); white-space: nowrap; border: 1px solid var(--card-borda); color: var(--grafite); }
+.selo-bol.atrasado { background: var(--laranja); border-color: var(--laranja); color: #fff; }
+.selo-bol.hoje { background: color-mix(in srgb, var(--teal) 22%, transparent); border-color: var(--sinal); color: var(--tinta); }
+.selo-bol.pago { color: var(--teal-forte); }
+.lem-lista.na-ficha > li.bol { grid-template-columns: minmax(0, 1fr) auto; }
+.lem-lista.na-ficha > li.bol .botoes { grid-column: 1 / -1; flex-wrap: wrap; }
+.lembretes .cartao { display: grid; gap: 10px; }
+.lembretes .dia-tit { display: flex; gap: 8px; align-items: center; margin: 0; }
+.lembretes .crm-numeros b { font-size: 24px; }
+.linha-conta { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 170px auto; gap: 10px; align-items: end; padding-top: 12px; border-top: 1px solid var(--card-borda); }
+.linha-conta label { display: grid; gap: 5px; font-weight: 700; font-size: 14px; }
+.linha-conta input { width: 100%; min-height: 44px; padding: 9px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 16px var(--sans); }
+.linha-conta input:focus { border-color: var(--sinal); outline: none; }
+.bt-ic.certeza, .bt.certeza { color: var(--erro); }
+@media (max-width: 860px) {
+  .lem-lista > li, .lem-lista > li.bol { grid-template-columns: minmax(0, 1fr) auto; }
+  .lem-lista > li > .ic { display: none; }
+  .lem-lista > li .botoes { grid-column: 1 / -1; flex-wrap: wrap; }
+  .linha-conta { grid-template-columns: 1fr 1fr; } .linha-conta label:first-child, .linha-conta .bt { grid-column: 1 / -1; }
+  .lembretes .crm-numeros { grid-template-columns: 1fr 1fr; }
+}
 .ficha .linha-form input, .ficha-bloco .campo input, .ficha-bloco .campo textarea { width: 100%; min-height: 44px; padding: 9px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 16px var(--sans); }
 .ficha .linha-form input:focus, .ficha-bloco .campo input:focus, .ficha-bloco .campo textarea:focus { border-color: var(--sinal); outline: none; }
 .lnk-ficha { border: 0; background: none; padding: 0; font: inherit; color: var(--teal-forte); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }

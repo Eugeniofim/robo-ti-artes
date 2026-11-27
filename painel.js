@@ -23,6 +23,8 @@
 
   /* ---------- ícones (traço, sem emoji) ---------- */
   const IC = {
+    sino: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+    moeda: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16.5" height="11" rx="2.5"/><path d="M16 13.5h.01"/>',
     upload: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>',
     doc: '<path d="M14 3.5H7.5A1.5 1.5 0 0 0 6 5v14a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 19V7.5z"/><path d="M14 3.5V7.5h4M9 12.5h6M9 16h6"/>',
     foto: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m20.5 16-4.8-4.8L7 19.5"/>',
@@ -93,6 +95,7 @@
       agenda: sol && dora ? f('ambos', 'marca', D, ' e ', S, ' marcam') : dora ? f('dora', 'marca', D, ' marca') : sol ? f('sol', 'marca', S, ' marca') : null,
       clientes: sol ? f('sol', 'cadastra', S, ' cadastra') : dora ? f('dora', 'cuida', D, ' cuida') : null,
       notas: dora ? f('dora', 'anota', D, ' anota') : null,
+      lembretes: dora ? f('dora', 'avisa', D, ' alimenta e avisa') : null,
       pedidos: sol ? f('sol', 'recebe', S, ' recebe') : null,
       arquivos: sol && dora ? f('ambos', '', S, ' lê · ', D, ' guarda') : sol ? f('sol', '', S, ' lê') : dora ? f('dora', '', D, ' guarda') : null,
     };
@@ -113,7 +116,7 @@
   /* o balão de cada item do menu: "(D) Dora anota" */
   const dicasDoMenu = () => Object.fromEntries(Object.entries(quemFaz()).map(([k, q]) => [k, q && { html: avatares(q.quem) + `<span>${q.html}</span>`, txt: q.txt }]));
   const ABAS = {
-    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', dora: 'Dora', marketing: 'Marketing', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
+    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', dora: 'Dora', marketing: 'Marketing', lembretes: 'Lembretes', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
   };
   /* nomes antigos de aba (links de volta do Stripe e do Instagram, favoritos) */
@@ -167,6 +170,8 @@
           { id: 'marketing', rotulo: 'Marketing', icone: 'megafone', href: '#marketing' },
         ] },
         { secao: 'O seu dia', itens: [
+          /* 27/11: os lembretes (o que pede atenção agora: boletos, contas, compromissos de hoje); o número vem de /lembretes */
+          { id: 'lembretes', rotulo: 'Lembretes', icone: 'sino', href: '#lembretes' },
           { id: 'agenda', rotulo: 'Agenda', icone: 'agenda', href: '#agenda' },
           { id: 'clientes', rotulo: 'Clientes', icone: 'pessoas', href: '#clientes' },
           { id: 'notas', rotulo: 'Notas', icone: 'nota', href: '#notas' },
@@ -212,6 +217,21 @@
     if (!e.matches) { document.body.classList.remove('gaveta'); let r = null; try { r = localStorage.getItem('robo-painel-menu:recolhido'); } catch (_) {} MENU.recolher(r === '1', false); }
     else MENU.recolher(false, false);
   });
+  /* 27/11 — o número no item Lembretes do menu: quantas coisas pedem atenção agora (atrasado ou de hoje) */
+  let LEM_VISTO = 0;
+  function poeSeloLembretes(n) {
+    const it = $('menu') && $('menu').querySelector('.gs-item[data-id="lembretes"]');
+    if (!it) return;
+    const p = it.querySelector('.gs-selo');
+    if (p) p.remove();
+    if (n > 0) it.insertAdjacentHTML('beforeend', `<span class="gs-selo alerta" aria-label="${n} pedindo atenção">${n > 99 ? '99+' : n}</span>`);
+  }
+  async function seloLembretes(forca) {
+    if (!forca && Date.now() - LEM_VISTO < 60000) return;
+    LEM_VISTO = Date.now();
+    const x = await api('/lembretes').catch(() => null);
+    if (x && !x.erro) poeSeloLembretes(x.n || 0);
+  }
   function seloCerebro() {
     const c = cerebroDe();
     const it = $('menu').querySelector('.gs-item[data-id="cerebro"]');
@@ -311,8 +331,9 @@
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, dora: telaDora, conectar: telaConectar,
-      plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio }[aba] || telaInicio)(alvo, topo);
+      plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio, lembretes: telaLembretes }[aba] || telaInicio)(alvo, topo);
     window.scrollTo(0, 0);
+    if (aba !== 'lembretes') seloLembretes();
   }
 
   /* ---------- quem entrou mas ainda não começou (conta de outro produto da Ti Artes, por exemplo) ---------- */
@@ -1822,6 +1843,86 @@
     if (z) z.oninput = () => { z.value = mascCep(z.value); };
   };
 
+  /* 27/11/2026 — BOLETOS E LEMBRETES (pedidos dele: "notificações de boletos" e "põe a aba LEMBRETES / notificações no app
+     também; a Dora alimenta e avisa"). O boleto a receber mora na ficha do cliente (ele emite no banco dele e cadastra
+     aqui); a conta que ele paga mora na agenda (tipo conta). O app só acompanha e avisa O DONO; a cobrança sai do
+     WhatsApp dele, com a mensagem pronta. Servidor: /lembretes, /boleto, /agenda (guia-cofre _comum/fichas.js). */
+  const reaisC = (c) => 'R$ ' + (Math.round(Number(c) || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dataBr = (iso) => (/^\d{4}-\d{2}-\d{2}$/.test(String(iso || '')) ? iso.split('-').reverse().join('/') : '');
+  const diasAte = (iso) => Math.round((Date.parse(iso + 'T12:00:00Z') - Date.parse(hojeIso() + 'T12:00:00Z')) / 86400000);
+  const sitBoleto = (b) => (b.pago ? 'pago' : b.vence < hojeIso() ? 'atrasado' : b.vence === hojeIso() ? 'hoje' : 'aberto');
+  const rotuloBoleto = (b) => { const s = sitBoleto(b), d = diasAte(b.vence);
+    return s === 'pago' ? 'pago em ' + dataBr(b.pago) : s === 'hoje' ? 'vence hoje' : s === 'atrasado' ? (d === -1 ? 'venceu ontem' : `atrasado há ${-d} dias`) : d === 1 ? 'vence amanhã' : `vence em ${d} dias`; };
+  const seloBoleto = (b) => `<span class="selo-bol ${sitBoleto(b)}">${esc(rotuloBoleto(b))}</span>`;
+  const linkBoleto = (b) => (/^https?:\/\//i.test(b.link || '') ? `<a class="lnk" href="${esc(b.link)}" target="_blank" rel="noopener">Abrir o boleto</a>` : b.link ? `<span class="dica linha-dig" title="Linha digitável">${esc(b.link)}</span>` : '');
+  const textoCobranca = (nome, b) => {
+    const s = sitBoleto(b), prim = nome ? ', ' + nome.split(' ')[0] : '';
+    return `Oi${prim}! Passando para lembrar do boleto de ${reaisC(b.valor)} ${s === 'atrasado' ? 'que venceu em' : 'com vencimento em'} ${dataBr(b.vence)}${b.descricao ? ' (' + b.descricao + ')' : ''}.`
+      + (b.link ? (/^https?:\/\//i.test(b.link) ? ' O link é este: ' : ' A linha digitável é esta: ') + b.link : '') + ' Qualquer dúvida, é só me chamar.';
+  };
+  const certezaBt = (b, rotulo) => { if (b.dataset.certeza === '1') return true; b.dataset.certeza = '1'; b.classList.add('certeza'); const antes = b.innerHTML; b.textContent = rotulo;
+    clearTimeout(b._t); b._t = setTimeout(() => { b.dataset.certeza = ''; b.classList.remove('certeza'); b.innerHTML = antes; }, 4000); return false; };
+
+  async function telaLembretes(alvo, topo) {
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('lembretes')}<h1>Lembretes</h1></div></div><p class="dica">Carregando…</p></section>`;
+    const r = await api('/lembretes');
+    if (abaAtual() !== 'lembretes') return;
+    const A = r.avisos || [], R = r.receber || [], P = r.pagar || [], rr = (r.resumo || {}).receber || {}, rp = (r.resumo || {}).pagar || {};
+    LEM_VISTO = Date.now(); poeSeloLembretes(r.n || 0);
+    const D = quemFaz().lembretes ? ASSIST() : '';
+    const icone = { receber: 'moeda', pagar: 'moeda', compromisso: 'agenda', folga: 'agenda', cliente: 'pessoas', pedido: 'agenda' };
+    const urg = { atrasado: 'atrasado', hoje: 'hoje', amanha: 'amanhã' };
+    const acaoAviso = (a) => a.tipo === 'receber' ? `<button type="button" class="bt pequeno" data-recebi="${esc(a.id)}" data-cliente="${esc(a.ficha)}">${svg('check')} Recebi</button><button type="button" class="bt pequeno fraco" data-abre-ficha="${esc(a.ficha)}">Abrir ficha</button>`
+      : a.tipo === 'pagar' ? `<button type="button" class="bt pequeno" data-paguei="${esc(a.id)}">${svg('check')} Paguei</button>`
+      : a.tipo === 'cliente' ? `<button type="button" class="bt pequeno fraco" data-abre-ficha="${esc(a.ficha)}">Abrir ficha</button>`
+      : `<a class="bt pequeno fraco" href="#agenda">Ver na agenda</a>`;
+    const aviso1 = (a) => `<li class="lem ${a.urgencia}">${ic(icone[a.tipo] || 'sino')}<div class="lem-txt"><b>${esc(a.titulo)}</b><span class="dica">${esc(a.detalhe || '')}</span></div>
+      <span class="selo-bol ${a.urgencia === 'amanha' ? 'aberto' : a.urgencia}">${urg[a.urgencia] || ''}</span><div class="botoes">${acaoAviso(a)}</div></li>`;
+    const receber1 = (b) => `<li class="bol ${b.situacao}"><div class="lem-txt"><b><button type="button" class="lnk-ficha" data-abre-ficha="${esc(b.cliente.id)}">${esc(b.cliente.nome || 'Cliente sem nome')}</button> · ${esc(reaisC(b.valor))}</b>
+        <span class="dica">vence ${esc(dataBr(b.vence))}${b.descricao ? ' · ' + esc(b.descricao) : ''}</span>${linkBoleto(b)}</div>${seloBoleto(b)}
+      <div class="botoes">${b.pago ? `<button type="button" class="bt pequeno fraco" data-reabre="${esc(b.id)}" data-cliente="${esc(b.cliente.id)}">Reabrir</button>`
+        : `<button type="button" class="bt pequeno" data-recebi="${esc(b.id)}" data-cliente="${esc(b.cliente.id)}">${svg('check')} Recebi</button>${b.cliente.whatsapp ? `<a class="bt pequeno fraco" href="${waLink({ whatsapp: b.cliente.whatsapp }, textoCobranca(b.cliente.nome, b))}" target="_blank" rel="noopener">${svg('balao')} Cobrar</a>` : ''}`}</div></li>`;
+    const pagar1 = (c) => `<li class="bol ${c.situacao}"><div class="lem-txt"><b>${esc(c.titulo)}${c.valor ? ' · ' + esc(reaisC(c.valor)) : c.valor_txt ? ' · ' + esc(c.valor_txt) : ''}</b><span class="dica">vence ${esc(dataBr(c.vence))}</span></div>${seloBoleto(c)}
+      <div class="botoes">${c.pago ? `<button type="button" class="bt pequeno fraco" data-despaguei="${esc(c.id)}">Reabrir</button>` : `<button type="button" class="bt pequeno" data-paguei="${esc(c.id)}">${svg('check')} Paguei</button>`}
+        <button type="button" class="bt-ic" data-apaga-conta="${esc(c.id)}" aria-label="Apagar ${esc(c.titulo)}">${svg('lixo')}</button></div></li>`;
+    const abertos = (L) => L.filter((b) => b.situacao !== 'pago'), pagos = (L) => L.filter((b) => b.situacao === 'pago').slice(0, 20);
+    alvo.innerHTML = `<section class="aba lembretes">${topo}
+      <div class="cabeca-aba"><div>${seloQuem('lembretes')}<h1>Lembretes</h1>
+        <p class="lede">O que pede a sua atenção, num lugar só: os boletos dos clientes, as suas contas, os compromissos de hoje e quem está esperando resposta.${D ? ` A ${esc(D)} alimenta esta lista: é só pedir para ela lembrar.` : ''}</p></div></div>
+      ${r.erro ? aviso('erro', r.erro) : ''}
+      <div class="crm-numeros"><div><b class="num">${inteiro(r.n || 0)}</b><span>pedem atenção agora</span></div>
+        <div><b class="num">${esc(reaisC(rr.atrasado_centavos))}</b><span>a receber, atrasado${rr.atrasados ? ` (${rr.atrasados})` : ''}</span></div>
+        <div><b class="num">${esc(reaisC(rr.aberto_centavos))}</b><span>a receber, no total</span></div>
+        <div><b class="num">${esc(reaisC(rp.aberto_centavos))}</b><span>a pagar, no total</span></div></div>
+      <div class="cartao"><h2 class="dia-tit">${ic('sino')} Agora</h2>
+        ${A.length ? `<ul class="lem-lista">${A.map(aviso1).join('')}</ul>` : '<p class="vazio">Nada pendente agora. Quando um boleto vencer, uma conta chegar ou um cliente ficar esperando, aparece aqui.</p>'}</div>
+      <div class="cartao"><h2 class="dia-tit">${ic('moeda')} Boletos a receber</h2>
+        <p class="dica">O boleto você emite no seu banco, como já faz. Aqui ele fica na ficha do cliente, e o app avisa você perto do vencimento e quando atrasa.</p>
+        ${abertos(R).length ? `<ul class="lem-lista">${abertos(R).map(receber1).join('')}</ul>` : '<p class="vazio">Nenhum boleto em aberto.</p>'}
+        ${pagos(R).length ? `<details class="editar-ct"><summary>Pagos (${pagos(R).length})</summary><ul class="lem-lista">${pagos(R).map(receber1).join('')}</ul></details>` : ''}
+        <div class="botoes"><a class="bt pequeno fraco" href="#clientes">${svg('mais')} Registrar boleto na ficha de um cliente</a></div></div>
+      <div class="cartao"><h2 class="dia-tit">${ic('moeda')} Contas a pagar</h2>
+        ${abertos(P).length ? `<ul class="lem-lista">${abertos(P).map(pagar1).join('')}</ul>` : '<p class="vazio">Nenhuma conta em aberto.</p>'}
+        ${pagos(P).length ? `<details class="editar-ct"><summary>Pagas (${pagos(P).length})</summary><ul class="lem-lista">${pagos(P).map(pagar1).join('')}</ul></details>` : ''}
+        <form id="lem-conta" class="linha-conta"><label>O quê<input name="titulo" placeholder="Fornecedor de borracha" required></label><label>Valor<input name="valor" inputmode="decimal" placeholder="R$ 320,00"></label>
+          <label>Vencimento<input name="dia" type="date" required></label><button class="bt pequeno" type="submit">${svg('mais')} Pôr conta</button></form></div>
+      ${D ? `<div class="cartao"><h2 class="dia-tit">${ic('balao')} Peça para a ${esc(D)}</h2>
+        <p class="dica">“Boleto do Renato, R$ 800, vence dia 10.” · “O Renato pagou.” · “Conta de luz, R$ 180, vence sexta.” · “Me lembra de ligar para o fornecedor amanhã às 9h.” · “O que eu tenho pendente?”</p>
+        <p class="dica">Tudo o que ela anota cai aqui. O resumo da manhã e o aviso antes do compromisso chegam pelo WhatsApp dela, quando ele estiver ligado em <a class="lnk" href="#conectar">Conectar</a>.</p>
+        <div class="botoes"><a class="bt pequeno" href="#dora">${svg('balao')} Falar com a ${esc(D)}</a></div></div>` : ''}
+      <p class="toast" id="lem-toast" role="status" hidden></p></section>`;
+    const toast = (t) => { const m = $('lem-toast'); if (!m) return; m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 2600); };
+    const refaz = async (x, ok) => { if (x && x.erro) return toast(x.erro); await telaLembretes(alvo, ''); if (ok) { const m = $('lem-toast'); if (m) { m.textContent = ok; m.hidden = false; setTimeout(() => (m.hidden = true), 2600); } } };
+    alvo.querySelectorAll('[data-abre-ficha]').forEach((b) => b.onclick = () => abreFicha(b.dataset.abreFicha));
+    alvo.querySelectorAll('[data-recebi]').forEach((b) => b.onclick = async () => { b.disabled = true; refaz(await api('/boleto', { cliente: b.dataset.cliente, acao: 'pagar', id: b.dataset.recebi }), 'Boleto marcado como recebido.'); });
+    alvo.querySelectorAll('[data-reabre]').forEach((b) => b.onclick = async () => { b.disabled = true; refaz(await api('/boleto', { cliente: b.dataset.cliente, acao: 'reabrir', id: b.dataset.reabre }), 'Boleto reaberto.'); });
+    alvo.querySelectorAll('[data-paguei]').forEach((b) => b.onclick = async () => { b.disabled = true; refaz(await api('/agenda', { acao: 'mudar', item: { id: b.dataset.paguei, pago: true } }), 'Conta marcada como paga.'); });
+    alvo.querySelectorAll('[data-despaguei]').forEach((b) => b.onclick = async () => { b.disabled = true; refaz(await api('/agenda', { acao: 'mudar', item: { id: b.dataset.despaguei, pago: false } }), 'Conta reaberta.'); });
+    alvo.querySelectorAll('[data-apaga-conta]').forEach((b) => b.onclick = async () => { if (!certezaBt(b, 'apagar?')) return; b.disabled = true; refaz(await api('/agenda', { acao: 'apagar', item: { id: b.dataset.apagaConta } }), 'Conta apagada.'); });
+    $('lem-conta').onsubmit = async (e) => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target));
+      refaz(await api('/agenda', { acao: 'criar', item: { dia: d.dia, titulo: d.titulo, valor: d.valor, tipo: 'conta' } }), 'Conta anotada.'); };
+  }
+
   async function telaClientes(alvo, topo) {
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/clientes');
@@ -2020,6 +2121,17 @@
               <button class="bt pequeno" type="submit">Marcar na agenda</button></form>
             <div class="atalhos">${['Ligar', 'Mandar orçamento', 'Confirmar o horário', 'Cobrar'].map((t) => `<button type="button" class="chip-f" data-atalho="${t}">${t}</button>`).join('')}</div>
           </div>
+          ${f.teste ? '' : `<div class="ficha-bloco" id="fi-boletos"><h3>${ic('moeda')} Boletos</h3>
+            ${(f.boletos || []).length ? `<ul class="lem-lista na-ficha">${(f.boletos || []).map((b) => `<li class="bol ${sitBoleto(b)}"><div class="lem-txt"><b>${esc(reaisC(b.valor))}</b><span class="dica">vence ${esc(dataBr(b.vence))}${b.descricao ? ' · ' + esc(b.descricao) : ''}</span>${linkBoleto(b)}</div>${seloBoleto(b)}
+              <div class="botoes">${b.pago ? `<button type="button" class="bt pequeno fraco" data-bol="reabrir" data-id="${esc(b.id)}">Reabrir</button>`
+                : `<button type="button" class="bt pequeno" data-bol="pagar" data-id="${esc(b.id)}">${svg('check')} Recebi</button>${f.whatsapp || f.telefone ? `<a class="bt pequeno fraco" href="${waLink(f, textoCobranca(f.nome, b))}" target="_blank" rel="noopener">${svg('balao')} Cobrar</a>` : ''}`}
+                <button type="button" class="bt-ic" data-bol="apagar" data-id="${esc(b.id)}" aria-label="Apagar o boleto de ${esc(reaisC(b.valor))}">${svg('lixo')}</button></div></li>`).join('')}</ul>`
+              : '<p class="dica">Nenhum boleto. Registre aqui o que esta pessoa tem a pagar: o app avisa você perto do vencimento e quando atrasa.</p>'}
+            <details class="editar-ct" ${(f.boletos || []).length ? '' : 'open'}><summary>Registrar boleto</summary>
+              <form id="fi-bol" class="linha-form"><label>Valor<input name="valor" inputmode="decimal" placeholder="R$ 800,00" required></label><label>Vencimento<input name="vence" type="date" required></label>
+                <label class="largo">Do que é<input name="descricao" placeholder="pedido de 8 palmilhas, parcela 1 de 2"></label>
+                <label class="largo">Link do boleto ou linha digitável<input name="link" placeholder="cole aqui, se tiver"></label>
+                <button class="bt pequeno" type="submit">Registrar boleto</button></form></details></div>`}
           <div class="ficha-bloco"><label class="campo">Valor do negócio<input id="fi-valor" value="${esc(f.valor || '')}" placeholder="R$ 380"></label>
             <label class="campo">Bloco de notas: quem é o cliente<textarea id="fi-nota" rows="5" placeholder="Quem é, do que gosta, como prefere ser atendido. Ex.: prefere falar à tarde; já comprou o arranjo de mesa.">${esc(f.nota || '')}</textarea></label></div>
           <div class="ficha-bloco"><h3>${ic('relogio')} Histórico</h3>${hist.length ? `<ul class="historico">${hist.map((h) => `<li>${h.html}</li>`).join('')}</ul>` : '<p class="dica">Ainda nada. Os pedidos do atendimento e os compromissos com essa pessoa aparecem aqui.</p>'}
@@ -2054,6 +2166,18 @@
         $('fi-nota').onchange = (e) => muda(f.id, { nota: e.target.value }).then((n) => n && toast('Anotação salva.'));
         $('fi-ct-salva').onclick = () => salva({ whatsapp: $('fi-wa').value, instagram: $('fi-ig').value, email: $('fi-em').value });
         ligaMascaras(g);
+        /* os boletos desta ficha */
+        const mexeBoleto = async (corpo, ok) => {
+          const x = await api('/boleto', { cliente: f.id, ...corpo });
+          if (x.erro || !x.ficha) return toast(x.erro || 'Não deu para salvar.');
+          const i = L.findIndex((y) => y.id === f.id); if (i >= 0) L[i] = { ...x.ficha, compromissos: f.compromissos || [] };
+          desenha(); abre(f.id); toast(ok); seloLembretes(true);
+        };
+        const fb = $('fi-bol'); if (fb) fb.onsubmit = (e) => { e.preventDefault(); mexeBoleto({ acao: 'criar', ...Object.fromEntries(new FormData(e.target)) }, 'Boleto registrado.'); };
+        g.querySelectorAll('[data-bol]').forEach((b) => b.onclick = () => {
+          if (b.dataset.bol === 'apagar' && !certezaBt(b, 'apagar?')) return;
+          mexeBoleto({ acao: b.dataset.bol, id: b.dataset.id }, b.dataset.bol === 'pagar' ? 'Boleto marcado como recebido.' : b.dataset.bol === 'reabrir' ? 'Boleto reaberto.' : 'Boleto apagado.');
+        });
         $('fi-pes').onsubmit = (e) => { e.preventDefault(); muda(f.id, Object.fromEntries(new FormData(e.target))).then((n) => { if (n) { abre(n.id); toast('Dados salvos.'); } }); };
         const px = $('fi-prox');
         px.onsubmit = async (e) => {
@@ -2172,6 +2296,7 @@ function criaMenuVidro(raiz, o) {
     lupa: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/>',
     grade: '<circle cx="7.5" cy="7.5" r="3.5"/><circle cx="16.5" cy="7.5" r="3.5"/><circle cx="7.5" cy="16.5" r="3.5"/><circle cx="16.5" cy="16.5" r="3.5"/>',
     carteira: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16.5" height="11" rx="2.5"/><path d="M16 13.5h.01"/>',
+    sino: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
     agenda: '<rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>',
     balao: '<path d="M12 4c4.7 0 8.5 3.2 8.5 7.2s-3.8 7.2-8.5 7.2c-1 0-2-.2-2.9-.4L4.5 20l1.2-3.9C4.3 14.8 3.5 13.1 3.5 11.2 3.5 7.2 7.3 4 12 4z"/>',
     barras: '<path d="M4 20h16M7 16v-5M12 16V6M17 16V9"/>',
