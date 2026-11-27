@@ -405,30 +405,54 @@
     ];
     const agora = passos.findIndex((x) => !x.feito);
     const faltam = c.itens.filter((i) => !i.ok).slice(0, 3);
-    alvo.innerHTML = `<section class="aba">${topo}
+    /* 27/11 (pedido dele: "layout foda de dashboard, o olhar geral do app"): a MESA DOS AGENTES. Três estações (Sol,
+       Dora, Marketing), cada uma com a luz de ligado, o número do mês e o que está fazendo; só número de verdade
+       (EU.saldo, a mesma conta do Plano e uso). O caminho de começo vira uma barra fina e some quando acaba. */
+    const cs = (EU.saldo && EU.saldo.carteiras) || {}, casa = !!(EU.saldo && EU.saldo.casa);
+    const resta = (c) => (!c ? '' : casa || !c.limita ? 'sem limite' : `${inteiro(c.restante)} sobrando`);
+    const ast = EU.assistente || {};
+    const mktLivre = casa || !!(cs.marketing && cs.marketing.franquia);
+    const estacoes = [
+      { k: 'sol', nome: NOME(), papel: 'atende os clientes', luz: EU.robo.ativo ? 'on' : EU.pausado ? 'pausa' : 'off',
+        estado: EU.robo.ativo ? 'atendendo agora' : EU.pausado ? 'pausado' : 'desligado',
+        n: cs.atendimento ? cs.atendimento.usadas : null, un: 'respostas no mês', resto: resta(cs.atendimento),
+        acoes: `<a class="lnk" href="#testar">Testar</a>${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<button class="lnk" id="pausar" type="button">${EU.pausado ? 'Religar' : 'Pausar'}</button>` : ''}` },
+      { k: 'dora', nome: ASSIST(), papel: 'a sua secretária', luz: ast.ligado ? 'on' : 'off',
+        estado: ast.ligado ? 'no seu WhatsApp' : ast.disponivel ? 'falta ligar' : 'chega em breve',
+        n: cs.dora && !cs.dora.junta ? cs.dora.usadas : null, un: 'conversas com você', resto: cs.dora && !cs.dora.junta ? resta(cs.dora) : '',
+        acoes: `<a class="lnk" href="#dora">Falar com a ${esc(ASSIST())}</a>${ast.disponivel && !ast.ligado ? '<a class="lnk" href="#conectar">Ligar</a>' : ''}` },
+      { k: 'mkt', nome: 'Marketing', papel: 'cria os seus posts', luz: mktLivre ? 'on' : 'off',
+        estado: mktLivre ? 'pronto para criar' : 'no plano Completo + Marketing',
+        n: mktLivre && cs.marketing ? cs.marketing.usadas : null, un: 'créditos usados', resto: mktLivre ? resta(cs.marketing) : '',
+        acoes: `<a class="lnk" href="#marketing">${mktLivre ? 'Criar um post' : 'Ver'}</a>` },
+    ];
+    const feitos = passos.filter((x) => x.feito).length;
+    alvo.innerHTML = `<section class="aba inicio">${topo}
       <div class="cartao heroi">
         <div class="heroi-txt"><p class="rotulo">${oi}${EU.nome ? ', ' + esc(primeiro(EU.nome)) : ''}</p>
           <h1>${esc(tit)}</h1>
           <p class="lede">${esc(p.frase)}${!EU.robo.ativo && (EU.robo.falta || []).length ? ` <span class="dica">Falta: ${esc(EU.robo.falta.join(', '))}.</span>` : ''}</p>
           <div class="heroi-acoes"><a class="bt" href="#${p.aba}">${esc(p.bt)} ${svg('seta')}</a>${p.alt ? `<a class="bt fraco" href="#${p.alt.aba}">${esc(p.alt.bt)}</a>` : ''}</div></div>
-        <a class="heroi-anel" href="#cerebro" aria-label="Abrir o cérebro do ${esc(NOME())}">${anel(c.nivel)}</a>
+        <a class="heroi-anel" href="#cerebro" aria-label="Abrir o cérebro do ${esc(NOME())}">${anel(c.nivel, 150)}</a>
       </div>
       ${quadroTeste()}
-      <ol class="passos" aria-label="O caminho até o agente atender">${passos.map((x, i) => `<li class="${x.feito ? 'feito' : ''} ${i === agora ? 'agora' : ''}"><a href="#${x.aba}">
-        <span class="bola">${x.feito ? svg('check').replace('<svg', '<svg style="width:15px;height:15px;stroke-width:2.6;fill:none;stroke:currentColor"') : i + 1}</span><span>${esc(x.nome)}</span></a></li>`).join('')}</ol>
-      <div class="bento">
+      ${agora >= 0 ? `<nav class="caminho" aria-label="O caminho até o agente atender: ${feitos} de ${passos.length} feitos">
+        <div class="caminho-barra" aria-hidden="true"><i style="width:${Math.round(feitos / passos.length * 100)}%"></i></div>
+        <ol>${passos.map((x, i) => `<li class="${x.feito ? 'feito' : ''} ${i === agora ? 'agora' : ''}"><a href="#${x.aba}"${i === agora ? ' aria-current="step"' : ''}>
+          <span class="bola">${x.feito ? svg('check').replace('<svg', '<svg style="width:13px;height:13px;stroke-width:2.8;fill:none;stroke:currentColor"') : i + 1}</span><span>${esc(x.nome)}</span></a></li>`).join('')}</ol></nav>` : ''}
+      <section class="mesa" aria-label="Os seus agentes">
+        ${estacoes.map((e) => `<article class="estacao e-${e.k}">
+          <header><span class="luz ${e.luz}" aria-hidden="true"></span><div><h2>${esc(e.nome)}</h2><p>${esc(e.papel)}</p></div></header>
+          <p class="estado">${esc(e.estado)}</p>
+          <p class="medida">${e.n == null ? '<b class="nada">—</b>' : `<b>${inteiro(e.n)}</b>`}<span>${e.n == null ? '' : esc(e.un)}${e.resto ? ` · ${esc(e.resto)}` : ''}</span></p>
+          <footer>${e.acoes}</footer></article>`).join('')}
+      </section>
+      <div class="bento dia">
         <article class="cartao tile"><h2>${ic('agenda')} Hoje</h2><div id="t-hoje"><p class="dica">Carregando…</p></div><a class="lnk" href="#agenda">Abrir a agenda</a></article>
-        <article class="cartao tile"><h2>${ic('pessoas')} Clientes</h2><div id="t-ped"><p class="dica">Carregando…</p></div><a class="lnk" href="#clientes">Abrir o CRM</a></article>
-        <article class="cartao tile"><h2>${ic('cerebro')} O que falta ele saber</h2>
+        <article class="cartao tile"><h2>${ic('pessoas')} Quem precisa de você</h2><div id="t-ped"><p class="dica">Carregando…</p></div><a class="lnk" href="#clientes">Abrir os clientes</a></article>
+        <article class="cartao tile leve cerebro-mini"><h2>${ic('cerebro')} O que falta o ${esc(NOME())} saber</h2>
           ${faltam.length ? `<ul class="mini-lista">${faltam.map((i) => `<li><span class="quando">${(i.meio || (+i.parcial || 0) > 0) ? 'meio' : 'falta'}</span><span><b>${esc(i.nome || (DICAS[i.id] || {}).nome || '')}</b></span></li>`).join('')}</ul>` : `<p>Ele sabe tudo o que precisa. Continue mandando novidades.</p>`}
-          <a class="lnk" href="#cerebro">Alimentar</a></article>
-        ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<article class="cartao tile largo"><h2>${ic(EU.pausado ? 'play' : 'pausa')} ${EU.pausado ? 'Ele está pausado' : 'Ligar e desligar'}</h2>
-          <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
-          <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></article>` : ''}
-        <article class="cartao tile da-dora ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? 'largo' : ''}"><h2>${ic('relogio')} A ${esc(ASSIST())}, a sua secretária</h2>
-          <p>${(EU.assistente || {}).otto_wa ? `Fale com a ${esc(ASSIST())} no WhatsApp dela: ela marca na agenda, anota, confirma os horários e, de manhã, manda o seu dia.` : `A ${esc(ASSIST())} vai morar num WhatsApp da Ti Artes e chega em breve: ela marca, anota, avisa e cuida do seu CRM.`}
-          ${!(EU.assistente || {}).disponivel ? '<span class="selo breve">chega em breve</span>' : EU.assistente.ligado ? '<span class="selo ok">ligado</span>' : ''}</p>
-          ${(EU.assistente || {}).disponivel && !EU.assistente.ligado ? '<a class="lnk" href="#conectar">Ligar em 1 minuto</a>' : ''}</article>
+          <a class="lnk" href="#cerebro">Ensinar</a></article>
       </div></section>`;
     enche(alvo);
     const bp = $('pausar');

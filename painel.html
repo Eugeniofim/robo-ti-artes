@@ -930,6 +930,84 @@ body.ficha-aberta { overflow: hidden; }
 .mkt-frase { font-size: 18px; font-weight: 600; margin: 0; }
 .mkt-peca h3 { margin: 6px 0 2px; font-size: 16px; }
 .mkt-peca ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+
+/* =====================================================================
+   27/11 — VISUAL PRO (pedido dele: "layout foda de dashboard… melhora o layout no geral").
+   Cada agente tem a sua cor: Sol = teal (a marca), Dora = laranja (já era), Marketing = azul-céu.
+   ===================================================================== */
+:root { --cor-sol: var(--sinal); --cor-dora: var(--laranja); --cor-mkt: #7DB7FF; }
+:root[data-theme="light"] { --cor-sol: #0B8C7D; --cor-mkt: #2F6FD0; }
+
+/* títulos e números: a serifa da marca com mais peso e aperto; números sempre alinhados */
+.aba h1 { font-size: clamp(30px, 3.6vw, 46px); letter-spacing: -0.025em; line-height: 1.04; }
+.aba h2 { letter-spacing: -0.01em; }
+.rotulo { font: 600 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
+.num, .medida b, .anel-txt b { font-variant-numeric: tabular-nums; }
+.cartao { box-shadow: var(--vidro-luz), 0 24px 48px -32px rgba(0, 0, 0, .55); transition: border-color .2s, transform .2s; }
+.tile { align-content: start; }
+.tile > .lnk:last-child { justify-self: start; margin-top: auto; }
+
+/* o herói: mais ar, a frase manda; o anel fica menor e ao lado */
+.inicio .heroi { padding: 34px 36px; }
+.inicio .heroi h1 { max-width: 16ch; }
+@media (max-width: 640px) { .inicio .heroi { grid-template-columns: 1fr; padding: 24px 20px; } .inicio .heroi-anel { justify-self: start; --tam: 110px; } .inicio .heroi-anel .anel { --tam: 110px !important; } }
+
+/* o caminho de começo: uma barra fina com os 4 passos; some quando acaba */
+.caminho { display: grid; gap: 10px; }
+.caminho-barra { height: 4px; border-radius: 4px; background: color-mix(in srgb, var(--tinta) 10%, transparent); overflow: hidden; }
+.caminho-barra i { display: block; height: 100%; background: var(--menta); border-radius: inherit; transition: width .8s cubic-bezier(.22, 1, .36, 1); }
+.caminho ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.caminho a { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 10px; border-radius: 14px; text-decoration: none; color: var(--grafite); font: 700 14.5px/1.2 var(--sans); transition: background .2s; }
+.caminho a:hover { background: color-mix(in srgb, var(--tinta) 5%, transparent); }
+.caminho .bola { width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; font: 700 12px var(--mono); border: 1.5px solid var(--card-borda); color: var(--cinza); }
+.caminho li.feito .bola { background: var(--menta); border-color: transparent; color: var(--menta-texto); }
+.caminho li.feito a { color: var(--cinza); }
+.caminho li.agora a { color: var(--tinta); background: color-mix(in srgb, var(--sinal) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sinal) 45%, transparent); }
+.caminho li.agora .bola { border-color: var(--sinal); color: var(--tinta); }
+@media (max-width: 760px) { .caminho ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* A MESA DOS AGENTES: três estações, cada uma com a sua cor, a luz, o número do mês e o que faz */
+.mesa { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.estacao { --cor: var(--cor-sol); position: relative; display: grid; gap: 14px; align-content: start; padding: 22px 22px 16px; border-radius: var(--raio-g); overflow: hidden;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--cor) 13%, var(--card)) 0%, var(--card) 55%);
+  border: 1px solid color-mix(in srgb, var(--cor) 28%, var(--card-borda));
+  box-shadow: var(--vidro-luz), 0 24px 48px -34px color-mix(in srgb, var(--cor) 60%, #000); }
+.estacao::after { content: ''; position: absolute; left: 22px; right: 22px; top: 0; height: 2px; border-radius: 0 0 2px 2px; background: var(--cor); opacity: .9; }
+.e-dora { --cor: var(--cor-dora); }
+.e-mkt { --cor: var(--cor-mkt); }
+.estacao header { display: flex; align-items: center; gap: 12px; }
+.estacao header h2 { font-size: 22px; line-height: 1.1; }
+.estacao header p { font-size: 14px; color: var(--cinza); }
+.luz { width: 11px; height: 11px; border-radius: 50%; flex: none; background: color-mix(in srgb, var(--tinta) 22%, transparent); }
+.luz.on { background: var(--cor); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor) 20%, transparent), 0 0 14px var(--cor); animation: pulsa 2.4s ease-in-out infinite; }
+.luz.pausa { background: var(--ambar); }
+@keyframes pulsa { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--cor) 6%, transparent), 0 0 18px var(--cor); } }
+.estacao .estado { font: 600 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--cor); }
+.estacao .medida { display: grid; gap: 2px; }
+.estacao .medida b { font: 700 clamp(40px, 4.4vw, 56px)/1 var(--serif); letter-spacing: -0.03em; color: var(--tinta); }
+.estacao .medida b.nada { color: color-mix(in srgb, var(--tinta) 25%, transparent); }
+.estacao .medida span { font-size: 14px; color: var(--grafite); }
+.estacao footer { display: flex; gap: 4px 12px; flex-wrap: wrap; margin: 2px -6px 0; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--cor) 18%, var(--card-borda)); }
+.estacao footer .lnk { color: var(--tinta); text-decoration-color: color-mix(in srgb, var(--cor) 70%, transparent); }
+@media (max-width: 900px) {
+  .mesa { grid-template-columns: 1fr; gap: 12px; }
+  .estacao { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cab num" "est est" "pe pe"; gap: 8px 12px; padding: 18px 18px 10px; align-items: center; }
+  .estacao header { grid-area: cab; } .estacao .medida { grid-area: num; justify-items: end; text-align: right; } .estacao .estado { grid-area: est; } .estacao footer { grid-area: pe; }
+  .estacao .medida b { font-size: 38px; } .estacao .medida span { font-size: 12.5px; max-width: 19ch; }
+}
+
+/* o dia: Hoje e Quem precisa de você em destaque; o cérebro mais quieto */
+
+.cerebro-mini h2 { font-size: 17px; color: var(--grafite); }
+@media (prefers-reduced-motion: reduce) { .luz.on { animation: none; } .caminho-barra i { transition: none; } }
+
+/* a linha solta no meio do topo (existia no ar): o brilho do herói (::before) brigava com a borda luminosa dos cartões
+   (.cartao::before, que vem depois). A borda volta a ocupar o cartão inteiro e o brilho mora no ::after. */
+.heroi::before { width: auto; height: auto; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; }
+.heroi::after { content: ''; position: absolute; right: -80px; top: -120px; width: 380px; height: 380px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--sinal) 22%, transparent), transparent 65%); }
+.estacao footer { align-items: center; }
+.estacao footer .lnk { min-height: 40px; display: inline-flex; align-items: center; }
 </style>
 </head>
 <body>
