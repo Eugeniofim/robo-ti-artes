@@ -2032,7 +2032,7 @@
       <div class="cabeca-aba"><div>${seloQuem('lembretes')}<h1>Lembretes</h1>
         <p class="lede">O que pede a sua atenção, num lugar só: os boletos dos clientes, as suas contas, os compromissos de hoje e quem está esperando resposta.${D ? ` A ${esc(D)} alimenta esta lista: é só pedir para ela lembrar.` : ''}</p></div></div>
       ${r.erro ? aviso('erro', r.erro) : ''}
-      <div class="crm-numeros"><div><b class="num">${inteiro(r.n || 0)}</b><span>pedem atenção agora</span></div>
+      <div class="crm-numeros"><div><b class="num">${inteiro(r.n || 0)}</b><span>${(r.n || 0) === 1 ? 'pede atenção agora' : 'pedem atenção agora'}</span></div>
         <div><b class="num">${esc(reaisC(rr.atrasado_centavos))}</b><span>a receber, atrasado${rr.atrasados ? ` (${rr.atrasados})` : ''}</span></div>
         <div><b class="num">${esc(reaisC(rr.aberto_centavos))}</b><span>a receber, no total</span></div>
         <div><b class="num">${esc(reaisC(rp.aberto_centavos))}</b><span>a pagar, no total</span></div></div>
