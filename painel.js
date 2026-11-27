@@ -23,6 +23,7 @@
 
   /* ---------- ícones (traço, sem emoji) ---------- */
   const IC = {
+    caminhao: '<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
     sino: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
     moeda: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16.5" height="11" rx="2.5"/><path d="M16 13.5h.01"/>',
     upload: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>',
@@ -116,7 +117,7 @@
   /* o balão de cada item do menu: "(D) Dora anota" */
   const dicasDoMenu = () => Object.fromEntries(Object.entries(quemFaz()).map(([k, q]) => [k, q && { html: avatares(q.quem) + `<span>${q.html}</span>`, txt: q.txt }]));
   const ABAS = {
-    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', dora: 'Dora', marketing: 'Marketing', lembretes: 'Lembretes', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
+    inicio: 'Início', cerebro: 'Cérebro', testar: 'Testar', dora: 'Dora', marketing: 'Marketing', lembretes: 'Lembretes', correios: 'Correios', agenda: 'Agenda', clientes: 'Clientes', notas: 'Notas', pedidos: 'Pedidos',
     arquivos: 'Arquivos', conectar: 'Conectar', plano: 'Plano e uso', estudio: 'Estúdio',
   };
   /* nomes antigos de aba (links de volta do Stripe e do Instagram, favoritos) */
@@ -176,6 +177,8 @@
           { id: 'clientes', rotulo: 'Clientes', icone: 'pessoas', href: '#clientes' },
           { id: 'notas', rotulo: 'Notas', icone: 'nota', href: '#notas' },
           { id: 'pedidos', rotulo: 'Pedidos', icone: 'caixa', href: '#pedidos' },
+          /* 27/11: a aba Correios só aparece na conta que contratou (servidor robo/correios.ts) */
+          ...((EU.correios || {}).disponivel ? [{ id: 'correios', rotulo: 'Correios', icone: 'caminhao', href: '#correios' }] : []),
           { id: 'arquivos', rotulo: 'Arquivos', icone: 'pasta', href: '#arquivos' },
         ] },
         { secao: 'Conta', itens: [
@@ -332,7 +335,7 @@
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, dora: telaDora, conectar: telaConectar,
-      plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio, lembretes: telaLembretes }[aba] || telaInicio)(alvo, topo);
+      plano: telaPlano, marketing: telaMarketing, pedidos: telaPedidos, clientes: telaClientes, arquivos: telaArquivos, estudio: telaEstudio, lembretes: telaLembretes, correios: telaCorreios }[aba] || telaInicio)(alvo, topo);
     window.scrollTo(0, 0);
     if (aba !== 'lembretes') seloLembretes();
   }
@@ -2062,6 +2065,103 @@
       refaz(await api('/agenda', { acao: 'criar', item: { dia: d.dia, titulo: d.titulo, valor: d.valor, tipo: 'conta' } }), 'Conta anotada.'); };
   }
 
+  /* ---------- 27/11/2026 — A ABA CORREIOS (pedido dele, para a Palmilhas ESE: "pode pôr a aba Correios já"). A conta liga
+     o contrato dela (usuário do Meu Correios, código de acesso e cartão de postagem), diz as embalagens e calcula o
+     frete e o prazo pelo CEP. O código de acesso vai uma vez para o servidor e NUNCA volta para a tela.
+     Servidor: robo/correios.ts. ---------- */
+  async function telaCorreios(alvo, topo) {
+    if (!(EU.correios || {}).disponivel) return telaInicio(alvo, topo);
+    alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><h1>Correios</h1></div></div><p class="dica">Carregando…</p></section>`;
+    let E = await api('/correios');
+    if (abaAtual() !== 'correios') return;
+    let FRETE = null, trocando = false;
+    const cepB = (d) => (/^\d{8}$/.test(String(d || '')) ? `${d.slice(0, 5)}-${d.slice(5)}` : String(d || ''));
+    const linhaTeste = (rot, v) => `<li class="co-t ${v === 'ok' ? 'ok' : v === 'não testado' ? '' : 'falta'}">${ic(v === 'ok' ? 'check' : 'alerta')}<div><b>${rot}</b><span class="dica">${v === 'ok' ? 'funcionando' : esc(v)}</span></div></li>`;
+    const formLigar = () => `<form id="co-liga" class="co-form">
+        <label class="campo">Usuário do Meu Correios<input name="usuario" autocomplete="off" placeholder="o login da empresa" required></label>
+        <label class="campo">Código de acesso<input name="codigo" type="password" autocomplete="off" placeholder="cole o código gerado no portal dos Correios" required></label>
+        <label class="campo">Cartão de postagem<input name="cartao" inputmode="numeric" autocomplete="off" placeholder="10 números" required></label>
+        <label class="campo">CEP de onde sai o envio<input name="cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" value="${esc(cepB(E.cep))}" required></label>
+        <div class="botoes"><button class="bt" type="submit">${svg('elo')} Ligar e testar</button>${trocando ? '<button class="bt fraco" type="button" id="co-cancela">Cancelar</button>' : ''}</div>
+        <p class="dica">O código de acesso fica guardado só no servidor. Ele não aparece mais na tela, nem para o estúdio.</p><p class="aviso erro" id="co-erro" hidden></p></form>`;
+    const pacoteLinha = (p) => `<div class="co-pac"><label>Até<input name="ate" inputmode="numeric" value="${esc(p.ate || '')}" placeholder="4"></label><label>Peso (g)<input name="peso" inputmode="numeric" value="${esc(p.peso || '')}" placeholder="500"></label>
+        <label>Compr. (cm)<input name="c" inputmode="numeric" value="${esc(p.c || '')}" placeholder="25"></label><label>Larg. (cm)<input name="l" inputmode="numeric" value="${esc(p.l || '')}" placeholder="18"></label><label>Alt. (cm)<input name="a" inputmode="numeric" value="${esc(p.a || '')}" placeholder="6"></label>
+        <button type="button" class="bt-ic" data-tira-pac aria-label="Tirar esta embalagem">${svg('x')}</button></div>`;
+    const resultado = (f) => !f ? '' : f.erro ? aviso('erro', f.erro) : `<div class="co-res">
+        <p class="dica">Para ${f.quantidade} ${f.quantidade === 1 ? 'unidade' : 'unidades'}, até o CEP ${esc(cepB(f.cep))}, na embalagem de ${inteiro(f.pacote.peso)} g (${f.pacote.c} × ${f.pacote.l} × ${f.pacote.a} cm).${f.padrao ? ' <b>Sem a tabela de embalagens, usei uma caixa padrão: preencha a sua para o valor sair certo.</b>' : ''}${f.acima ? ' <b>A quantidade passa da sua maior embalagem: confira o peso antes de fechar.</b>' : ''}</p>
+        <ul class="lem-lista">${f.opcoes.map((o) => `<li class="bol"><div class="lem-txt"><b>${esc(o.nome)}${o.centavos ? ' · ' + esc(reaisC(o.centavos)) : ''}</b>
+          <span class="dica">${o.dias != null ? `chega em ${o.dias} ${o.dias === 1 ? 'dia útil' : 'dias úteis'}${o.ate ? ' (até ' + esc(dataBr(o.ate)) + ')' : ''}` : esc(o.erro_prazo || '')}${o.erro_preco ? ' · ' + esc(o.erro_preco) : ''}</span></div>
+          <span></span><div class="botoes">${o.centavos ? `<button type="button" class="bt pequeno fraco" data-copia="${esc(`${o.nome}: ${reaisC(o.centavos)}${o.dias != null ? `, chega em ${o.dias} ${o.dias === 1 ? 'dia útil' : 'dias úteis'}` : ''} (CEP ${cepB(f.cep)}).`)}">Copiar</button>` : ''}</div></li>`).join('')}</ul></div>`;
+    const desenha = () => {
+      const t = E.teste || {};
+      alvo.innerHTML = `<section class="aba correios">${topo}
+        <div class="cabeca-aba"><div><h1>Correios</h1>
+          <p class="lede">Frete e prazo pelo CEP, com os preços do contrato da sua empresa nos Correios.</p></div></div>
+        ${E.erro ? aviso('erro', E.erro) : ''}
+        ${E.ligado && !trocando ? `<div class="cartao"><h2 class="dia-tit">${ic('elo')} Contrato ligado <span class="selo ok">ligado</span></h2>
+            <p class="dica">Usuário ${esc(E.usuario)} · cartão de postagem com final ${esc(E.cartao_fim)} · envios saindo do CEP ${esc(cepB(E.cep))}.</p>
+            <ul class="co-testes">${linhaTeste('A ligação com os Correios', t.token || 'não testado')}${linhaTeste('Preço do frete', t.preco || 'não testado')}${linhaTeste('Prazo de entrega', t.prazo || 'não testado')}</ul>
+            ${t.token === 'ok' && (t.preco !== 'ok' || t.prazo !== 'ok') ? aviso('atencao', 'A ligação abriu, mas falta liberar no contrato. Peça ao seu gerente dos Correios para vincular ao contrato e ao cartão de postagem os serviços <b>38202 (API Preços)</b> e <b>38210 (API Prazos)</b>, e teste de novo.') : ''}
+            <div class="botoes"><button class="bt pequeno" type="button" id="co-testa">Testar de novo</button><button class="bt pequeno fraco" type="button" id="co-troca">Trocar o código</button><button class="bt pequeno perigo" type="button" id="co-desliga">Desligar</button></div></div>`
+          : `<div class="cartao"><h2 class="dia-tit">${ic('elo')} ${trocando ? 'Trocar a ligação' : 'Ligar o contrato'}</h2>
+            <ol class="co-passos"><li>Peça ao seu gerente dos Correios para vincular ao contrato e ao cartão de postagem os serviços <b>38202 (API Preços)</b> e <b>38210 (API Prazos)</b>.</li>
+              <li>Entre em <b>cws.correios.com.br</b> com o login da empresa no Meu Correios, abra <b>Gestão de acesso a API's</b> e gere o código de acesso. Se outro sistema seu já usa um código, use o mesmo: gerar outro derruba o antigo.</li>
+              <li>Preencha aqui embaixo e toque em Ligar e testar.</li></ol>${formLigar()}</div>`}
+        ${E.ligado ? `<div class="cartao"><h2 class="dia-tit">${ic('caixa')} Embalagens</h2>
+            <p class="dica">Diga quanto pesa e quanto mede a caixa para cada quantidade. Exemplo: até 4 unidades, 500 g, 25 × 18 × 6 cm. O app escolhe a caixa pela quantidade do pedido.</p>
+            <form id="co-pacs"><div id="co-pac-lista">${(E.pacotes.length ? E.pacotes : [{}]).map(pacoteLinha).join('')}</div>
+              <div class="botoes"><button class="bt pequeno fraco" type="button" id="co-mais-pac">${svg('mais')} Outra embalagem</button><button class="bt pequeno" type="submit">Salvar embalagens</button></div></form></div>
+          <div class="cartao"><h2 class="dia-tit">${ic('caminhao')} Calcular o frete</h2>
+            <form id="co-frete" class="co-calc"><label>CEP do cliente<input name="cep" inputmode="numeric" placeholder="00000-000" required></label><label>Quantidade<input name="quantidade" inputmode="numeric" value="1" required></label>
+              <button class="bt pequeno" type="submit">Calcular</button></form>
+            <div id="co-res">${resultado(FRETE)}</div></div>` : ''}
+        <p class="toast" id="co-toast" role="status" hidden></p></section>`;
+      liga();
+    };
+    const toast = (t) => { const m = $('co-toast'); if (!m) return; m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 2800); };
+    const liga = () => {
+      const fl = $('co-liga');
+      if (fl) {
+        const cz = fl.querySelector('[name=cep]'); cz.oninput = () => { cz.value = mascCep(cz.value); };
+        fl.onsubmit = async (e) => {
+          e.preventDefault(); const b = fl.querySelector('button[type=submit]'); b.disabled = true; b.textContent = 'Ligando e testando…';
+          const x = await api('/correios', Object.fromEntries(new FormData(fl)));
+          fl.querySelector('[name=codigo]').value = '';
+          if (x.erro) { b.disabled = false; b.innerHTML = `${svg('elo')} Ligar e testar`; $('co-erro').textContent = x.erro; $('co-erro').hidden = false; return; }
+          E = x; trocando = false; EU.correios = { disponivel: true, ligado: !!x.ligado }; desenha();
+        };
+      }
+      const on = (id, f) => { const b = $(id); if (b) b.onclick = f; };
+      on('co-cancela', () => { trocando = false; desenha(); });
+      on('co-troca', () => { trocando = true; desenha(); });
+      on('co-testa', async (e) => { e.currentTarget.disabled = true; e.currentTarget.textContent = 'Testando…'; const x = await api('/correios/testar', {}); if (!x.erro) E = x; desenha(); if (x.erro) toast(x.erro); });
+      on('co-desliga', async (e) => { if (!certezaBt(e.currentTarget, 'Desligar mesmo?')) return; const x = await api('/correios/desligar', {}); if (!x.erro) { E = x; FRETE = null; EU.correios = { disponivel: true, ligado: false }; } desenha(); });
+      on('co-mais-pac', () => { $('co-pac-lista').insertAdjacentHTML('beforeend', pacoteLinha({})); tiraPac(); });
+      const tiraPac = () => alvo.querySelectorAll('[data-tira-pac]').forEach((b) => b.onclick = () => { if (alvo.querySelectorAll('.co-pac').length > 1) b.closest('.co-pac').remove(); else b.closest('.co-pac').querySelectorAll('input').forEach((i) => (i.value = '')); });
+      tiraPac();
+      const fp = $('co-pacs');
+      if (fp) fp.onsubmit = async (e) => {
+        e.preventDefault();
+        const pacotes = [...fp.querySelectorAll('.co-pac')].map((d) => Object.fromEntries([...d.querySelectorAll('input')].map((i) => [i.name, i.value])));
+        const x = await api('/correios/pacotes', { pacotes });
+        if (x.erro) return toast(x.erro);
+        E = x; desenha(); toast(x.pacotes.length ? 'Embalagens salvas.' : 'Nenhuma embalagem completa: preencha todos os campos da linha.');
+      };
+      const ff = $('co-frete');
+      if (ff) {
+        const cz = ff.querySelector('[name=cep]'); cz.oninput = () => { cz.value = mascCep(cz.value); };
+        ff.onsubmit = async (e) => {
+          e.preventDefault(); const b = ff.querySelector('button'); b.disabled = true; b.textContent = 'Calculando…';
+          const d = Object.fromEntries(new FormData(ff));
+          FRETE = await api('/correios/frete', d);
+          $('co-res').innerHTML = resultado(FRETE); b.disabled = false; b.textContent = 'Calcular';
+          $('co-res').querySelectorAll('[data-copia]').forEach((c) => c.onclick = async () => { try { await navigator.clipboard.writeText(c.dataset.copia); toast('Copiado: cole na conversa com o cliente.'); } catch (_) { toast(c.dataset.copia); } });
+        };
+      }
+    };
+    desenha();
+  }
+
   async function telaClientes(alvo, topo) {
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/clientes');
@@ -2451,6 +2551,7 @@ function criaMenuVidro(raiz, o) {
     lupa: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/>',
     grade: '<circle cx="7.5" cy="7.5" r="3.5"/><circle cx="16.5" cy="7.5" r="3.5"/><circle cx="7.5" cy="16.5" r="3.5"/><circle cx="16.5" cy="16.5" r="3.5"/>',
     carteira: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16.5" height="11" rx="2.5"/><path d="M16 13.5h.01"/>',
+    caminhao: '<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
     sino: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
     agenda: '<rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>',
     balao: '<path d="M12 4c4.7 0 8.5 3.2 8.5 7.2s-3.8 7.2-8.5 7.2c-1 0-2-.2-2.9-.4L4.5 20l1.2-3.9C4.3 14.8 3.5 13.1 3.5 11.2 3.5 7.2 7.3 4 12 4z"/>',

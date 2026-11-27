@@ -839,6 +839,22 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 .as-pix-tx textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 12.5px/1.4 var(--mono); resize: none; overflow-wrap: anywhere; }
 .as-ja { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding-top: 12px; border-top: 1px solid var(--card-borda); }
 @media (max-width: 860px) { .as-pix { grid-template-columns: 1fr; justify-items: center; } .as-pix-tx { justify-self: stretch; } .as-valor { font-size: 36px; } }
+/* 27/11 — a aba Correios: ligar o contrato, as embalagens e a calculadora de frete */
+.correios .cartao { display: grid; gap: 12px; }
+.correios .dia-tit { display: flex; gap: 8px; align-items: center; margin: 0; flex-wrap: wrap; }
+.co-passos { margin: 0; padding-left: 22px; display: grid; gap: 8px; color: var(--grafite); }
+.co-form { display: grid; gap: 12px; max-width: 520px; }
+.co-testes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.co-t { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; }
+.co-t > div { display: grid; gap: 1px; } .co-t .ic { color: var(--grafite); margin-top: 2px; }
+.co-t.ok .ic { color: var(--teal-forte); } .co-t.falta .ic { color: var(--laranja); }
+.co-pac { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) auto; gap: 8px; align-items: end; margin-bottom: 8px; }
+.co-pac label, .co-calc label { display: grid; gap: 5px; font-weight: 700; font-size: 13.5px; }
+.co-pac input, .co-calc input { width: 100%; min-height: 44px; padding: 9px 10px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 16px var(--sans); }
+.co-pac input:focus, .co-calc input:focus { border-color: var(--sinal); outline: none; }
+.co-calc { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 10px; align-items: end; max-width: 520px; }
+.co-res { display: grid; gap: 8px; padding-top: 6px; }
+@media (max-width: 860px) { .co-pac { grid-template-columns: 1fr 1fr 1fr; } .co-calc { grid-template-columns: 1fr 1fr; } .co-calc .bt { grid-column: 1 / -1; } }
 /* 27/11 — lembretes e boletos: a lista de avisos, os boletos de cada cliente e as contas a pagar */
 .lem-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .lem-lista > li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: center; padding: 11px 4px; border-top: 1px solid var(--card-borda); }
