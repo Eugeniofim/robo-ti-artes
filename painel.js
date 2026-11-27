@@ -180,7 +180,8 @@
         ] },
         { secao: 'Conta', itens: [
           { id: 'conectar', rotulo: 'Conectar', icone: 'elo', href: '#conectar' },
-          { id: 'plano', rotulo: 'Plano e uso', icone: 'carteira', href: '#plano' },
+          /* 27/11: cliente implantado (mensalidade por Pix) não tem Plano e uso: tem Assinatura */
+          { id: 'plano', rotulo: (ABAS.plano = EU.mensalidade ? 'Assinatura' : 'Plano e uso'), icone: 'carteira', href: '#plano' },
           ...(EU.estudio ? [{ id: 'estudio', rotulo: 'Estúdio', icone: 'barras', href: '#estudio' }] : []),
           { id: 'sair', rotulo: 'Sair', icone: 'sair', href: '#' },
         ] },
@@ -327,7 +328,7 @@
     cabecalho();
     if (MENU && MENU.dicas) MENU.dicas(dicasDoMenu());
     const aba = abaAtual(), alvo = $('conteudo');
-    const topo = (avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '') + (aba !== 'plano' ? avisoSaldo() : '');
+    const topo = (avisoVolta ? aviso(avisoVolta.tipo, avisoVolta.texto) : '') + (aba !== 'plano' ? avisoMensalidade() + avisoSaldo() : '');
     avisoVolta = null;
     alvo.innerHTML = '';
     ({ inicio: telaInicio, cerebro: telaCerebro, agenda: telaAgenda, notas: telaNotas, testar: telaTestar, dora: telaDora, conectar: telaConectar,
@@ -1332,7 +1333,145 @@
   }
 
   /* ---------- Plano e uso ---------- */
+  /* ---------- 27/11/2026 — A ASSINATURA (pedido dele, para a Palmilhas ESE: "deixe igual tem no app da Milla o lugar do
+     pagamento mensal, com QR code e Pix da Ti Artes, todo dia 1 de cada mês começando por janeiro"; "no caso dele não
+     precisa mais ter ali Plano e uso"). Cliente implantado paga a mensalidade por Pix, direto para o estúdio: a
+     combinação vem em EU.mensalidade (servidor robo/mensalidade.ts). As contas (vencimentos, situação, o BR Code do
+     Pix) são as da "Sua assinatura" da Milla e das Mensalidades do TI ARTES OS. O app não cobra nem corta sozinho:
+     ele paga, aperta "Já paguei" e o estúdio dá a baixa. Os créditos de IA continuam aqui embaixo. ---------- */
+  const MS_MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const MS_MES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const msD = (t) => { const [y, m, d] = String(t).split('-').map(Number); return new Date(y, m - 1, d); };
+  const msIso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const msHoje = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const msMais = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const msDias = (t, hoje) => Math.round((msD(t) - hoje) / 86400000);
+  const msFmt = (t) => { const d = msD(t); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'); };
+  const msFmtAno = (t) => msFmt(t) + '/' + msD(t).getFullYear();
+  const msReal = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  function msVencs(a, ate) {
+    const b = msD(a.inicio), dia = Number(a.dia) || b.getDate(), L = [];
+    for (let k = 0; k < 240; k++) { const y = b.getFullYear(), mo = b.getMonth() + k, ult = new Date(y, mo + 1, 0).getDate(), d = new Date(y, mo, Math.min(dia, ult)); if (d > ate) break; if (d >= b) L.push(msIso(d)); }
+    return L;
+  }
+  const msPago = (a, v) => !!(a && a.pagos && a.pagos[v]);
+  function msSituacao(a, hoje = msHoje()) {
+    if (a.status === 'pausado') return { t: 'pausado' };
+    if (a.status === 'encerrado') return { t: 'encerrado' };
+    const primeira = msVencs(a, msMais(msD(a.inicio), 40))[0] || a.inicio;
+    if (msD(primeira) > hoje && !msPago(a, primeira)) return { t: 'carencia', v: primeira, n: msDias(primeira, hoje) };
+    const abertos = msVencs(a, hoje).filter((v) => !msPago(a, v));
+    const atr = abertos.filter((v) => msDias(v, hoje) < 0);
+    if (atr.length) return { t: 'atrasado', v: atr[0], n: atr.length, dias: -msDias(atr[0], hoje) };
+    if (abertos.some((v) => msDias(v, hoje) === 0)) return { t: 'hoje', v: msIso(hoje) };
+    const prox = msVencs(a, msMais(hoje, 400)).find((v) => msDias(v, hoje) > 0 && !msPago(a, v));
+    if (!prox) return { t: 'emdia' };
+    const n = msDias(prox, hoje);
+    return { t: n <= 5 ? 'logo' : 'emdia', v: prox, n };
+  }
+  const msAvisou = (a, v) => { const q = a && a.avisos && v ? a.avisos[v] : ''; return q && !msPago(a, v) ? q : ''; };
+  const msQuando = (t) => { const d = new Date(t); return isNaN(d) ? '' : d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
+  function msTexto(s) {
+    const pl = (n, um, mais) => n + ' ' + (n === 1 ? um : mais);
+    switch (s.t) {
+      case 'carencia': return { txt: 'Primeira mensalidade em ' + msFmtAno(s.v), sub: 'faltam ' + pl(s.n, 'dia', 'dias'), cor: 'azul' };
+      case 'atrasado': return { txt: 'Em aberto desde ' + msFmt(s.v), sub: pl(s.dias, 'dia', 'dias') + (s.n > 1 ? ' · ' + s.n + ' meses' : ''), cor: 'verm' };
+      case 'hoje': return { txt: 'Vence hoje', sub: msFmt(s.v), cor: 'ambar' };
+      case 'logo': return { txt: 'Vence em ' + pl(s.n, 'dia', 'dias'), sub: msFmt(s.v), cor: 'ambar' };
+      case 'emdia': return { txt: 'Em dia', sub: s.v ? 'próxima em ' + msFmt(s.v) : '', cor: 'verde' };
+      case 'pausado': return { txt: 'Assinatura pausada', sub: '', cor: 'cinza' };
+      default: return { txt: 'Encerrada', sub: '', cor: 'cinza' };
+    }
+  }
+  /* Pix: o BR Code do Banco Central (o mesmo pixPayload do OS e da Milla) */
+  const msPixLimpo = (t, max) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9 .\-]/g, '').toUpperCase().trim().slice(0, max);
+  function msPixChave(k) {
+    k = String(k || '').trim();
+    if (/^[\d.\-\/\s]+$/.test(k)) { const d = k.replace(/\D/g, ''); if (d.length === 11 || d.length === 14) return d; }
+    if (/^\+?[\d\s()\-]{10,}$/.test(k) && !/[.\/]/.test(k)) { const d = k.replace(/\D/g, ''); return '+' + (d.startsWith('55') ? d : '55' + d); }
+    return k.includes('@') ? k.toLowerCase() : k;
+  }
+  function msPixCRC(t) { let c = 0xFFFF; for (let i = 0; i < t.length; i++) { c ^= t.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) : (c << 1); c &= 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); }
+  function msPixPayload({ chave, valor, nome, cidade, txid }) {
+    const f = (id, v) => id + String(v.length).padStart(2, '0') + v;
+    let p = f('00', '01') + f('26', f('00', 'br.gov.bcb.pix') + f('01', msPixChave(chave))) + f('52', '0000') + f('53', '986');
+    if (valor > 0) p += f('54', Number(valor).toFixed(2));
+    p += f('58', 'BR') + f('59', msPixLimpo(nome || 'TI ARTES', 25) || 'TI ARTES') + f('60', msPixLimpo(cidade || 'CURITIBA', 15) || 'CURITIBA');
+    p += f('62', f('05', String(txid || '***').replace(/[^A-Za-z0-9]/g, '').slice(0, 25) || '***')) + '6304';
+    return p + msPixCRC(p);
+  }
+  const msPix = (a, v) => (a.pix && a.pix.chave ? msPixPayload({ chave: a.pix.chave, valor: Number(a.valor) || 0, nome: a.pix.nome, cidade: a.pix.cidade, txid: 'TIARTES' + String(v || '').replace(/\D/g, '').slice(0, 6) + (a.ref || '') }) : '');
+  function msQr(txt, px) {
+    if (typeof qrcode !== 'function' || !txt) return null;
+    const q = qrcode(0, 'M'); q.addData(txt); q.make();
+    const n = q.getModuleCount(), m = 4, t = Math.max(4, Math.floor((px || 280) / (n + m * 2))), W = (n + m * 2) * t;
+    const c = document.createElement('canvas'); c.width = c.height = W; const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, W); g.fillStyle = '#0B1514';
+    for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) g.fillRect((cc + m) * t, (r + m) * t, t, t);
+    return c;
+  }
+  /* a faixa no alto das outras abas, só quando a mensalidade pede atenção e ele ainda não avisou que pagou */
+  function avisoMensalidade() {
+    const a = EU && EU.mensalidade; if (!a) return '';
+    const s = msSituacao(a);
+    if (!['logo', 'hoje', 'atrasado'].includes(s.t) || msAvisou(a, s.v)) return '';
+    const msg = s.t === 'atrasado' ? `A mensalidade de ${msFmt(s.v)} está em aberto.` : s.t === 'hoje' ? 'A mensalidade vence hoje.' : `A mensalidade vence em ${s.n} ${s.n === 1 ? 'dia' : 'dias'} (${msFmt(s.v)}).`;
+    return aviso(s.t === 'atrasado' ? 'erro' : 'atencao', `${esc(msg)} <a href="#plano">Ver e pagar pelo Pix</a>`);
+  }
+  async function telaAssinatura(alvo, topo) {
+    const a = EU.mensalidade, hoje = msHoje(), s = msSituacao(a, hoje), x = msTexto(s);
+    const alvoV = s.v || msVencs(a, msMais(hoje, 400)).find((v) => !msPago(a, v)) || a.inicio, av = msAvisou(a, alvoV);
+    const pagavel = ['carencia', 'atrasado', 'hoje', 'logo', 'emdia'].includes(s.t) && !msPago(a, alvoV);
+    const longe = pagavel && msDias(alvoV, hoje) > 10;
+    const pix = pagavel ? msPix(a, alvoV) : '';
+    const meses = msVencs(a, msMais(hoje, 62)).slice(-6);
+    alvo.innerHTML = `<section class="aba assinatura">${topo}
+      <div class="cabeca-aba"><div><p class="rotulo">Conta</p><h1>Assinatura</h1>
+        <p class="lede">A sua mensalidade com o ${esc(a.estudio || 'studio Ti Artes')}. Você paga pelo Pix aqui mesmo e avisa; assim que o estúdio conferir, fica em dia.</p></div></div>
+      <div class="cartao as-cartao">
+        <span class="as-pill as-${av ? 'azul' : x.cor}"><i></i>${esc(av ? 'Você avisou que pagou a de ' + msFmt(alvoV) : x.txt)}${!av && x.sub ? ` <small>${esc(x.sub)}</small>` : ''}</span>
+        <p class="as-valor num">${a.cheio ? `<s>${esc(msReal(a.cheio))}</s> ` : ''}${esc(msReal(a.valor))}<small> por mês</small></p>
+        <dl class="as-linhas">
+          <div><dt>Plano</dt><dd>${esc(a.plano)}${a.cheio ? ` · com ${esc(msReal(a.cheio - a.valor))} de desconto` : ''}</dd></div>
+          <div><dt>Vence</dt><dd>todo dia ${esc(String(a.dia))}</dd></div>
+          ${alvoV && pagavel ? `<div><dt>${s.t === 'atrasado' ? 'Em aberto' : 'Próxima'}</dt><dd>${esc(msFmtAno(alvoV))}</dd></div>` : ''}
+          <div><dt>Paga para</dt><dd>${esc(a.estudio || 'studio Ti Artes')}</dd></div>
+          <div><dt>Créditos de IA</dt><dd>por sua conta, carregados aqui embaixo</dd></div>
+        </dl>
+        ${meses.length ? `<div class="as-meses" aria-label="Meses">${meses.map((v) => { const p = msPago(a, v), atr = !p && msDias(v, hoje) < 0, avi = msAvisou(a, v);
+          return `<span class="as-mes ${p ? 'ok' : avi ? 'avisado' : atr ? 'atr' : v === alvoV ? 'prox' : ''}" title="${p ? 'Pago' : avi ? 'Você avisou que pagou' : atr ? 'Em aberto' : 'A vencer'}">${MS_MES[msD(v).getMonth()]}<small>${p ? 'pago' : avi ? 'avisado' : atr ? 'aberto' : 'dia ' + msFmt(v).slice(0, 2)}</small></span>`; }).join('')}</div>` : ''}
+      </div>
+      ${pagavel ? `<div class="cartao as-pagar"><h2>${ic('moeda')} Pagar a de ${esc(MS_MES_LONGO[msD(alvoV).getMonth()])}</h2>
+        ${pix ? `<details class="as-det" ${longe ? '' : 'open'}><summary class="bt pequeno ${longe ? 'fraco' : ''}">${longe ? 'Pagar adiantado pelo Pix' : 'Pix: QR code e copia e cola'}</summary>
+          <div class="as-pix"><div class="as-qr" id="as-qr" aria-label="QR code do Pix"></div>
+            <div class="as-pix-tx"><p class="dica">Abra o app do banco, escolha Pix e leia o QR code, ou use o copia e cola. O valor (${esc(msReal(a.valor))}) e o mês já vão no código.</p>
+              <textarea id="as-cod" rows="4" readonly aria-label="Pix copia e cola">${esc(pix)}</textarea>
+              <div class="botoes"><button type="button" class="bt pequeno" id="as-copiar">Copiar o código Pix</button></div></div></div></details>`
+          : `<p class="dica">O Pix ainda não está pronto aqui. Fale com o estúdio para pagar esta mensalidade.</p>`}
+        <div class="as-ja">${av ? `<p class="dica">Você avisou em ${esc(msQuando(av))}. Assim que o estúdio conferir, a mensalidade fica em dia.</p>`
+          : `<button type="button" class="bt pequeno fraco" id="as-avisar">Já paguei a de ${esc(msFmt(alvoV))}</button><span class="dica">Avisa o estúdio, que confere o extrato e dá a baixa.</span>`}</div></div>` : ''}
+      <div class="cartao" id="uso"><h2>${ic('relogio')} Créditos de IA</h2><p class="dica">Carregando…</p></div>
+      ${(EU.em_dia && (EU.robo.ativo || EU.pausado)) ? `<div class="cartao"><h2>${ic(EU.pausado ? 'play' : 'pausa')} Ligar e desligar</h2>
+        <p class="dica">${EU.pausado ? 'Pausado, ele não responde ninguém. Religue quando quiser.' : 'Pausado, ele para de responder em todas as conversas, na hora.'}</p>
+        <div><button class="bt ${EU.pausado ? '' : 'fraco'}" id="pausar" type="button">${EU.pausado ? 'Religar o agente' : 'Pausar o agente'}</button></div></div>` : ''}
+      <p class="toast" id="as-toast" role="status" hidden></p></section>`;
+    const toast = (t) => { const m = $('as-toast'); if (!m) return; m.textContent = t; m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => (m.hidden = true), 3200); };
+    const box = $('as-qr'), cod = $('as-cod');
+    if (box && cod) { const c = msQr(cod.value, 260); if (c) box.appendChild(c); else box.textContent = 'Use o copia e cola ao lado.'; }
+    if ($('as-copiar')) $('as-copiar').onclick = async () => { try { await navigator.clipboard.writeText(cod.value); toast('Código Pix copiado: cole no app do banco, em Pix copia e cola.'); } catch (_) { cod.focus(); cod.select(); toast('Selecionei o código: copie com Ctrl+C.'); } };
+    if ($('as-avisar')) $('as-avisar').onclick = async (e) => {
+      e.currentTarget.disabled = true;
+      const r = await api('/mensalidade', { acao: 'paguei', venc: alvoV });
+      if (r.erro || !r.mensalidade) { e.currentTarget.disabled = false; return toast(r.erro || 'Não consegui avisar agora. Tente de novo.'); }
+      EU.mensalidade = r.mensalidade; await telaAssinatura(alvo, ''); const m = $('as-toast'); if (m) { m.textContent = 'Pronto: o estúdio recebeu o aviso. Assim que conferir, fica em dia.'; m.hidden = false; setTimeout(() => (m.hidden = true), 3600); }
+    };
+    const bp = $('pausar');
+    if (bp) bp.onclick = async () => { bp.disabled = true; const r = await api('/pausar', { pausado: !EU.pausado }); if (!r.erro) EU = r; mostra(); };
+    usoDoMes();
+  }
+
   async function telaPlano(alvo, topo) {
+    if (EU.mensalidade) return telaAssinatura(alvo, topo);
     const p = EU.plano;
     const ST = { teste: `Em teste grátis até ${dia(EU.pago_ate)}. O cartão só é cobrado depois.`, ativa: EU.cancela_no_fim ? `Pago até ${dia(EU.pago_ate)}.` : `Ativa. Renova sozinha em ${dia(EU.pago_ate)}.`,
       atrasada: 'O último pagamento não passou. Atualize o cartão para o agente não parar.', cancelada: `Cancelada. O agente responde até ${dia(EU.pago_ate)}.`, vencida: 'O plano venceu e o agente parou.', novo: '' };
@@ -2270,10 +2409,26 @@
     if (abaAtual() !== 'estudio') return;
     if (r.erro) { alvo.innerHTML = aviso('erro', r.erro); return; }
     const t = r.total, l = r.assinantes || [];
+    /* 27/11: as contas que pagam por Pix (robo/mensalidade.ts): quem avisou que pagou e o Recebi */
+    const pintaMensalidades = (contas) => {
+      const el = $('es-mens'); if (!el) return;
+      if (!contas || !contas.length) { el.hidden = true; return; }
+      el.hidden = false;
+      el.innerHTML = `<h2>${ic('moeda')} Mensalidades por Pix</h2><p class="dica">Clientes implantados pagam por Pix dentro do app e avisam. Confira o extrato e dê o Recebi.</p>
+        <ul class="lem-lista">${contas.map((c) => `<li class="bol"><div class="lem-txt"><b>${esc(c.negocio)} · ${reais(c.valor)}</b><span class="dica">${esc(c.plano)} · todo dia ${esc(String(c.dia))} · começa em ${esc(dataBr(c.inicio))}</span></div>
+          <span class="selo-bol ${c.meses.some((m) => m.atrasado) ? 'atrasado' : 'pago'}">${c.meses.some((m) => m.atrasado) ? 'em aberto' : c.meses.length ? 'em dia' : 'na carência'}</span>
+          <div class="botoes">${c.meses.filter((m) => !m.pago).map((m) => `<button type="button" class="bt pequeno ${m.avisou ? '' : 'fraco'}" data-recebi-mens="${esc(c.slug)}" data-venc="${esc(m.venc)}" title="${m.avisou ? 'Avisou que pagou em ' + esc(hora(m.avisou)) : 'Ainda não avisou'}">${svg('check')} Recebi ${esc(dataBr(m.venc).slice(0, 5))}${m.avisou ? ' · avisou' : ''}</button>`).join('')}
+            ${c.meses.filter((m) => m.pago).slice(-1).map((m) => `<button type="button" class="bt pequeno fraco" data-desfaz-mens="${esc(c.slug)}" data-venc="${esc(m.venc)}">Desfazer ${esc(dataBr(m.venc).slice(0, 5))}</button>`).join('')}</div></li>`).join('')}</ul>`;
+      const age = (b, acao) => b.onclick = async () => { b.disabled = true; const x = await api('/estudio/mensalidade', { slug: b.dataset.recebiMens || b.dataset.desfazMens, venc: b.dataset.venc, acao }); if (x.erro) { b.disabled = false; b.insertAdjacentHTML('afterend', `<span class="dica">${esc(x.erro)}</span>`); return; } pintaMensalidades(x.contas); };
+      el.querySelectorAll('[data-recebi-mens]').forEach((b) => age(b, 'recebi'));
+      el.querySelectorAll('[data-desfaz-mens]').forEach((b) => age(b, 'desfazer'));
+    };
+    api('/estudio/mensalidades').then((x) => { if (x && !x.erro) pintaMensalidades(x.contas); });
     const nomePlano = { otto: 'Secretária', instagram: 'Instagram', whatsapp: 'WhatsApp', completo: 'Completo' };
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div><p class="rotulo">Só a Ti Artes</p><h1>Estúdio · ${esc(nomeMes(r.mes))}</h1>
       <p class="lede">O que cada assinante paga e quanto a IA dele custou de verdade neste mês (medido em cada resposta). IA em reais a R$ 6,50 por dólar.</p></div></div>
       <div class="numeros"><div><b>${reais(t.receita)}</b><span>entra no mês</span></div><div><b>${reais(t.ia)}</b><span>IA de todos</span></div><div><b>${reais(t.lucro)}</b><span>sobra, depois de IA, taxa, imposto e casa</span></div></div>
+      <div class="cartao" id="es-mens" hidden></div>
       <div class="cartao rolagem"><table><thead><tr><th>Negócio</th><th>Plano</th><th>Situação</th><th class="n">Mensagens</th><th class="n">IA (US$)</th><th class="n">Paga</th><th class="n">Custo</th><th class="n">Sobra</th><th class="n">Margem</th></tr></thead><tbody>
       ${l.map((x) => `<tr><td><b>${esc(x.negocio)}</b><br><span class="dica">${esc(x.email)}${x.instagram ? ' · @' + esc(x.instagram) : ''}</span></td><td>${esc(nomePlano[x.plano] || '—')}</td>
         <td><span class="selo ${x.ativo ? 'ok' : 'desligado'}">${esc(x.status)}</span></td><td class="n">${inteiro(x.mensagens)}</td><td class="n">${x.ia_usd.toFixed(4)}</td>

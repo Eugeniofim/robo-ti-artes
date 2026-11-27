@@ -815,6 +815,30 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 .ficha .linha-form select:focus { border-color: var(--sinal); outline: none; }
 .ficha-form .linha-form input { min-height: 48px; }
 .ficha textarea { resize: vertical; }
+/* 27/11 — a Assinatura (mensalidade por Pix do cliente implantado): situação, valor, meses e o QR code */
+.assinatura .cartao { display: grid; gap: 12px; }
+.as-pill { justify-self: start; display: inline-flex; gap: 8px; align-items: center; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 15px; border: 1px solid var(--card-borda); }
+.as-pill i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.as-pill small { font-weight: 400; color: var(--grafite); }
+.as-pill.as-verde { color: var(--teal-forte); } .as-pill.as-azul { color: #6FB6F0; } .as-pill.as-ambar { color: #F0B95A; } .as-pill.as-verm { color: var(--erro); background: var(--erro-fundo); } .as-pill.as-cinza { color: var(--grafite); }
+.as-valor { font: 700 44px/1 var(--serif); margin: 0; }
+.as-valor small { font: 400 16px var(--sans); color: var(--grafite); }
+.as-valor s { font: 400 20px var(--sans); color: var(--grafite); text-decoration-thickness: 1.5px; margin-right: 4px; }
+.as-linhas { display: grid; gap: 6px; margin: 0; }
+.as-linhas > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 10px; }
+.as-linhas dt { color: var(--grafite); font-size: 14.5px; } .as-linhas dd { margin: 0; font-weight: 600; }
+.as-meses { display: flex; flex-wrap: wrap; gap: 8px; }
+.as-mes { display: grid; justify-items: center; min-width: 58px; padding: 7px 8px; border-radius: 12px; border: 1px solid var(--card-borda); font: 700 13px var(--mono); text-transform: uppercase; }
+.as-mes small { font: 400 11px var(--sans); text-transform: none; color: var(--grafite); }
+.as-mes.ok { border-color: var(--sinal); color: var(--teal-forte); } .as-mes.atr { border-color: var(--erro); color: var(--erro); } .as-mes.avisado { border-color: #6FB6F0; color: #6FB6F0; } .as-mes.prox { border-color: #F0B95A; }
+.as-pagar h2 { display: flex; gap: 8px; align-items: center; margin: 0; }
+.as-det > summary { cursor: pointer; list-style: none; justify-self: start; display: inline-flex; } .as-det > summary::-webkit-details-marker { display: none; }
+.as-pix { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; padding-top: 14px; }
+.as-qr { background: #fff; border-radius: 14px; padding: 6px; line-height: 0; } .as-qr canvas { display: block; width: 220px; height: 220px; }
+.as-pix-tx { display: grid; gap: 10px; }
+.as-pix-tx textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 12.5px/1.4 var(--mono); resize: none; overflow-wrap: anywhere; }
+.as-ja { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding-top: 12px; border-top: 1px solid var(--card-borda); }
+@media (max-width: 860px) { .as-pix { grid-template-columns: 1fr; justify-items: center; } .as-pix-tx { justify-self: stretch; } .as-valor { font-size: 36px; } }
 /* 27/11 — lembretes e boletos: a lista de avisos, os boletos de cada cliente e as contas a pagar */
 .lem-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .lem-lista > li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: center; padding: 11px 4px; border-top: 1px solid var(--card-borda); }
@@ -910,6 +934,7 @@ body.ficha-aberta { overflow: hidden; }
 <nav class="baixo" id="baixo" aria-label="Atalhos"></nav>
 <script src="config.js"></script>
 <script src="sessao.js"></script>
+<script src="qrcode.js"></script>
 <script src="painel.js"></script>
 </body>
 </html>
