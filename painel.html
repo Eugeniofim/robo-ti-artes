@@ -807,6 +807,14 @@ details.mais .botoes, details.mais .dica { margin-top: 8px; }
 .ficha .linha-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
 .ficha .linha-form label { display: grid; gap: 5px; font-weight: 700; font-size: 14px; }
 .ficha .linha-form .largo, .ficha .linha-form .bt { grid-column: 1 / -1; }
+/* 27/11 — a ficha completa: títulos das partes do cadastro, o estado (select) e o bloco de notas */
+.ficha .form-sec { display: flex; gap: 8px; align-items: center; font-size: 15px; margin: 8px 0 0; padding-top: 14px; border-top: 1px solid var(--card-borda); }
+.ficha .form-pes { display: grid; gap: 12px; padding-top: 10px; }
+.ficha .form-pes .form-sec { border-top: 0; padding-top: 0; margin-top: 2px; }
+.ficha .linha-form select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 16px var(--sans); }
+.ficha .linha-form select:focus { border-color: var(--sinal); outline: none; }
+.ficha-form .linha-form input { min-height: 48px; }
+.ficha textarea { resize: vertical; }
 .ficha .linha-form input, .ficha-bloco .campo input, .ficha-bloco .campo textarea { width: 100%; min-height: 44px; padding: 9px 12px; border: 1.5px solid var(--card-borda); border-radius: 12px; background: color-mix(in srgb, var(--folha) 50%, transparent); color: var(--tinta); font: 400 16px var(--sans); }
 .ficha .linha-form input:focus, .ficha-bloco .campo input:focus, .ficha-bloco .campo textarea:focus { border-color: var(--sinal); outline: none; }
 .lnk-ficha { border: 0; background: none; padding: 0; font: inherit; color: var(--teal-forte); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }

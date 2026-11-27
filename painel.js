@@ -1788,6 +1788,40 @@
   const proxTxt = (p) => (p ? `${p.texto}${p.dia ? ' · ' + new Date(p.dia + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + (p.hora ? ' ' + p.hora : '') : ''}` : '');
   const waLink = (f, texto) => `https://wa.me/${esc(f.whatsapp || f.telefone)}${texto ? '?text=' + encodeURIComponent(texto) : ''}`;
 
+  /* 27/11/2026 — A FICHA COMPLETA (pedido dele: "colocar endereço, CEP, endereço completo, CPF, RG, data de nascimento
+     e um bloco de notas para falar sobre quem é o cliente"). Tudo opcional. O servidor confere (CPF pelos dígitos, data
+     que existe, CEP com 8 números) e devolve limpo; aqui é só o jeito de mostrar e de digitar. */
+  const UFS = 'AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ');
+  const cpfBonito = (d) => (/^\d{11}$/.test(String(d || '')) ? `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}` : '');
+  const cepBonito = (d) => (/^\d{8}$/.test(String(d || '')) ? `${d.slice(0, 5)}-${d.slice(5)}` : '');
+  const nascBonito = (iso) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''))) return '';
+    const [a, m, d] = iso.split('-').map(Number), h = new Date();
+    const anos = h.getFullYear() - a - (h.getMonth() + 1 < m || (h.getMonth() + 1 === m && h.getDate() < d) ? 1 : 0);
+    return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${a}${anos >= 0 && anos < 130 ? ` · ${anos} ${anos === 1 ? 'ano' : 'anos'}` : ''}`;
+  };
+  const enderecoLinha = (f) => [[f.endereco, f.complemento].filter(Boolean).join(', '), f.bairro, [f.cidade, f.uf].filter(Boolean).join(' / '), cepBonito(f.cep) ? 'CEP ' + cepBonito(f.cep) : ''].filter(Boolean).join(' · ');
+  const mascCpf = (v) => String(v).replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  const mascCep = (v) => String(v).replace(/\D/g, '').slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2');
+  /* os campos de documentos e endereço (o mesmo desenho no cadastro e na ficha aberta) */
+  const camposPessoais = (f) => `<div class="linha-form">
+      <label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" value="${esc(cpfBonito(f.cpf))}"></label>
+      <label>RG<input name="rg" autocomplete="off" placeholder="00.000.000-0" value="${esc(f.rg || '')}"></label>
+      <label class="largo">Data de nascimento<input name="nascimento" type="date" max="${hojeIso()}" value="${esc(f.nascimento || '')}"></label></div>
+    <h3 class="form-sec">${ic('casa')} Endereço</h3>
+    <div class="linha-form">
+      <label>CEP<input name="cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" value="${esc(cepBonito(f.cep))}"></label>
+      <label>Bairro<input name="bairro" autocomplete="off" value="${esc(f.bairro || '')}"></label>
+      <label class="largo">Endereço (rua e número)<input name="endereco" autocomplete="off" placeholder="Rua das Flores, 120" value="${esc(f.endereco || '')}"></label>
+      <label class="largo">Complemento<input name="complemento" autocomplete="off" placeholder="apto 32, bloco B, fundos…" value="${esc(f.complemento || '')}"></label>
+      <label>Cidade<input name="cidade" autocomplete="off" value="${esc(f.cidade || '')}"></label>
+      <label>Estado<select name="uf"><option value="">—</option>${UFS.map((u) => `<option${f.uf === u ? ' selected' : ''}>${u}</option>`).join('')}</select></label></div>`;
+  const ligaMascaras = (raiz) => {
+    const c = raiz.querySelector('[name=cpf]'), z = raiz.querySelector('[name=cep]');
+    if (c) c.oninput = () => { c.value = mascCpf(c.value); };
+    if (z) z.oninput = () => { z.value = mascCep(z.value); };
+  };
+
   async function telaClientes(alvo, topo) {
     alvo.innerHTML = `<section class="aba">${topo}<div class="cabeca-aba"><div>${seloQuem('clientes')}<h1>Clientes</h1></div></div><p class="dica">Carregando…</p></section>`;
     const r = await api('/clientes');
@@ -1805,8 +1839,8 @@
       if (SIT[filtro] && f.situacao !== filtro) return false;
       if (!busca) return true;
       const b = busca.toLowerCase(), bd = b.replace(/\D/g, '');
-      const tudo = [f.nome, f.instagram, f.email, f.nota, ...(f.pedidos || []).map((p) => p.assunto)].join(' ').toLowerCase();
-      return tudo.includes(b) || (bd.length >= 4 && [f.whatsapp, f.telefone].some((t) => String(t || '').includes(bd)));
+      const tudo = [f.nome, f.instagram, f.email, f.nota, f.cidade, f.bairro, f.endereco, ...(f.pedidos || []).map((p) => p.assunto)].join(' ').toLowerCase();
+      return tudo.includes(b) || (bd.length >= 4 && [f.whatsapp, f.telefone, f.cpf, f.cep].some((t) => String(t || '').includes(bd)));
     };
     const cartaoCliente = (f, compacto) => {
       const p = precisa(f), ult = (f.pedidos || [])[0];
@@ -1935,10 +1969,17 @@
           <label class="campo">WhatsApp<input name="whatsapp" inputmode="tel" placeholder="41 99999-0000"></label>
           <label class="campo">Instagram<input name="instagram" placeholder="@marina"></label>
           <label class="campo">E-mail<input name="email" type="email" placeholder="marina@email.com"></label>
-          <div class="botoes"><button class="bt" type="submit">Cadastrar</button></div><p class="dica">Se o contato já estiver numa ficha, ela é completada em vez de nascer outra.</p></form>`;
+          <h3 class="form-sec">${ic('doc')} Documentos</h3>
+          ${camposPessoais({})}
+          <h3 class="form-sec">${ic('texto')} Sobre o cliente</h3>
+          <label class="campo">Bloco de notas<textarea name="nota" rows="4" placeholder="Quem é, do que gosta, como prefere ser atendido, o que já comprou…"></textarea></label>
+          <div class="botoes"><button class="bt" type="submit">Cadastrar</button></div><p class="dica">Só o nome ou um contato já basta: o resto você completa quando quiser. Se o contato já estiver numa ficha, ela é completada em vez de nascer outra.</p></form>`;
+        ligaMascaras(g);
         g.querySelector('#cl-form-novo').onsubmit = async (e) => {
-          e.preventDefault(); const d = Object.fromEntries(new FormData(e.target));
-          const x = await muda('', d); if (x) abre(x.id);
+          e.preventDefault();
+          /* só vai o que foi preenchido: campo em branco no cadastro não apaga nada de uma ficha que já existe */
+          const d = Object.fromEntries([...new FormData(e.target)].filter(([, v]) => String(v).trim() !== ''));
+          const x = await muda('', d); if (x) { abre(x.id); g.scrollTop = 0; }   /* a ficha nova abre do começo, não de onde o cadastro parou */
         };
       } else {
         const sitBt = Object.keys(SIT).map((s) => `<button type="button" class="seg sit-${s} ${f.situacao === s ? 'ativo' : ''}" data-sit="${s}" aria-pressed="${f.situacao === s}">${SIT[s]}</button>`).join('');
@@ -1963,6 +2004,14 @@
               <div class="linha-form"><label>WhatsApp<input id="fi-wa" value="${esc(f.whatsapp ? foneBonito(f.whatsapp) : '')}" inputmode="tel"></label><label>Instagram<input id="fi-ig" value="${esc(f.instagram)}"></label>
               <label class="largo">E-mail<input id="fi-em" value="${esc(f.email)}" type="email"></label><button class="bt pequeno fraco" type="button" id="fi-ct-salva">Salvar contatos</button></div></details>
           </div>
+          <div class="ficha-bloco contatos" id="fi-dados"><h3>${ic('doc')} Documentos e endereço</h3>
+            ${f.cpf ? contato('CPF', cpfBonito(f.cpf)) : ''}
+            ${f.rg ? contato('RG', f.rg) : ''}
+            ${f.nascimento ? contato('Nascimento', nascBonito(f.nascimento)) : ''}
+            ${enderecoLinha(f) ? contato('Endereço', enderecoLinha(f), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(enderecoLinha(f).replace(/ · /g, ', ')), 'Ver no mapa') : ''}
+            <details class="editar-ct"><summary>${f.cpf || f.rg || f.nascimento || enderecoLinha(f) ? 'Mudar documentos e endereço' : 'Pôr CPF, RG, nascimento e endereço'}</summary>
+              <form id="fi-pes" class="form-pes">${camposPessoais(f)}<div class="botoes"><button class="bt pequeno fraco" type="submit">Salvar dados</button></div></form></details>
+          </div>
           <div class="ficha-bloco proximo ${f.proximo ? 'tem' : ''}"><h3>${ic('agenda')} Próximo passo</h3>
             ${f.proximo ? `<p class="prox-atual"><b>${esc(f.proximo.texto)}</b>${f.proximo.dia ? `<span class="dica">${esc(diaLongo(f.proximo.dia))}${f.proximo.hora ? ' às ' + esc(f.proximo.hora) : ''} · está na agenda${(EU.assistente || {}).ligado ? ` e a ${esc(ASSIST())} avisa` : ''}</span>` : '<span class="dica">sem dia</span>'}</p>
               <div class="botoes"><button class="bt pequeno" type="button" id="fi-feito">${svg('check')} Feito</button><button class="bt pequeno fraco" type="button" id="fi-troca">Mudar</button></div>` : ''}
@@ -1972,7 +2021,7 @@
             <div class="atalhos">${['Ligar', 'Mandar orçamento', 'Confirmar o horário', 'Cobrar'].map((t) => `<button type="button" class="chip-f" data-atalho="${t}">${t}</button>`).join('')}</div>
           </div>
           <div class="ficha-bloco"><label class="campo">Valor do negócio<input id="fi-valor" value="${esc(f.valor || '')}" placeholder="R$ 380"></label>
-            <label class="campo">Anotações<textarea id="fi-nota" rows="3" placeholder="Prefere falar à tarde. Já comprou o arranjo de mesa.">${esc(f.nota || '')}</textarea></label></div>
+            <label class="campo">Bloco de notas: quem é o cliente<textarea id="fi-nota" rows="5" placeholder="Quem é, do que gosta, como prefere ser atendido. Ex.: prefere falar à tarde; já comprou o arranjo de mesa.">${esc(f.nota || '')}</textarea></label></div>
           <div class="ficha-bloco"><h3>${ic('relogio')} Histórico</h3>${hist.length ? `<ul class="historico">${hist.map((h) => `<li>${h.html}</li>`).join('')}</ul>` : '<p class="dica">Ainda nada. Os pedidos do atendimento e os compromissos com essa pessoa aparecem aqui.</p>'}
             <p class="dica">Primeiro contato ${esc(dia(f.primeiro))} · pelo ${esc(f.origem === 'whatsapp' ? 'WhatsApp' : f.origem === 'instagram' ? 'Instagram' : f.origem === 'teste' ? 'Testar (conversa de teste)' : 'cadastro')}</p></div>
           <div class="ficha-pe"><button type="button" class="bt pequeno perigo" id="fi-apaga">${svg('lixo')} Apagar ficha</button></div>`;
@@ -2004,6 +2053,8 @@
         $('fi-valor').onchange = (e) => muda(f.id, { valor: e.target.value });
         $('fi-nota').onchange = (e) => muda(f.id, { nota: e.target.value }).then((n) => n && toast('Anotação salva.'));
         $('fi-ct-salva').onclick = () => salva({ whatsapp: $('fi-wa').value, instagram: $('fi-ig').value, email: $('fi-em').value });
+        ligaMascaras(g);
+        $('fi-pes').onsubmit = (e) => { e.preventDefault(); muda(f.id, Object.fromEntries(new FormData(e.target))).then((n) => { if (n) { abre(n.id); toast('Dados salvos.'); } }); };
         const px = $('fi-prox');
         px.onsubmit = async (e) => {
           e.preventDefault();
